@@ -114,8 +114,9 @@ a. **Which of the variables in the dataset are *nominal*? Which ones are *Ordina
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-* nominal: none
+* nominal: none (?)
 * ordinal: `cut`, `color`, `clarity`
+* numerical: `cut`, `depth`, `table`, `price`, `x`, `y`, `z`
 </details> 
 
 b. **Report the summary of the *diamonds* data? set by using function `summary()`.**
@@ -136,7 +137,7 @@ mean(diamonds[["price"]])
 min(diamonds["price"])
 max(diamonds["price"])
 ```
-</details> 
+</details>
 
 ## Unusual Values in the *diamonds* dataset 
 
@@ -201,6 +202,20 @@ Here, in the *diamonds* dataset, we want to check if there is any unusual or out
 
 **Your task here is to check if there is any unusual or outliers in the variables `x` and `z`. Follow the same steps at above for the variable `y`.**
 
+```{r}
+ggplot( diamonds ) +
+    geom_histogram( mapping = aes( x = x ), binwidth = 0.5 ) +
+    coord_cartesian( ylim = c( 0, 30 ) )
+```
+There seems to be an unusual value for the x measure of the diamond. One of the measures of the diamond is 0mm, which is impossible. It probably meant in the data recording a missing value, or an invalid measure etc. To be finished.
+
+```{r}
+ggplot( diamonds ) +
+    geom_histogram( mapping = aes( x = z ), binwidth = 0.5 ) +
+    coord_cartesian( ylim = c( 0, 30 ) )
+```
+There seems to be an unusual value for the x measure of the diamond. One of the measures of the diamond is 0mm, which is impossible. It probably meant in the data recording a missing value, or an invalid measure etc. To be finished.
+
 # Adult Dataset
 
 We want to find out *which type of people can earn more than 50K per year*. Thus, the prediction task is to determine whether a person makes over $50K a year. For this classification task, in week 5, we will apply the *Decision Tree* as well as the *Random Forest* algorithm. 
@@ -248,6 +263,10 @@ a. **Which of the variables in the dataset are *nominal*? And which ones are *nu
 b. **Report the summary of the *adult* dataset by using function `summary()`.**
 
 c. **Report the proportion of the people who earn more than 50K (`>50K`).**
+
+```{r}
+mean(adult[["income"]])
+```
 
 ## Data Cleaning
 
