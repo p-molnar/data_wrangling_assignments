@@ -19,7 +19,16 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center'  )
 ```
 
-**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+```{css, echo=FALSE}
+.answer_panel {
+  margin-left: 40px;
+}
+```
+
+**Full Name:**
+
+1. Peter Molnar
+2. Lourencio
 
 **Online Exercises on DataCamp**: 
 Register at the [DataCamp](https://www.datacamp.com) for the free online course “Data Analytics 2022”. Three online assignments are waiting for you. Those online assignments are preparing you for the computer labs. *The online assignments at the DataCamp are not mandatory*.
@@ -103,9 +112,31 @@ You can find more information related to this dataset [here](https://ggplot2.tid
 
 a. **Which of the variables in the dataset are *nominal*? Which ones are *Ordinal*? Which ones are *numerical*?**
 
-b. **Report the summary of the *diamonds* dataset by using function `summary()`.**
+<details class="answer_panel">
+  <summary>Answer a</summary>
+* nominal: none
+* ordinal: `cut`, `color`, `clarity`
+</details> 
+
+b. **Report the summary of the *diamonds* data? set by using function `summary()`.**
+
+<details class="answer_panel">
+  <summary>Answer b</summary>
+```{r}
+summary(diamonds)
+```
+</details> 
 
 c. **Report the average, minimum, and maximum price for the diamonds.**
+
+<details class="answer_panel">
+  <summary>Answer c</summary>
+```{r}
+mean(diamonds[["price"]])
+min(diamonds["price"])
+max(diamonds["price"])
+```
+</details> 
 
 ## Unusual Values in the *diamonds* dataset 
 
