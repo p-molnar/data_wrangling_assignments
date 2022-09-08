@@ -1,4 +1,5 @@
 .DS_store
+/*/*
 Book*
-.RData
-.Rhistory
+!/**/assignment_*
+!/**/assignment_*/.R*
