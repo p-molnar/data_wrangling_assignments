@@ -114,9 +114,9 @@ a. **Which of the variables in the dataset are *nominal*? Which ones are *Ordina
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-* nominal: none (?)
-* ordinal: `cut`, `color`, `clarity`
-* numerical: `cut`, `depth`, `table`, `price`, `x`, `y`, `z`
+* nominal variables: The dataset does not contain any nonimal variables.
+* ordinal variables: `cut`, `color`, `clarity`
+* numerical variables: `carat`, `depth`, `table`, `price`, `x`, `y`, `z`
 </details> 
 
 b. **Report the summary of the *diamonds* data? set by using function `summary()`.**
