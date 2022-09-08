@@ -114,7 +114,7 @@ a. **Which of the variables in the dataset are *nominal*? Which ones are *Ordina
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-* nominal variables: The dataset does not contain any nonimal variables.
+* nominal variables: The dataset does not contain any nominal variables.
 * ordinal variables: `cut`, `color`, `clarity`
 * numerical variables: `carat`, `depth`, `table`, `price`, `x`, `y`, `z`
 </details> 
@@ -133,10 +133,22 @@ c. **Report the average, minimum, and maximum price for the diamonds.**
 <details class="answer_panel">
   <summary>Answer c</summary>
 ```{r}
-mean(diamonds[["price"]])
-min(diamonds["price"])
-max(diamonds["price"])
+mean_price <- mean(diamonds[["price"]])
 ```
+
+The average price a diamond sells in the `diamonds` dataset is $`r  round(mean_price, digits = 3)`.
+
+```{r}
+min_price <- min(diamonds["price"])
+```
+
+The cheapest diamond of the `diamonds` dataset was sold for $`r  min_price`.
+
+```{r}
+max_price <- max(diamonds["price"])
+```
+The most expensive a diamond of the `diamonds` dataset was sold for $`r  max_price`.
+
 </details>
 
 ## Unusual Values in the *diamonds* dataset 
@@ -202,19 +214,77 @@ Here, in the *diamonds* dataset, we want to check if there is any unusual or out
 
 **Your task here is to check if there is any unusual or outliers in the variables `x` and `z`. Follow the same steps at above for the variable `y`.**
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+  <h3>Outliers in `x`</h3>
+  
 ```{r}
+mean_x = mean(diamonds $ x)
+min_x =  min(diamonds $ x)
+max_x =  max(diamonds $ x)
+
 ggplot( diamonds ) +
-    geom_histogram( mapping = aes( x = x ), binwidth = 0.5 ) +
-    coord_cartesian( ylim = c( 0, 30 ) )
+    geom_histogram( mapping = aes( x = x ), binwidth = 0.5 )
 ```
-There seems to be an unusual value for the x measure of the diamond. One of the measures of the diamond is 0mm, which is impossible. It probably meant in the data recording a missing value, or an invalid measure etc. To be finished.
+
+The histogram above shows 2 potential outliers; one at `r min_x`mm and another at `r max_x`mm. The outlier at `r min_x`mm is likely to be an entry error, since a diamond's width cannot be 0mm.
+
+The other end of the data at `r max_x`mm requires further investigation, but since the histogram follows an approximate normal distribution centered around the mean of `r round(mean_x, digits = 3)`, it seems that the value `r max_x`mm is not an outlier.
+
+If we plot the the `x` variable on the x-axis against `price` on the y-axis, we see that the larger values towards `r max_x` cost more, which is a likely case. Therefore, `r max_x` is not deemed to be an outlier.
 
 ```{r}
-ggplot( diamonds ) +
-    geom_histogram( mapping = aes( x = z ), binwidth = 0.5 ) +
-    coord_cartesian( ylim = c( 0, 30 ) )
+ggplot( data = diamonds, mapping = aes( x = x, y = price ) ) + 
+  geom_point( colour = 'blue' )
 ```
-There seems to be an unusual value for the x measure of the diamond. One of the measures of the diamond is 0mm, which is impossible. It probably meant in the data recording a missing value, or an invalid measure etc. To be finished.
+
+
+The below code replaces the outliers with NA, and plots the new data.
+
+```{r}
+diamonds_2 = mutate( diamonds_2, x = ifelse( x ==  0, NA, x) )
+
+ggplot( data = diamonds_2, mapping = aes( x = x, y = price ) ) + 
+  geom_point( colour = 'blue' )
+```
+
+The takeaway from the scatterplot is a positive correlation between the `x` variable and `price`. That is, the greater the width of a diamond, the more valuable it is, and hence sells for a higher price.
+
+  <h3>Outliers in `z`</h3>
+  
+```{r}
+mean_z = mean(diamonds $ z)
+min_z =  min(diamonds $ z)
+max_z =  max(diamonds $ z)
+
+ggplot( diamonds ) +
+    geom_histogram( mapping = aes( x = z ), binwidth = 0.5 )
+```
+
+The histogram above shows 2 potential outliers; one at `r min_z`mm and another at `r max_z`mm. The outlier at `r min_z` is likely to be an entry error, since a diamond's depth cannot be 0mm.
+
+Not only looking at the extreme values of `z`, but also the width of the histogram gives away, that the there is likely to be an outlier. It happens to be the case that there is a data entry at `r max_z`mm which requires further investigation to justify whether it is an outlier or not.
+
+To do so, we plot the `z` variable against `price`.
+
+```{r}
+ggplot( data = diamonds, mapping = aes( x = z, y = price ) ) + 
+  geom_point( colour = 'blue' )
+```
+
+It seems unusual that a diamond with a depth over 3cm does not cost a fortune, so it may be the case, that when recording the data a decimal point was placed at the wrong place.
+
+The below code replaces the outliers with NA values, and plots the data again.
+
+```{r}
+diamonds_2 = mutate( diamonds_2, z = ifelse( z == 0 | z > 10, NA, z) )
+
+ggplot( data = diamonds_2, mapping = aes( x = z, y = price ) ) + 
+  geom_point( colour = 'blue' )
+```
+
+</details>
 
 # Adult Dataset
 
@@ -256,17 +326,51 @@ data( adult )
 str( adult )
 ```
 
-It shows the dataset contains `r nrow( adult )` records and `r ncol( adult )` variables/features.  The dataset has `r ncol( adult ) - 1` predictors along with a target variable `income` as a binary variable with two levels "<=50K" and ">50K".
+It shows the dataset contains `r nrow( adult )` records and `r ncol( adult )` variables/features. The dataset has `r ncol( adult ) - 1` predictors along with a target variable `income` as a binary variable with two levels "<=50K" and ">50K".
 
 a. **Which of the variables in the dataset are *nominal*? And which ones are *numerical*?**
 
+<details class="answer_panel">
+  <summary>Answer a</summary>
+* nominal variables:
+* numerical variables: 
+
+</details>
+
 b. **Report the summary of the *adult* dataset by using function `summary()`.**
 
+<details class="answer_panel">
+  <summary>Answer b</summary>
+```{r}
+summary(adult)
+```
+
+</details>
+
 c. **Report the proportion of the people who earn more than 50K (`>50K`).**
+<details class="answer_panel">
+  <summary>Answer c</summary>
+```{r}
+
+income = adult[["income"]]
+
+# to inspect the underlying integer values of the factor levels
+levels(income)
+```
+
+The above output shows, that "<=50K" is associated with integer value `1`, and ">50K" with `2`. Although in this format the data is already binary in a sense that it can only take 2 mutually exclusive values, but is not binary in its literal sense. That is, it is not within the boundaries of [0, 1]. If we were to take the mean of `income` now, it would result in a value 1 greater than the mean of a strictly binary variable. To work with binary values, we need to convert the factor records to values between 0 and 1. To achieve this, we took away 1 from each records.
 
 ```{r}
-mean(adult[["income"]])
+# take factor values as numeric
+numeric_income = as.numeric(income)
+
+# take away one from each value to bind the outcome to [0, 1]
+numeric_income = numeric_income - 1
+
+mean(numeric_income)
 ```
+
+</details>
 
 ## Data Cleaning
 
