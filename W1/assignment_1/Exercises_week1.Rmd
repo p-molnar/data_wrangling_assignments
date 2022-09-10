@@ -136,18 +136,18 @@ c. **Report the average, minimum, and maximum price for the diamonds.**
 mean_price <- mean(diamonds[["price"]])
 ```
 
-The average price a diamond sells in the `diamonds` dataset is $`r  round(mean_price, digits = 3)`.
+The average price of a diamond in the `diamonds` dataset is $`r  round(mean_price, digits = 3)`.
 
 ```{r}
 min_price <- min(diamonds["price"])
 ```
 
-The cheapest diamond of the `diamonds` dataset was sold for $`r  min_price`.
+The cheapest diamond of the `diamonds` dataset is $`r  min_price`.
 
 ```{r}
 max_price <- max(diamonds["price"])
 ```
-The most expensive a diamond of the `diamonds` dataset was sold for $`r  max_price`.
+The most expensive diamond of the `diamonds` dataset is $`r  max_price`.
 
 </details>
 
@@ -218,72 +218,114 @@ Here, in the *diamonds* dataset, we want to check if there is any unusual or out
   <summary>Answer</summary>
   
   <h3>Outliers in `x`</h3>
-  
-```{r}
-mean_x = mean(diamonds $ x)
-min_x =  min(diamonds $ x)
-max_x =  max(diamonds $ x)
 
+To see if variable `x` contains any outliers, first we are going to plot it as a histogram.
+
+```{r}
 ggplot( diamonds ) +
     geom_histogram( mapping = aes( x = x ), binwidth = 0.5 )
 ```
 
-The histogram above shows 2 potential outliers; one at `r min_x`mm and another at `r max_x`mm. The outlier at `r min_x`mm is likely to be an entry error, since a diamond's width cannot be 0mm.
+```{r echo=FALSE}
+min_x = min(diamonds $ x)
+max_x = max(diamonds $ x)
+```
 
-The other end of the data at `r max_x`mm requires further investigation, but since the histogram follows an approximate normal distribution centered around the mean of `r round(mean_x, digits = 3)`, it seems that the value `r max_x`mm is not an outlier.
+The limits of the x-axis does not have a wide limit — the observations spread out withing a range of [`r min_x`, `r max_x`]. By looking at the two extreme values of `x`, minimum at `r min_x`mm, and maximum at `r max_x`mm, we can already rule out 0mm, since a diamond's width cannot be 0mm. It requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or if it is a codified indication of a missing value.
 
-If we plot the the `x` variable on the x-axis against `price` on the y-axis, we see that the larger values towards `r max_x` cost more, which is a likely case. Therefore, `r max_x` is not deemed to be an outlier.
+On the other end of the range, `r max_x`mm, also requires further investigation to be deemed as an outlier or not. For that we calculate the relevant boxplot values for `x`. For that we report the quartiles of `x` and utilise the below formulas to calculate $Q_4$.
+
+```{r}
+quantile(diamonds $ x, prob=c(.25,.5,.75))
+
+q1 = unname(quantile(diamonds $ x, prob=c(.25)))
+q3 = unname(quantile(diamonds $ x, prob=c(.75)))
+
+iqr = q3 - q1
+q4 = q3 + 1.5 * iqr
+```
+
+From the above output and with the help of the below formulas, we can calculate the parameters of the boxplot.
+
+$$
+IQR = Q_3 - Q_1
+$$
+$$
+Q_4 = Q_3 + 1.5 * IQR
+$$
+In our case the relevant metrics is the boxplot's $Q_4$ value, which results to `r q4`, which is smaller than `r max_x`. Given that `r max_x` is located outside of $Q_4$, it is numerically so distant from the rest of the data that it can be deemed an outlier.
 
 ```{r}
 ggplot( data = diamonds, mapping = aes( x = x, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-
-The below code replaces the outliers with NA, and plots the new data.
+The below code replaces the unusual values with missing values, and plots the new data.
 
 ```{r}
-diamonds_2 = mutate( diamonds_2, x = ifelse( x ==  0, NA, x) )
+diamonds_3 = mutate( diamonds_2, x = ifelse( x == 0 | x > q4, NA, x) )
 
-ggplot( data = diamonds_2, mapping = aes( x = x, y = price ) ) + 
+ggplot( data = diamonds_3, mapping = aes( x = x, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The takeaway from the scatterplot is a positive correlation between the `x` variable and `price`. That is, the greater the width of a diamond, the more valuable it is, and hence sells for a higher price.
+Below we report a summary of variable `x` with the new missing values present in the dataset, whereby we see that 32 values were replaced with missing values.
+
+```{r}
+summary(diamonds_3 $ z)
+```
 
   <h3>Outliers in `z`</h3>
   
-```{r}
-mean_z = mean(diamonds $ z)
-min_z =  min(diamonds $ z)
-max_z =  max(diamonds $ z)
+To see if variable `z` contains any outliers, first we are going to plot it as a histogram and look for anomalies, and observations that are far from the bulk of the data.
 
-ggplot( diamonds ) +
+```{r}
+ggplot( diamonds_3 ) +
     geom_histogram( mapping = aes( x = z ), binwidth = 0.5 )
 ```
 
-The histogram above shows 2 potential outliers; one at `r min_z`mm and another at `r max_z`mm. The outlier at `r min_z` is likely to be an entry error, since a diamond's depth cannot be 0mm.
+```{r echo=FALSE}
+min_z = min(diamonds $ z)
+max_z = max(diamonds $ z)
+```
 
-Not only looking at the extreme values of `z`, but also the width of the histogram gives away, that the there is likely to be an outlier. It happens to be the case that there is a data entry at `r max_z`mm which requires further investigation to justify whether it is an outlier or not.
+The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`]. By looking at the two extreme values of `z`, minimum at `r min_z`mm, and maximum at `r max_z`mm, we can already rule out 0mm, since a diamond's width cannot be 0mm. It, however, requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or if it is a codified indication of a missing value.
 
-To do so, we plot the `z` variable against `price`.
+On the other end of the range, `r max_z`mm, also requires further investigation to be deemed as an outlier or not. For that we calculate the relevant boxplot values for `z`. For that we report the quartiles of `z` and utilise the above used formulas to calculate $Q_4$.
 
 ```{r}
-ggplot( data = diamonds, mapping = aes( x = z, y = price ) ) + 
+quantile(diamonds $ z, prob=c(.25,.5,.75))
+
+q1 = unname(quantile(diamonds $ z, prob=c(.25)))
+q3 = unname(quantile(diamonds $ z, prob=c(.75)))
+
+iqr = q3 - q1
+q4 = q3 + 1.5 * iqr
+```
+
+From the above output and by plugging in the values to the formula we can calculate the relevant statistics. $Q_4$ results to `r q4`, which is smaller than `r max_z`. Given that `r max_z` is located outside of $Q_4$, it is numerically so distant from the rest of the data that it can be deemed an outlier.
+
+Below we plot variable `z` against `price`. 
+
+```{r}
+ggplot( data = diamonds_3, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-It seems unusual that a diamond with a depth over 3cm does not cost a fortune, so it may be the case, that when recording the data a decimal point was placed at the wrong place.
-
-The below code replaces the outliers with NA values, and plots the data again.
+The below code replaces the unusual values with missing values, and plots the new data.
 
 ```{r}
-diamonds_2 = mutate( diamonds_2, z = ifelse( z == 0 | z > 10, NA, z) )
+diamonds_4 = mutate( diamonds_3, z = ifelse( z == 0 | z > q4, NA, x) )
 
-ggplot( data = diamonds_2, mapping = aes( x = z, y = price ) ) + 
+ggplot( data = diamonds_4, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
+Below we report a summary of variable `x` with the new missing values present in the dataset, whereby we see that 59 values were replaced with missing values.
+
+```{r}
+summary(diamonds_4 $ z)
+```
 </details>
 
 # Adult Dataset
@@ -332,8 +374,8 @@ a. **Which of the variables in the dataset are *nominal*? And which ones are *nu
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-* nominal variables:
-* numerical variables: 
+* nominal variables: `demogweight`, `marital.status`, `occupation`, `relationship`, `race`, `gender`, `native.country`
+* numerical variables: `age`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`
 
 </details>
 
@@ -348,6 +390,7 @@ summary(adult)
 </details>
 
 c. **Report the proportion of the people who earn more than 50K (`>50K`).**
+
 <details class="answer_panel">
   <summary>Answer c</summary>
 ```{r}
@@ -479,11 +522,43 @@ ggplot( adult ) +
 
 **What would be your interpretation of the above outputs for the variable `capital.loss`? Are there any outliers in the variable `capital.loss`? If so, what would be a good strategy to deal with the outliers?**
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+Capital loss of 0 may be deemed as an outlier, however, it has relevant meaning. Capital loss of 0 means, that the individual either did not suffer any capital loss, or did not invest, and accordingly did not lose anything.
+
+```{r}
+ggplot( adult ) +
+  geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" ) +
+  coord_cartesian( ylim = c( 0, 30 ) )
+
+ggplot( data = adult, mapping = aes( x = capital.loss, y = income ) ) + 
+  geom_point( colour = 'blue' )
+```
+
+</details>
+
 ## Outliers for variable `capital.gain`
 
 Here we want to check if there is any outliers in the variable `capital.gain` or not. 
 
 a. **Similar to the previous part report the `summary`, `boxplot`, and `histogram` for the variable `capital.gain`.**
+
+<details class="answer_panel">
+  <summary>Answer a</summary>
+  
+```{r}
+summary(adult $ capital.gain)
+
+ggplot( adult ) +
+     geom_boxplot( aes( y = capital.gain ) )
+
+ggplot( adult ) +
+     geom_histogram( aes( x = capital.gain ), bins = 30, color = "blue", fill = "lightblue" )
+```
+
+
+</details>
 
 b. **What would be your interpretation of the above outputs for the variable `capital.gain`? Are there any outliers in the variable `capital.loss`? If so, what would be a good strategy to deal with the outliers?**
 
