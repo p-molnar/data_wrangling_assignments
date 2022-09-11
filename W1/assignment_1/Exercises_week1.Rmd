@@ -273,7 +273,7 @@ summary( diamonds_3 $ x )
 
   <h3>Outliers in `z`</h3>
   
-To see if variable `z` contains any outliers, first we are going to plot it as a histogram and look for anomalies, and observations that are far from the bulk of the data.
+Next, we move on to the exploration of `z`. First, we plot `z` as a histogram and look for anomalies, and observations that are far from the bulk of the data.
 
 ```{r}
 ggplot( diamonds_3 ) +
@@ -285,50 +285,45 @@ min_z = min(diamonds $ z)
 max_z = max(diamonds $ z)
 ```
 
-$$
-IQR = Q_3 - Q_1
-$$
-$$
-Q_4 = Q_3 + 1.5 * IQR
-$$
+The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`], which may be an indication of outliers present in `z`. By looking at the two extreme values of `z`, the minimum of `r min_z`mm, can already be deemed an unusual value, since a diamond's depth cannot be 0mm.
 
-The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`]. By looking at the two extreme values of `z`, minimum at `r min_z`mm, and maximum at `r max_z`mm, we can already rule out 0mm, since a diamond's width cannot be 0mm. It, however, requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or if it is a codified indication of a missing value.
+Without knowing the data recording procedure or methodology, we cannot conclude whether 0mm is a measurement error, or a codified indication of a missing value.
 
-On the other end of the range, `r max_z`mm, also requires further investigation to be deemed as an outlier or not. For that we calculate the relevant boxplot values for `z`. For that we report the quartiles of `z` and utilise the above used formulas to calculate $Q_4$.
+To make the unusual values along the x-axis more visible, we adjust the limits of y-axis.
 
 ```{r}
-quantile(diamonds $ z, prob=c(.25,.5,.75))
-
-q1 = unname(quantile(diamonds $ z, prob=c(.25)))
-q3 = unname(quantile(diamonds $ z, prob=c(.75)))
-
-iqr = q3 - q1
-q4 = q3 + 1.5 * iqr
+ggplot( diamonds_3 ) +
+    geom_histogram( mapping = aes( x = z ), binwidth = 0.5 ) +
+    coord_cartesian( ylim = c( 0, 30 ) )
 ```
 
-From the above output and by plugging in the values to the formula we can calculate the relevant statistics. $Q_4$ results to `r q4`, which is smaller than `r max_z`. Given that `r max_z` is located outside of $Q_4$, it is numerically so distant from the rest of the data that it can be deemed an outlier.
-
-Below we plot variable `z` against `price`. 
+We see the `r max_z`mm greatly deviates from the rest of the data. Such a diamond is over 3cm in depth, so we would like to see whether this observation is in line with its price to conclude whether it is an outlier or not. For that we plot `z` against `price` in a histogram.
 
 ```{r}
 ggplot( data = diamonds_3, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The below code replaces the unusual values with missing values, and plots the new data.
+The plot clearly shows that the largest diamond in terms of length sells for similar prices as those of 3-5mm. Therefore, it is likely, that the decimal point of 31.8mm was misplaced when recording the data, and meant 3.18mm instead. Nevertheless, such observation is numerically so distant from the rest of the data that it can be deemed an outlier.
+
+Therefore, we replace the above classified unusual values with NA, plots the new data, and report a summary of the replaced values.
 
 ```{r}
-diamonds_4 = mutate( diamonds_3, z = ifelse( z == 0 | z > q4, NA, x) )
+diamonds_4 = mutate( diamonds_3, z = ifelse( z == 0 | z > 10, NA, z) )
 
 ggplot( data = diamonds_4, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
-```
 
-Below we report a summary of variable `x` with the new missing values present in the dataset, whereby we see that 59 values were replaced with missing values.
-
-```{r}
 summary(diamonds_4 $ z)
 ```
+
+We see, that in total 21 outliers were replaced by NAs. Next, we will impute the new missing values with random values that are proportional to the category's records, and report a summary on the imputed `z`. 
+
+```{r}
+diamonds_4 $ z = impute( diamonds_4 $ z, 'random' )
+summary(diamonds_4 $ z)
+```
+
 </details>
 
 # Adult Dataset
@@ -377,7 +372,8 @@ a. **Which of the variables in the dataset are *nominal*? And which ones are *nu
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-* nominal variables: `demogweight`, `marital.status`, `occupation`, `relationship`, `race`, `gender`, `native.country`
+  
+* nominal variables: `workclass`, `demogweight`, `education`, `marital.status`, `occupation`, `relationship`, `race`, `native.country`
 * numerical variables: `age`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`
 
 </details>
@@ -404,7 +400,7 @@ income = adult[["income"]]
 levels(income)
 ```
 
-The above output shows, that "<=50K" is associated with integer value `1`, and ">50K" with `2`. Although in this format the data is already binary in a sense that it can only take 2 mutually exclusive values, but is not binary in its literal sense. That is, it is not within the boundaries of [0, 1]. If we were to take the mean of `income` now, it would result in a value 1 greater than the mean of a strictly binary variable. To work with binary values, we need to convert the factor records to values between 0 and 1. To achieve this, we took away 1 from each records.
+The above output shows, that "<=50K" is associated with integer value `1`, and ">50K" with `2`. Although in this format the data is already binary in a sense that it can only take two mutually exclusive values, but is not binary in its literal sense. That is, its range is not within the boundaries of [0, 1]. If we were to take the mean of `income` now, it would result in an average 1 greater than the mean of a strictly binary variable. To work with binary values, we need to convert the factor records to values between 0 and 1. To achieve this, we take away 1 from each records.
 
 ```{r}
 # take factor values as numeric
@@ -413,8 +409,10 @@ numeric_income = as.numeric(income)
 # take away one from each value to bind the outcome to [0, 1]
 numeric_income = numeric_income - 1
 
-mean(numeric_income)
+mean_num_income = mean(numeric_income)
 ```
+
+According to the above calculation, `r round(mean_num_income * 100, 2)`% of the adults earn more than $50.000 annually.
 
 </details>
 
@@ -523,21 +521,45 @@ ggplot( adult ) +
      geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" )
 ```
 
-**What would be your interpretation of the above outputs for the variable `capital.loss`? Are there any outliers in the variable `capital.loss`? If so, what would be a good strategy to deal with the outliers?**
+**What would be your interpretation of the above outputs for the variable `capital.loss`?**
 
 <details class="answer_panel">
   <summary>Answer</summary>
-  
-Capital loss of 0 may be deemed as an outlier, however, it has relevant meaning. Capital loss of 0 means, that the individual either did not suffer any capital loss, or did not invest, and accordingly did not lose anything.
+
+Capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for.
+
+There are two peculiarities about the above graph. One of them is the absorbent amount of 0 capital losses, and the other one is the symmetric distribution of those who suffered from non-zero losses.
+
+Per the above definition capital loss of 0 may come down to either of the below scenarios:
+
+1. The individual did not invest and hence could not incur any capital losses on the investment.
+2. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence he/she had not suffer any realised loss, that is capital loss.
+3. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss.
+
+Unlike in the case of the `diamonds` dataset where 0mm was an invalid record, capital loss of 0 is a valid observation. Therefore, it is not advised to classify them as outliers, since they hold relevant information.
+
+</details>
+
+**Are there any outliers in the variable `capital.loss`?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
 
 ```{r}
 ggplot( adult ) +
   geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" ) +
-  coord_cartesian( ylim = c( 0, 30 ) )
+  coord_cartesian( ylim = c( 0, 1000 ) )
 
 ggplot( data = adult, mapping = aes( x = capital.loss, y = income ) ) + 
   geom_point( colour = 'blue' )
 ```
+
+</details>
+
+**If so, what would be a good strategy to deal with the outliers?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
 
 </details>
 
