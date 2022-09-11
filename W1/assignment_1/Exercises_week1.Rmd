@@ -28,7 +28,7 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
 **Full Name:**
 
 1. Peter Molnar
-2. Lourencio
+2. Lourenço Santos Moitinho de Almeida
 
 **Online Exercises on DataCamp**: 
 Register at the [DataCamp](https://www.datacamp.com) for the free online course “Data Analytics 2022”. Three online assignments are waiting for you. Those online assignments are preparing you for the computer labs. *The online assignments at the DataCamp are not mandatory*.
@@ -242,7 +242,7 @@ ggplot( data = diamonds_2, mapping = aes( x = x, y = price ) ) +
   geom_point( colour = 'blue' )
 ```
 
-The above scatterplot shows, that diamonds with width above 9mm tend to deviate from the bulk of the data, and although having an unusual width the diamond does not sell for proportionately higher price. Since variable `x` is just one of many independent variables that determines the price of a diamond, it is likely to be the case that unusual width diamonds that did not sell for proportionately higher price are of lower quality cut, colour or clarity.
+The above scatterplot shows, that diamonds with length above 9mm tend to deviate from the bulk of the data, and although having an unusual length the diamond does not sell for proportionately higher price. Since variable `x` is just one of many independent variables that determines the price of a diamond, other explanatory variables such as lower quality cut, colour or clarity could have caused this observation to occur.
 
 Based on the above argumentation, we believe the only unequivocal outliers are of width 0mm, therefore we replace them with with missing values, and plot the new data.
 
@@ -289,7 +289,7 @@ The observations along the x-axis are widely spread out within the range of [`r 
 
 Without knowing the data recording procedure or methodology, we cannot conclude whether 0mm is a measurement error, or a codified indication of a missing value.
 
-To make the unusual values along the x-axis more visible, we adjust the limits of y-axis.
+To make the unusual values along the x-axis more visible, we adjusted the limits of the y-axis.
 
 ```{r}
 ggplot( diamonds_3 ) +
@@ -297,14 +297,14 @@ ggplot( diamonds_3 ) +
     coord_cartesian( ylim = c( 0, 30 ) )
 ```
 
-We see the `r max_z`mm greatly deviates from the rest of the data. Such a diamond is over 3cm in depth, so we would like to see whether this observation is in line with its price to conclude whether it is an outlier or not. For that we plot `z` against `price` in a histogram.
+We see the `r max_z`mm greatly deviates from the rest of the data. In order to determine if the observation with a depth over 30mm is an outlier we plotted `z` against `price` in a histogram.
 
 ```{r}
 ggplot( data = diamonds_3, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The plot clearly shows that the largest diamond in terms of length sells for similar prices as those of 3-5mm. Therefore, it is likely, that the decimal point of 31.8mm was misplaced when recording the data, and meant 3.18mm instead. Nevertheless, such observation is numerically so distant from the rest of the data that it can be deemed an outlier.
+The plot clearly shows that the largest diamond in terms of length sells for similar prices as those of 3-5mm. Therefore, it is likely, that the decimal point of 31.8mm was misplaced when recording the data and was meant to be 3.18mm instead. Nevertheless, such observation is numerically so distant from the rest of the data that it can be deemed an outlier.
 
 Therefore, we replace the above classified unusual values with NA, plots the new data, and report a summary of the replaced values.
 
@@ -524,26 +524,35 @@ ggplot( adult ) +
 **What would be your interpretation of the above outputs for the variable `capital.loss`?**
 
 <details class="answer_panel">
-  <summary>Answer</summary>
+  <summary>Answer a</summary>
 
 Capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for.
 
-There are two peculiarities about the above graph. One of them is the absorbent amount of 0 capital losses, and the other one is the symmetric distribution of those who suffered from non-zero losses.
+Given that the above histogram's y-axis is adjusted to the large amount of 0 capital losses, it does not allow to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
 
-Per the above definition capital loss of 0 may come down to either of the below scenarios:
+```{r fig.align = 'center'}
+ggplot( adult ) +
+  geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" ) +
+  coord_cartesian( ylim = c( 0, 1000 ) )
+```
+
+There are two peculiarities about the above graph. One of them is the large count of 0 capital losses, and the other one is the approximately symmetric distribution of the non-zero losses. It is worth to note, that unlike in the case of the `diamonds` dataset where 0mm was an invalid record, capital loss of 0 is a valid observation. Therefore, it is wrong to classify them as invalid observations, since they may hold relevant information.
+
+Capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for. Per the previous definition capital loss of 0 may come down to either of the below three scenarios:
 
 1. The individual did not invest and hence could not incur any capital losses on the investment.
-2. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence he/she had not suffer any realised loss, that is capital loss.
+2. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence he/she had not suffer any realised losses, that is capital loss.
 3. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss.
 
-Unlike in the case of the `diamonds` dataset where 0mm was an invalid record, capital loss of 0 is a valid observation. Therefore, it is not advised to classify them as outliers, since they hold relevant information.
+Based on the data documentation, there is no clear indication for point number 2 being a valid reason for the large amount of 0 capital losses. In real life of someone incurring exactly 0 capital losses is also unlikely, as individuals invest for the profit and not for just null-saldo. Therefore, point number 3. seems to be an unlikely scenario too, therefore the only plausible explanation for the large count of 0 capital losses is that the individual did not have investments that could have generated gains or losses.
+
 
 </details>
 
 **Are there any outliers in the variable `capital.loss`?**
 
 <details class="answer_panel">
-  <summary>Answer</summary>
+  <summary>Answer b</summary>
 
 ```{r}
 ggplot( adult ) +
@@ -559,7 +568,7 @@ ggplot( data = adult, mapping = aes( x = capital.loss, y = income ) ) +
 **If so, what would be a good strategy to deal with the outliers?**
 
 <details class="answer_panel">
-  <summary>Answer</summary>
+  <summary>Answer c</summary>
 
 </details>
 
