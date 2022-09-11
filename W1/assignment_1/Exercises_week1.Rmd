@@ -222,57 +222,53 @@ Here, in the *diamonds* dataset, we want to check if there is any unusual or out
 To see if variable `x` contains any outliers, first we are going to plot it as a histogram.
 
 ```{r}
-ggplot( diamonds ) +
+ggplot( diamonds_2 ) +
     geom_histogram( mapping = aes( x = x ), binwidth = 0.5 )
 ```
 
 ```{r echo=FALSE}
-min_x = min(diamonds $ x)
-max_x = max(diamonds $ x)
+min_x = min(diamonds_2 $ x)
+max_x = max(diamonds_2 $ x)
 ```
 
-The limits of the x-axis does not have a wide limit — the observations spread out withing a range of [`r min_x`, `r max_x`]. By looking at the two extreme values of `x`, minimum at `r min_x`mm, and maximum at `r max_x`mm, we can already rule out 0mm, since a diamond's width cannot be 0mm. It requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or if it is a codified indication of a missing value.
+The limits of the x-axis does not have a wide limit — the observations spread out withing a range of [`r min_x`, `r max_x`]. 
 
-On the other end of the range, `r max_x`mm, also requires further investigation to be deemed as an outlier or not. For that we calculate the relevant boxplot values for `x`. For that we report the quartiles of `x` and utilise the below formulas to calculate $Q_4$.
+By looking at the two extreme values of `x`, its minimum is at `r min_x`mm, and maximum at `r max_x`mm. We can already rule out 0mm, since a diamond's width cannot be 0mm. It, however, requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or a codified indication of a missing value.
 
-```{r}
-quantile(diamonds $ x, prob=c(.25,.5,.75))
-
-q1 = unname(quantile(diamonds $ x, prob=c(.25)))
-q3 = unname(quantile(diamonds $ x, prob=c(.75)))
-
-iqr = q3 - q1
-q4 = q3 + 1.5 * iqr
-```
-
-From the above output and with the help of the below formulas, we can calculate the parameters of the boxplot.
-
-$$
-IQR = Q_3 - Q_1
-$$
-$$
-Q_4 = Q_3 + 1.5 * IQR
-$$
-In our case the relevant metrics is the boxplot's $Q_4$ value, which results to `r q4`, which is smaller than `r max_x`. Given that `r max_x` is located outside of $Q_4$, it is numerically so distant from the rest of the data that it can be deemed an outlier.
+The other extreme of the range is `r max_x`mm, and it also requires further investigation to be deemed an outlier or not. For that we will plot variable `x` against `price` to see whether the unusual width of the diamond is justified by its price.
 
 ```{r}
-ggplot( data = diamonds, mapping = aes( x = x, y = price ) ) + 
+ggplot( data = diamonds_2, mapping = aes( x = x, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The below code replaces the unusual values with missing values, and plots the new data.
+The above scatterplot shows, that diamonds with width above 9mm tend to deviate from the bulk of the data, and although having an unusual width the diamond does not sell for proportionately higher price. Since variable `x` is just one of many independent variables that determines the price of a diamond, it is likely to be the case that unusual width diamonds that did not sell for proportionately higher price are of lower quality cut, colour or clarity.
+
+Based on the above argumentation, we believe the only unequivocal outliers are of width 0mm, therefore we replace them with with missing values, and plot the new data.
 
 ```{r}
-diamonds_3 = mutate( diamonds_2, x = ifelse( x == 0 | x > q4, NA, x) )
+diamonds_3 = mutate( diamonds_2, x = ifelse( x == 0, NA, x) )
 
 ggplot( data = diamonds_3, mapping = aes( x = x, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-Below we report a summary of variable `x` with the new missing values present in the dataset, whereby we see that 32 values were replaced with missing values.
+Below we report a summary of variable `x` with the new missing values present in the dataset.
 
 ```{r}
-summary(diamonds_3 $ z)
+summary(diamonds_3 $ x)
+```
+
+Per above summary we see that 8 observations were replaced by NA values. Next, we replace the missing values with random values proportional to the category's records.
+
+```{r}
+diamonds_3 $ x = impute( diamonds_3 $ x, 'random' )
+```
+
+Finally, we report the imputed summary for `x`:
+
+```{r}
+summary( diamonds_3 $ x )
 ```
 
   <h3>Outliers in `z`</h3>
@@ -288,6 +284,13 @@ ggplot( diamonds_3 ) +
 min_z = min(diamonds $ z)
 max_z = max(diamonds $ z)
 ```
+
+$$
+IQR = Q_3 - Q_1
+$$
+$$
+Q_4 = Q_3 + 1.5 * IQR
+$$
 
 The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`]. By looking at the two extreme values of `z`, minimum at `r min_z`mm, and maximum at `r max_z`mm, we can already rule out 0mm, since a diamond's width cannot be 0mm. It, however, requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or if it is a codified indication of a missing value.
 
