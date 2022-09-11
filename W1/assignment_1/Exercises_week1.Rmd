@@ -506,11 +506,13 @@ We also can remove NA values from the *adult* dataset by using `na.omit()`. Note
 ## Outliers for variable `capital.loss`
 
 Here we want to check if there are any outliers in the variable `capital.loss` or not. For this, first, we report the summary of the variable `capital.loss` as follow:
+
 ```{r}
 summary( adult $ capital.loss )
 ```
 
 We also report the boxplot and histogram of the variable `capital.loss` as follow:
+
 ```{r fig.align = 'center'}
 ggplot( adult ) +
      geom_boxplot( aes( y = capital.loss ) )
@@ -544,8 +546,19 @@ Capital loss, is a loss incurred when an investment is sold for less than the pr
 2. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence he/she had not suffer any realised losses, that is capital loss.
 3. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss.
 
-Based on the data documentation, there is no clear indication for point number 2 being a valid reason for the large amount of 0 capital losses. In real life of someone incurring exactly 0 capital losses is also unlikely, as individuals invest for the profit and not for just null-saldo. Therefore, point number 3. seems to be an unlikely scenario too, therefore the only plausible explanation for the large count of 0 capital losses is that the individual did not have investments that could have generated gains or losses.
+Considering the validity of scenario number 2; the data documentation does not make any indication that the dataset records unrealised losses as 0 capital losses.
+The validity of scenario number 3 is also questionable. Firstly, markets tend to move in a way that it impacts one's capital balance, and hence it is unlikely that one manages to have a portfolio that ends up being in 0 capital loss. Second, individuals invest for the hope of closing investments with profit, instead of at 0 gain and loss. Conclusively, the only plausible scenario is number 1. That is, those who did not invest did not incur any losses and hence were recorded 0 as capital loss.
 
+For the non-zero observations, that is a subset of people who invest, we see an approximate bell curved distribution centered around mean losses of \$1873. The middle 50% of the distribution consists of average performing investors who  reported capital losses between \$1672 and \$1977.
+
+
+```{r}
+adult_removed_zero_closs = mutate( adult, capital.loss = ifelse( capital.loss ==  0, NA, capital.loss ) ) 
+
+ggplot( adult_removed_zero_closs ) +
+  geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" )
+summary(adult_removed_zero_closs $ capital.loss)
+```
 
 </details>
 
@@ -553,6 +566,8 @@ Based on the data documentation, there is no clear indication for point number 2
 
 <details class="answer_panel">
   <summary>Answer b</summary>
+  
+use boxplot?
 
 ```{r}
 ggplot( adult ) +
@@ -569,6 +584,8 @@ ggplot( data = adult, mapping = aes( x = capital.loss, y = income ) ) +
 
 <details class="answer_panel">
   <summary>Answer c</summary>
+  
+Use flag variables like `has.invested`.?
 
 </details>
 
