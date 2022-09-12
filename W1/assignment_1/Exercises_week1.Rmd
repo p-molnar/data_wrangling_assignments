@@ -528,6 +528,14 @@ ggplot( adult ) +
 <details class="answer_panel">
   <summary>Answer</summary>
 
+**Interpretation of 4.4 outputs**
+
+The summary output for `capital.loss` shows that the data is positively skewed, because the median < mean. Furthermore, we can report that extreme values from the summary; the smallest value that `capital.loss` takes on is 0, while the largest one is 4365. Lastly, we can conclude from the summary output that more than 75% of the data consists of 0 observations, based on the first, second (median) and thirds quartiles. Furthermore, on average the an indivual of the data set has suffered from a capital loss of $87.94.
+
+The second plot is a boxplot for `capital.loss` and it shows an immense positive skewness at value 0. Not only the distribution of the data can be read from the plot but also the extreme values reported above; minimum of 0 and maximum of approximately 4300.
+
+The last graph is a histogram, that collects observation frequencies into bins of width 30. We see a large quantity of zero observations, and some other observations in the middle of the grap around 2000. Although we cannot see the maximum value from the graph, we can just suspect that it is somewhere around 4000, since this is how far the x-axis of the plot strecthes. This alludes to fact that the right extreme is around 4000.
+
 Given that the above histogram's y-axis is adjusted to the large amount of 0 capital losses, it does not allow us to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
 
 ```{r fig.align = 'center'}
@@ -581,9 +589,9 @@ summary(adult_2 $ capital.loss)
 
 We report that 46316 observations were replaced by NA, that is there are 46316 individuals who either did not invest or gained on their investments. Further we can report that the data is approximately bell-curve distributed and centered around mean losses of \$1873. The largest subset of losers is represented by the middle 50% of the distribution. It consists of individuals who reported capital losses between \$1672 and \$1977. The left tail of the histogram represents 25% of the distribution who lost between \$155 and \$1672. The right tail represents another 25% of the non-zero observations, investors who lost from \$1977 up to \$4356. The shape of the curve is reasonable, since it is usual to have a wide range of investors losing an average amount, while only a small fraction of those who lose either a small or rather considerable amount.
 
-**Outliers in `capital.gain`**
+**Outliers in `capital.loss`**
 
-To identify the outliers for `capital.gain`, we work with the cleaned-up data, and plot the it on a boxplot.
+To identify the outliers for `capital.loss`, we work with the cleaned-up data, and plot the it on a boxplot.
 
 ```{r}
 boxplot(adult_2 $ capital.loss, horizontal = TRUE)
@@ -637,6 +645,70 @@ ggplot( adult ) +
 </details>
 
 b. **What would be your interpretation of the above outputs for the variable `capital.gain`? Are there any outliers in the variable `capital.loss`? If so, what would be a good strategy to deal with the outliers?**
+
+<details class="answer_panel">
+  <summary>Answer b</summary>
+
+**Interpretation of output 4.5/a**
+
+The first output of 4.5/a is a descriptive of `capital.gain`. By reading the "Min." and "Max." values of the summary for `capital.gain` we can conclude that the data is distributed over the range of [0, 41310]. The first, second (median) and thrid quartiles refer to the 25th, 50th and 75th percentile of the data. They are all 0s, meaning that at least 75% of the data consists of zero observations for `capital.gain`. The mean number of 582.4, refers to the mean value an individual realises as capital gain in the dataset in dollar terms. From the above summary, we can conclude that the data skewed positively since the median < mean. 
+
+The second output is a boxplot demonstraing the locality, spead and the skewness of `capital.gain`. Again, we read a large quantity of 0 observation, and some other values saturating below 10000, that thins up above 10000. We can approximate the extreme values of the data by reading the smallest and largest observation of the boxplot. Minimum being at 0, and the maximum a little bit above 40000. The positively skewed nature of the distribution is clear from the boxplot.
+
+The last output is a histogram for `capital.gains`' value frequency compiled into bins of size 30. The 0 observations for `capital.gain` is significant from the plot — it almost reaches 45000 observations.
+
+**Outliers in `capital.gain`**
+
+We see from the above summary output, that the first and the third quartile are at 0, meaning that at least 75% of `capital.gain` is 0. Similarly to exercise 4.4, we replace the 0 observations with NA values, so to limit down the observations to individuals who invested and realised capital gains. After then, we report a summary of the mutated data, and plot it as a boxplot. 
+
+```{r}
+adult_4 = mutate( adult_3, capital.gain = ifelse( capital.gain == 0, NA, capital.gain ) )
+
+summary(adult_4 $ capital.gain)
+```
+
+We see from the above summary that the 44807 zero observations were replaced by NA values.
+
+To have an idea of the mutated data's distribution we replot a histogram.
+
+```{r}
+ggplot( adult_4 ) +
+     geom_histogram( aes( x = capital.gain ), bins = 30, color = "blue", fill = "lightblue" )
+```
+
+The positive skewness is still present in the distribution, nevertheless, we report a boxplot of it to see potential outliers.
+
+```{r}
+boxplot(adult_4 $ capital.gain, horizontal = TRUE)
+q1 = unname(quantile(adult_4 $ capital.gain, 0.25,  na.rm = TRUE))
+q3 = unname(quantile(adult_4 $ capital.gain, 0.75,  na.rm = TRUE))
+iqr = q3 - q1
+whisker_left = q1 - 1.5 * iqr
+whisker_right = q3 + 1.5 * iqr
+```
+
+Based on the above calculations, values beyond `r whisker_right`, are so distant from the majority of the data, that they are outliers. This regards `r length(which(adult_4 $ capital.gain > whisker_right))` observations.
+
+
+**Strategy to deal with the outliers**
+
+The distribution of `capital.gain` does not show strong enough similarities to normality or similarity, therefore we do not apply the same imputation method as in exercise 4.4. Since `capital.gain` is a numerical attribute, we replace the above qualified outliers with the mean value of the data, and replot it.
+
+```{r}
+adult_5 = mutate(adult_4, capital.gain = ifelse(capital.gain > whisker_right, mean(capital.gain), capital.gain))
+
+ggplot( adult_5 ) +
+  geom_histogram( aes( x = capital.gain ), bins = 30, color = "blue", fill = "lightblue" )
+```
+
+Finally, to preserve the eliminated 0 observations for both `capital.gain` and `capital.loss` we add a flag variable for future reference, to be able to make a distinction between individuals who invested and those who did not.
+
+```{r}
+adult_5["has.invested"] = ifelse(adult["capital.gain" == 0] & adult["capital.loss" == 0], TRUE, FALSE)
+```
+
+</details>
+
 
 # Business Understaning Stage for your main project
 
