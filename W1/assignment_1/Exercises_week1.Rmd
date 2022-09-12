@@ -528,9 +528,7 @@ ggplot( adult ) +
 <details class="answer_panel">
   <summary>Answer</summary>
 
-Capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for.
-
-Given that the above histogram's y-axis is adjusted to the large amount of 0 capital losses, it does not allow to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
+Given that the above histogram's y-axis is adjusted to the large amount of 0 capital losses, it does not allow us to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
 
 ```{r fig.align = 'center'}
 ggplot( adult ) +
@@ -538,33 +536,41 @@ ggplot( adult ) +
   coord_cartesian( ylim = c( 0, 1000 ) )
 ```
 
-There are two peculiarities about the above graph. One of them is the large count of 0 capital losses, and the other one is the approximately symmetric distribution of the non-zero losses. It is worth to note, that unlike in the case of the `diamonds` dataset where 0mm was an invalid record due to the characterisitcs of the variable, capital loss of 0 is a valid observation. 
+There are two peculiarities that immediately outstand from the graph. First, the large count of 0 capital losses. Second, the approximately symmetric distribution of the non-zero losses.
 
-Per the definition of capital loss, 0 observations may come down to either one of the below four scenarios:
+Below we interpret the two peculiarities separately.
 
-1. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence he/she had not suffer any realised losses, that is capital loss.
-2. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss.
-3. The individual made an investment, but incurred capital gain.
-4. The individual did not make an investment and hence could not incur any capital losses on the investment.
+**Large count of 0 observations**
+ 
+The dataset contains `r length(which(adult $ capital.loss == 0))` obeservations that are 0 for `capital.loss`. Per definition, capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for. Unlike in the case of the `diamonds` datatset whereby 0mm for `x`, `y` or `z` was an invalid record, 0 for `capital.loss` is a valid observations of which root cause may be multiple fold.
 
-Considering the validity of each of the above scenarios, in point number 1 the data documentation does not make any indication that the dataset records unrealised losses as 0 capital losses. Therefore, we cannot justify with certainty that the large amount of zero capital loss observations is due to unrealised saldos.
+1. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence the investor had not suffer any realised losses, i.e., capital loss.
+2. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss as well as gain.
+3. The individual made an investment, did not incur capital loss, but capital gain.
+4. The individual did not make an investment and hence could not incur any capital losses, nor gains on the investment.
 
-The validity of point number 2 is also shaky. First, markets tend to have some level of volatility that impacts one's capital balance. Hence, it is highly unlikely that one manages a portfolio in a way that it ends up being in exactly 0 capital loss and gain at the same time. Second, individuals invest with the purpose of realising profits, instead of closing off the investment at 0 gain and loss. 
+Considering the validity of each of the above points, for the first point the data documentation does not make any indication that the dataset records unrealised losses as 0 capital losses. Therefore, we can rule out that the large count of 0 observation is due to unrealised saldos.
 
-Consequently, scenario number 1 and 2 are week enough to be ruled out as an explanation for the large quantitiy of 0 observations.
+The validity of point number 2 also lies on shaky grounds as well. Firstly, markets tend to have some level of movements that has a direct impact over investors capital balance. Hence, it is highly unlikely that one manages a portfolio in a way that it ends up being in exactly null-saldo, i.e., in 0 capital gain and loss. Second, individuals invest with the primary purpose of making profits, instead of closing off the investment at 0 gain and loss. Therefore, we can conclude that the large count of 0 observations are unlikely to be because of the investors sold the investment at the same price it was purchased for.
 
-Considering point number 3, it is testable if it is always the case that if one realises gain, then the capital loss is 0, and vice versa. To that end, we write the following code:
+Consequently, point number 1 and 2 are week enough assumption to be relied on, and so discarded.
+
+Considering point number 3, it is testable how the values for `capital.loss` and `capital.gain`
 ```{r}
-# is there any observations, where both capital.gaint
+# is there any observations, where both capital.gain
 # and capital.loss is greater than zero
-any(ifelse(adult $ capital.loss > 0 & adult $ capital.gain > 0, TRUE, FALSE))
+any(ifelse(adult $ capital.loss != 0 & adult $ capital.gain != 0, TRUE, FALSE))
+any(ifelse(adult $ capital.loss == 0 & adult $ capital.gain != 0, TRUE, FALSE))
+any(ifelse(adult $ capital.loss != 0 & adult $ capital.gain == 0, TRUE, FALSE))
 ```
 
-Given the above output, we can conclude, that `capital.loss` and `capital.gain` are mutually exclusive values. That is, if one makes an investment, the investor can either realises gain or loss, but not the two together. This realisation leads us to point number 4, which questions whether the individual made an investment at all. Above we argued about point number 2 being a shaky assumption, and hence we can say, that if `capital.loss` and `capital.gain` are both 0, the individual did not make an investment.
+Given the above outputs, we can conclude, that `capital.loss` and `capital.gain` are mutually exclusive values. That is, if one makes an investment, the investor either makes a loss or gain, but not the two together. This realisation leads us to point number 4, which questions whether the individual made an investment at all. This must be the case when both attributes, `capital.loss` and `capital.gain` are 0. 
 
-For the non-zero observations, that is a subset of people who incurred capital loss, we see an approximate bell curved distribution centered around mean losses of \$1873. The middle 50% of the distribution consists of individuals who reported capital losses between \$1672 and \$1977. The left tail of the histogram consists of investors losing between \$155 and \$1672, while the right tail of investors losing from \$1977 up to \$4356.
+All things considered above, the large amount of zero observations in `capital.loss` boils down 2 factors. First, the person made a gain on the investment, and hence did not incur any losses. Second, the individual did not make any investment and hence did not incur either losses or gains.
 
-Given that in the current state of the data, `capital.loss` is burdened with a large quantity of zero observations, we replace them with NA values, so that `capital.loss` would only account for those investors who make losses on their investment.
+**Approximate normality of the non-zero observations**
+
+For the non-zero observations, that is a subset of people who incurred capital loss, we see an approximate bell curved distribution. However, currently, `capital.loss` is burdened with the large quantity of 0 observations, therefore, it skews the data positively. To eliminate the skewness, and be able to draw  meaningful statistics we replace zero observations with NA and report the mutated data.
 
 ```{r}
 adult_2 = mutate( adult, capital.loss = ifelse( capital.loss == 0, NA, capital.loss ) )
@@ -572,17 +578,39 @@ adult_2 = mutate( adult, capital.loss = ifelse( capital.loss == 0, NA, capital.l
 summary(adult_2 $ capital.loss)
 ```
 
-Next, we depict the mutated data, as a boxplot, and report the quartiles, and whiskers.
+
+We report that 46316 observations were replaced by NA, that is there are 46316 individuals who either did not invest or gained on their investments. Further we can report that the data is approximately bell-curve distributed and centered around mean losses of \$1873. The largest subset of losers is represented by the middle 50% of the distribution. It consists of individuals who reported capital losses between \$1672 and \$1977. The left tail of the histogram represents 25% of the distribution who lost between \$155 and \$1672. The right tail represents another 25% of the non-zero observations, investors who lost from \$1977 up to \$4356. The shape of the curve is reasonable, since it is usual to have a wide range of investors losing an average amount, while only a small fraction of those who lose either a small or rather considerable amount.
+
+**Outliers in `capital.gain`**
+
+To identify the outliers for `capital.gain`, we work with the cleaned-up data, and plot the it on a boxplot.
 
 ```{r}
 boxplot(adult_2 $ capital.loss, horizontal = TRUE)
 
-quantile(adult_2 $ capital.loss, na.rm = TRUE) 
+quantile(adult_2 $ capital.loss, na.rm = TRUE)
+
+q1 = unname(quantile(adult_2 $ capital.loss, 0.25,  na.rm = TRUE))
+q3 = unname(quantile(adult_2 $ capital.loss, 0.75,  na.rm = TRUE))
+iqr = q3 - q1
+whisker_left = q1 - 1.5 * iqr
+whisker_right = q3 + 1.5 * iqr
 ```
 
-We report that 46316 observations were replaced by NA. According to the
+The plot and the above calculation shows that any values below the left whisker, `r whisker_left`, and above the right whisker, `r whisker_right` are deemed outliers. This regards on the left `r length(which(adult_2 $ capital.loss < whisker_left))`, and on the right `r length(which(adult_2 $ capital.loss > whisker_right))` of observations.
 
-To preserve the 0 observations to some extent, we introduce a new flag variable `has.invested`, that indicates if the individual is an investor or not.
+**Strategy to deal with the outliers**
+
+Since we interpreted the shape of the distribution as an approximate bell-curve, we would replace the outliers with values taken from a random normal distribution centered around the same mean as the original data. This way we can guarantee the measure of location and the spread to preserve its original shape.
+
+```{r}
+adult_3 = mutate(adult_2, capital.loss = ifelse(capital.loss < whisker_left | capital.loss > whisker_right, rnorm(1, mean = 1873), capital.loss))
+
+ggplot( adult_3 ) +
+  geom_histogram( aes( x = capital.loss ), bins = 30, color = "blue", fill = "lightblue" )
+
+summary(adult_3 $ capital.loss)
+```
 
 </details>
 
