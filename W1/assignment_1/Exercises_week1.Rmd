@@ -27,8 +27,8 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
 
 **Full Name:**
 
-1. Peter Molnar
-2. Lourenço Santos Moitinho de Almeida
+1. Peter Molnar (11759216)
+2. Lourenço Santos Moitinho de Almeida (12636622)
 
 **Online Exercises on DataCamp**: 
 Register at the [DataCamp](https://www.datacamp.com) for the free online course “Data Analytics 2022”. Three online assignments are waiting for you. Those online assignments are preparing you for the computer labs. *The online assignments at the DataCamp are not mandatory*.
@@ -231,18 +231,18 @@ min_x = min(diamonds_2 $ x)
 max_x = max(diamonds_2 $ x)
 ```
 
-The limits of the x-axis does not have a wide limit — the observations spread out withing a range of [`r min_x`, `r max_x`]. 
+The limits of the x-axis does not have a wide limit, therefore, this does not necessarily refer to outliers. The observations spread out within a range of [`r min_x`, `r max_x`]. 
 
 By looking at the two extreme values of `x`, its minimum is at `r min_x`mm, and maximum at `r max_x`mm. We can already rule out 0mm, since a diamond's width cannot be 0mm. It, however, requires further investigation to understand how the data were recorded, and whether 0mm is a measurement error, or a codified indication of a missing value.
 
-The other extreme of the range is `r max_x`mm, and it also requires further investigation to be deemed an outlier or not. For that we will plot variable `x` against `price` to see whether the unusual width of the diamond is justified by its price.
+The other extreme of the range is `r max_x`mm, and it also requires investigation to be classified as an outlier or not. For that we plot variable `x` against `price` to see whether the unusual width of the diamond is justified by its price.
 
 ```{r}
 ggplot( data = diamonds_2, mapping = aes( x = x, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The above scatterplot shows, that diamonds with length above 9mm tend to deviate from the bulk of the data, and although having an unusual length the diamond does not sell for proportionately higher price. Since variable `x` is just one of many independent variables that determines the price of a diamond, other explanatory variables such as lower quality cut, colour or clarity could have caused this observation to occur.
+The above scatterplot shows, that diamonds with length above 9mm tend to deviate from the bulk of the data. We also see that although having an unusual length of diamond, it does not sell for a proportionately higher price. Since variable `x` is just one of many explanatory variables that may explain `price`, other variables such as cut, colour or clarity may very well have a significant explanatory power of  price. Therefore, judging the dimensions of a diamond isolatively with price does not give a valid criteria of what counts as an outlier.
 
 Based on the above argumentation, we believe the only unequivocal outliers are of width 0mm, therefore we replace them with with missing values, and plot the new data.
 
@@ -285,11 +285,11 @@ min_z = min(diamonds $ z)
 max_z = max(diamonds $ z)
 ```
 
-The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`], which may be an indication of outliers present in `z`. By looking at the two extreme values of `z`, the minimum of `r min_z`mm, can already be deemed an unusual value, since a diamond's depth cannot be 0mm.
+The observations along the x-axis are widely spread out within the range of [`r min_z`, `r max_z`], which is an unofficial indication of outliers present in `z`. By looking at the two extreme values of `z`, the minimum of `r min_z`mm, can already be deemed an outlier, since a diamond's depth cannot be 0mm.
 
 Without knowing the data recording procedure or methodology, we cannot conclude whether 0mm is a measurement error, or a codified indication of a missing value.
 
-To make the unusual values along the x-axis more visible, we adjusted the limits of the y-axis.
+To make the unusual values along the x-axis more visible, we adjusted the limits of the y-axis, so that it ranges between 0 and 30 counts.
 
 ```{r}
 ggplot( diamonds_3 ) +
@@ -297,16 +297,16 @@ ggplot( diamonds_3 ) +
     coord_cartesian( ylim = c( 0, 30 ) )
 ```
 
-We see the `r max_z`mm greatly deviates from the rest of the data. In order to determine if the observation with a depth over 30mm is an outlier we plotted `z` against `price` in a histogram.
+We see the `r max_z`mm greatly deviates from the rest of the data. In order to determine if the observation with a depth over 30mm is an outlier we plot `z` against `price` in a scatterplot.
 
 ```{r}
 ggplot( data = diamonds_3, mapping = aes( x = z, y = price ) ) + 
   geom_point( colour = 'blue' )
 ```
 
-The plot clearly shows that the largest diamond in terms of length sells for similar prices as those of 3-5mm. Therefore, it is likely, that the decimal point of 31.8mm was misplaced when recording the data and was meant to be 3.18mm instead. Nevertheless, such observation is numerically so distant from the rest of the data that it can be deemed an outlier.
+The above histogram clearly shows that the largest diamond in terms of depth sells for similar prices as those of 3-5mm. Therefore, it is likely, that the decimal point of 31.8mm was misplaced when recording the data and was meant to be 3.18mm instead. Nevertheless, such observation is numerically so distant from the rest of the data that it can be deemed an outlier.
 
-Therefore, we replace the above classified unusual values with NA, plots the new data, and report a summary of the replaced values.
+Therefore, we replace the above classified unusual values with NA, plot the new data, and report a summary of the replaced values.
 
 ```{r}
 diamonds_4 = mutate( diamonds_3, z = ifelse( z == 0 | z > 10, NA, z) )
@@ -317,7 +317,7 @@ ggplot( data = diamonds_4, mapping = aes( x = z, y = price ) ) +
 summary(diamonds_4 $ z)
 ```
 
-We see, that in total 21 outliers were replaced by NAs. Next, we will impute the new missing values with random values that are proportional to the category's records, and report a summary on the imputed `z`. 
+We see, that in total 21 outliers were replaced by NA values. Next, we impute the new missing values with random values that are proportional to the category's records, and report a summary on the imputed `z` variable. 
 
 ```{r}
 diamonds_4 $ z = impute( diamonds_4 $ z, 'random' )
@@ -373,7 +373,7 @@ a. **Which of the variables in the dataset are *nominal*? And which ones are *nu
 <details class="answer_panel">
   <summary>Answer a</summary>
   
-* nominal variables: `workclass`, `demogweight`, `education`, `marital.status`, `occupation`, `relationship`, `race`, `native.country`
+* nominal variables: `workclass`, `demogweight`, `marital.status`, `occupation`, `relationship`, `race`, `native.country`
 * numerical variables: `age`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`
 
 </details>
@@ -400,7 +400,7 @@ income = adult[["income"]]
 levels(income)
 ```
 
-The above output shows, that "<=50K" is associated with integer value `1`, and ">50K" with `2`. Although in this format the data is already binary in a sense that it can only take two mutually exclusive values, but is not binary in its literal sense. That is, its range is not within the boundaries of [0, 1]. If we were to take the mean of `income` now, it would result in an average 1 greater than the mean of a strictly binary variable. To work with binary values, we need to convert the factor records to values between 0 and 1. To achieve this, we take away 1 from each records.
+The above output shows, that "<=50K" is associated with an underlying integer value `1`, and ">50K" with `2`. Although in this format the data is already binary in a sense that it can only take two mutually exclusive values, but is not binary in its literal sense. That is, its range is not within the boundaries of [0, 1], instead [1, 2]. If we were to take the mean of `income` now, it would result in an average 1 greater than the mean of a strictly binary variable of [0, 1]. To work with binary values, we need to convert the factor to values between 0 and 1. To achieve this, we take away 1 from each observations
 
 ```{r}
 # take factor values as numeric
@@ -530,13 +530,13 @@ ggplot( adult ) +
 
 **Interpretation of 4.4 outputs**
 
-The summary output for `capital.loss` shows that the data is positively skewed, because the median < mean. Furthermore, we can report that extreme values from the summary; the smallest value that `capital.loss` takes on is 0, while the largest one is 4365. Lastly, we can conclude from the summary output that more than 75% of the data consists of 0 observations, based on the first, second (median) and thirds quartiles. Furthermore, on average the an indivual of the data set has suffered from a capital loss of $87.94.
+The summary output for `capital.loss` shows that the data is positively skewed, because the median < mean. Furthermore, we can report the extreme values from the summary; the smallest value that `capital.loss` can take on is \$0, while the largest one is \$4365. Lastly, we can conclude from the summary output that more than 75% of the data consists of \$0 observations, based on the first, second (median) and third quartiles. Furthermore, on average the individual of the data set has suffered from a capital loss of $87.94.
 
-The second plot is a boxplot for `capital.loss` and it shows an immense positive skewness at value 0. Not only the distribution of the data can be read from the plot but also the extreme values reported above; minimum of 0 and maximum of approximately 4300.
+The second plot is a boxplot for `capital.loss` and it shows an immense positive skewness towarsd $0. Not only the distribution of the data can be read from the plot but also the extreme values reported above; minimum of \$0 and maximum of approximately \$4300.
 
-The last graph is a histogram, that collects observation frequencies into bins of width 30. We see a large quantity of zero observations, and some other observations in the middle of the grap around 2000. Although we cannot see the maximum value from the graph, we can just suspect that it is somewhere around 4000, since this is how far the x-axis of the plot strecthes. This alludes to fact that the right extreme is around 4000.
+The last graph is a histogram, that collects observation frequencies into bins of width 30. We see a large quantity of \$0 observations, and some other observations in the middle of the graph around 2000. Although we cannot see the maximum value from the graph, we can just suspect that it is somewhere around 4000, since this is how far the x-axis of the plot stretches. This alludes to fact that the right extreme is around \$4000.
 
-Given that the above histogram's y-axis is adjusted to the large amount of 0 capital losses, it does not allow us to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
+Given that the above histogram's y-axis is adjusted to the large amount of \$0 capital losses, it does not allow us to see the distribution of non-zero observations. A remedy for that is to adjust the limit of the y-axis to [0, 1000], and plot the new graph.
 
 ```{r fig.align = 'center'}
 ggplot( adult ) +
@@ -544,26 +544,26 @@ ggplot( adult ) +
   coord_cartesian( ylim = c( 0, 1000 ) )
 ```
 
-There are two peculiarities that immediately outstand from the graph. First, the large count of 0 capital losses. Second, the approximately symmetric distribution of the non-zero losses.
+There are two peculiarities that immediately standout from the graph. First, the large count of \$0 capital losses. Second, the approximately symmetric distribution of the non-zero losses.
 
 Below we interpret the two peculiarities separately.
 
 **Large count of 0 observations**
  
-The dataset contains `r length(which(adult $ capital.loss == 0))` obeservations that are 0 for `capital.loss`. Per definition, capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for. Unlike in the case of the `diamonds` datatset whereby 0mm for `x`, `y` or `z` was an invalid record, 0 for `capital.loss` is a valid observations of which root cause may be multiple fold.
+The dataset contains `r length(which(adult $ capital.loss == 0))` obeservations that are \$0 for `capital.loss`. Per definition, capital loss, is a loss incurred when an investment is sold for less than the price it was originally purchased for. Unlike in the case of the `diamonds` datatset whereby 0mm for `x`, `y` or `z` was an invalid record, 0 for `capital.loss` is a valid observations of which root cause may be multiple fold.
 
 1. The individual made an investment, but did not sell the asset during the time window the data was recorded, and hence the investor had not suffer any realised losses, i.e., capital loss.
 2. The individual made an investment, and sold it at the exact same price the asset was originally purchased for, and hence incurred 0 capital loss as well as gain.
 3. The individual made an investment, did not incur capital loss, but capital gain.
 4. The individual did not make an investment and hence could not incur any capital losses, nor gains on the investment.
 
-Considering the validity of each of the above points, for the first point the data documentation does not make any indication that the dataset records unrealised losses as 0 capital losses. Therefore, we can rule out that the large count of 0 observation is due to unrealised saldos.
+Considering the validity of each of the above points, for the first point the data documentation does not make any indication that the dataset records unrealised losses as \$0 capital losses. Therefore, we can rule out that the large count of \$0 observation is due to unrealised saldos.
 
-The validity of point number 2 also lies on shaky grounds as well. Firstly, markets tend to have some level of movements that has a direct impact over investors capital balance. Hence, it is highly unlikely that one manages a portfolio in a way that it ends up being in exactly null-saldo, i.e., in 0 capital gain and loss. Second, individuals invest with the primary purpose of making profits, instead of closing off the investment at 0 gain and loss. Therefore, we can conclude that the large count of 0 observations are unlikely to be because of the investors sold the investment at the same price it was purchased for.
+The validity of point number 2 also lies on shaky grounds. Firstly, markets tend to have some level of movements that has a direct impact over investors capital balance. Hence, it is highly unlikely that one manages a portfolio in a way that it ends up being in exactly null-saldo, i.e., in \$0 capital gain and loss. Second, individuals invest with the primary purpose of making profits, instead of closing off the investment at \$0 gain and loss. Therefore, we can conclude that the large count of \$0 observations are unlikely because of the investors sold the investment at the same price it was purchased for.
 
 Consequently, point number 1 and 2 are week enough assumption to be relied on, and so discarded.
 
-Considering point number 3, it is testable how the values for `capital.loss` and `capital.gain`
+Considering point number 3, we must test both `capital.loss` and `capital.gain` as shown below.
 ```{r}
 # is there any observations, where both capital.gain
 # and capital.loss is greater than zero
@@ -572,13 +572,13 @@ any(ifelse(adult $ capital.loss == 0 & adult $ capital.gain != 0, TRUE, FALSE))
 any(ifelse(adult $ capital.loss != 0 & adult $ capital.gain == 0, TRUE, FALSE))
 ```
 
-Given the above outputs, we can conclude, that `capital.loss` and `capital.gain` are mutually exclusive values. That is, if one makes an investment, the investor either makes a loss or gain, but not the two together. This realisation leads us to point number 4, which questions whether the individual made an investment at all. This must be the case when both attributes, `capital.loss` and `capital.gain` are 0. 
+Given the above outputs, we can conclude, that `capital.loss` and `capital.gain` are mutually exclusive values. That is, if one makes an investment, the investor either makes a loss or gain, but not the two together. This realisation leads us to point number 4, which questions whether the individual made an investment at all. This must be the case when both attributes, `capital.loss` and `capital.gain` are that of \$0. 
 
-All things considered above, the large amount of zero observations in `capital.loss` boils down 2 factors. First, the person made a gain on the investment, and hence did not incur any losses. Second, the individual did not make any investment and hence did not incur either losses or gains.
+All things considered above, the large amount of zero observations in `capital.loss` boils down 2 factors. First, the person made a gain on the investment, and hence did not incur any losses. Second, the individual did not make any investment and hence could not incur either losses or gains.
 
 **Approximate normality of the non-zero observations**
 
-For the non-zero observations, that is a subset of people who incurred capital loss, we see an approximate bell curved distribution. However, currently, `capital.loss` is burdened with the large quantity of 0 observations, therefore, it skews the data positively. To eliminate the skewness, and be able to draw  meaningful statistics we replace zero observations with NA and report the mutated data.
+For the non-zero observations, that is a subset of people who incurred capital loss, we see an approximate bell curved distribution. However, currently, `capital.loss` is burdened with the large quantity of \$0 observations, therefore, it skews the data positively. To eliminate the skewness and to be able to draw meaningful statistics we replace \$0 observations with NA and report the mutated data.
 
 ```{r}
 adult_2 = mutate( adult, capital.loss = ifelse( capital.loss == 0, NA, capital.loss ) )
@@ -586,12 +586,11 @@ adult_2 = mutate( adult, capital.loss = ifelse( capital.loss == 0, NA, capital.l
 summary(adult_2 $ capital.loss)
 ```
 
-
-We report that 46316 observations were replaced by NA, that is there are 46316 individuals who either did not invest or gained on their investments. Further we can report that the data is approximately bell-curve distributed and centered around mean losses of \$1873. The largest subset of losers is represented by the middle 50% of the distribution. It consists of individuals who reported capital losses between \$1672 and \$1977. The left tail of the histogram represents 25% of the distribution who lost between \$155 and \$1672. The right tail represents another 25% of the non-zero observations, investors who lost from \$1977 up to \$4356. The shape of the curve is reasonable, since it is usual to have a wide range of investors losing an average amount, while only a small fraction of those who lose either a small or rather considerable amount.
+We report that 46316 observations were replaced by NA, that is there are 46316 individuals who either did not invest or gained on their investments. Furthermore, we can report that the data is approximately bell-curve distributed and centered around mean losses of \$1873. The largest subset of losers is represented by the middle 50% of the distribution. It consists of individuals who reported capital losses between \$1672 and \$1977. The left tail of the histogram represents 25% of the distribution who lost between \$155 and \$1672. The right tail represents another 25% of the non-zero observations, investors who lost from \$1977 up to \$4356. The shape of the curve is reasonable, since it is usual to have a wide range of investors losing an average amount, while only a small fraction of those who lose either a small or rather considerable amount.
 
 **Outliers in `capital.loss`**
 
-To identify the outliers for `capital.loss`, we work with the cleaned-up data, and plot the it on a boxplot.
+To identify the outliers for `capital.loss` we created a boxplot with the cleaned up data.
 
 ```{r}
 boxplot(adult_2 $ capital.loss, horizontal = TRUE)
@@ -609,7 +608,7 @@ The plot and the above calculation shows that any values below the left whisker,
 
 **Strategy to deal with the outliers**
 
-Since we interpreted the shape of the distribution as an approximate bell-curve, we would replace the outliers with values taken from a random normal distribution centered around the same mean as the original data. This way we can guarantee the measure of location and the spread to preserve its original shape.
+Since we assumed for the shape of the distribution an approximate bell-curve, we would replace the outliers with values taken from a random normal distribution centered around the same mean as the original data. This way we can guarantee the measure of location and the spread to preserve its original shape.
 
 ```{r}
 adult_3 = mutate(adult_2, capital.loss = ifelse(capital.loss < whisker_left | capital.loss > whisker_right, rnorm(1, mean = 1873), capital.loss))
@@ -651,15 +650,15 @@ b. **What would be your interpretation of the above outputs for the variable `ca
 
 **Interpretation of output 4.5/a**
 
-The first output of 4.5/a is a descriptive of `capital.gain`. By reading the "Min." and "Max." values of the summary for `capital.gain` we can conclude that the data is distributed over the range of [0, 41310]. The first, second (median) and thrid quartiles refer to the 25th, 50th and 75th percentile of the data. They are all 0s, meaning that at least 75% of the data consists of zero observations for `capital.gain`. The mean number of 582.4, refers to the mean value an individual realises as capital gain in the dataset in dollar terms. From the above summary, we can conclude that the data skewed positively since the median < mean. 
+The first output of 4.5/a is a descriptive statistic of `capital.gain`. By reading the "Min." and "Max." values of the summary for `capital.gain` we can conclude that the data is distributed over the range of [0, 41310]. The first, second (median) and thrid quartiles refer to the 25th, 50th and 75th percentile of the data. They are all \$0, meaning that at least 75% of the data consists of \$0 observations for `capital.gain`. The mean number of 582.4, refers to the mean value an individual realises as capital gain in the dataset in dollar terms. From the above summary, we can conclude that the data skewed positively since the median < mean. 
 
-The second output is a boxplot demonstraing the locality, spead and the skewness of `capital.gain`. Again, we read a large quantity of 0 observation, and some other values saturating below 10000, that thins up above 10000. We can approximate the extreme values of the data by reading the smallest and largest observation of the boxplot. Minimum being at 0, and the maximum a little bit above 40000. The positively skewed nature of the distribution is clear from the boxplot.
+The second output is a boxplot demonstrating the locality, spread and the skewness of `capital.gain`. Again, we read a large quantity of 0 observation, and some other values saturating below 10000, that thins up above 10000. We can approximate the extreme values of the data by reading the smallest and largest observation of the boxplot. Minimum being at 0, and the maximum a little bit above 40000. The positively skewed nature of the distribution is clear from the boxplot.
 
 The last output is a histogram for `capital.gains`' value frequency compiled into bins of size 30. The 0 observations for `capital.gain` is significant from the plot — it almost reaches 45000 observations.
 
 **Outliers in `capital.gain`**
 
-We see from the above summary output, that the first and the third quartile are at 0, meaning that at least 75% of `capital.gain` is 0. Similarly to exercise 4.4, we replace the 0 observations with NA values, so to limit down the observations to individuals who invested and realised capital gains. After then, we report a summary of the mutated data, and plot it as a boxplot. 
+We see from the above summary output, that the first and the third quartile are at \$0, meaning that at least 75% of `capital.gain` is 0. Similarly to exercise 4.4, we replace the 0 observations with NA values, so to limit down the observations to individuals who invested and realised capital gains. As shown below, we reported the summary of the mutated data along with a boxplot.  
 
 ```{r}
 adult_4 = mutate( adult_3, capital.gain = ifelse( capital.gain == 0, NA, capital.gain ) )
@@ -669,7 +668,7 @@ summary(adult_4 $ capital.gain)
 
 We see from the above summary that the 44807 zero observations were replaced by NA values.
 
-To have an idea of the mutated data's distribution we replot a histogram.
+To have an idea of the mutated data's distribution we replotted a histogram.
 
 ```{r}
 ggplot( adult_4 ) +
@@ -692,7 +691,7 @@ Based on the above calculations, values beyond `r whisker_right`, are so distant
 
 **Strategy to deal with the outliers**
 
-The distribution of `capital.gain` does not show strong enough similarities to normality or similarity, therefore we do not apply the same imputation method as in exercise 4.4. Since `capital.gain` is a numerical attribute, we replace the above qualified outliers with the mean value of the data, and replot it.
+The distribution of `capital.gain` does not show strong enough similarities to normality or symmetry, therefore we do not apply the same imputation method as in exercise 4.4. Since `capital.gain` is a numerical attribute, we replace the above qualified outliers with the mean value of the data, and replot it.
 
 ```{r}
 adult_5 = mutate(adult_4, capital.gain = ifelse(capital.gain > whisker_right, mean(capital.gain), capital.gain))
