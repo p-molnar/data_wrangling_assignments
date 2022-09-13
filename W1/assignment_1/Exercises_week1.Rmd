@@ -703,7 +703,7 @@ ggplot( adult_5 ) +
 Finally, to preserve the eliminated 0 observations for both `capital.gain` and `capital.loss` we add a flag variable for future reference, to be able to make a distinction between individuals who invested and those who did not.
 
 ```{r}
-adult_5["has.invested"] = ifelse(adult["capital.gain" == 0] & adult["capital.loss" == 0], TRUE, FALSE)
+adult_5["has.invested"] = ifelse(adult["capital.gain" == 0] & adult["capital.loss" == 0], FALSE, TRUE)
 ```
 
 </details>
