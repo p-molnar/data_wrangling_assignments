@@ -198,8 +198,9 @@ summary( churn $ churn )
   
   $n = P(churn = no) + P(churn = yes) = 4293 + 707 = 5000$
   
-  $P(churn = yes) = \frac{P(churn = yes)}{n} = \frac{707}{5000} = 0.1414 = 14.14%$
-  The proportion of churners is $14.14%$.
+  $P(churn = yes) = \frac{P(churn = yes)}{n} = \frac{707}{5000} = 0.1414 = 14.14\%$
+  
+  The proportion of churners is $14.14\%$.
 </details>
 
 ## Investigate variable *International Plan*
@@ -325,6 +326,20 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above boxplot?**
 
+<details>
+  <summary>Answer</summary>
+
+The above boxplots depict the locality and spread and skewness of `day.mins` grouped by `churn` categories.
+
+We see that `day.mins` is negatively skewed for those who churned.
+
+The median of churners is at 215 minutes, which means that the 50% of all observations are below 215 mintues and the other 50% is above that value. Since we established that the data is skewed negatively, it means that the the upper 50% of the data spread out on a smaller range, and thereby its density must increase. This finding let us conclude that as a customer's day minutes increase above 215, its tendency to churn also incrasing. That is, customers who consume more than 215 minutes inclined to churn more than otherwise.
+
+The boxplot for non-churners depicts an approximate symmetry, i.e., the data is cut in half at approximately 175 minutes. This boxplot report some outliers as well below 45 and above 310 minutes.
+
+</details>
+
+
 ## Investigate variable "*International Calls*" 
 
 Here, we are interested to investigate the relationship between variable International Calls and the target variable `churn`. First, we report the histogram of the variable International Calls as follows:
@@ -359,6 +374,15 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above boxplot?**
 
+<details>
+  <summary>Answer</summary>
+
+The boxplot on the left represents churners, and the right non-churners. Both non- and churners are positively skewed, and have their medians at approximately 4 calls.
+
+Both plots report outliers above approximately 10 calls. The boxplot, however, does not indicate strong evidence of the predictive importance of international calls.
+  
+</details>
+
 ## Detect Correlated Variables 
 
 To visualize the correlation matrix between the "day.mins", "Day.Calls", "Day.Charge", "Eve.Mins", "Eve.Calls", "Eve.Charge", "Night.Mins", "Night.Calls", and "Night.Charge", we could use the `ggcorr` function as follows
@@ -383,6 +407,15 @@ pairs.panels( churn[ , c( "night.mins", "night.calls", "night.charge" ) ] )
 ```
 
 **What would be your interpretation of the above correlation matrix plots?**
+
+<details>
+  <summary>Answer</summary>
+  
+From the above correlation matrix we see that there are 4 problematic variable that shows perfect correlation with another variable.
+
+Namely, `night.charge` is perfectly linearly correlated with `night.mins`, which does not come as surprise, since the former is a function of `night.mins`. The same holds true for `eve.mins` and `eve.charge`, `day.mins` and `day.charge`, `intl.mins` and `intl.charge`.
+
+</details>
 
 # Exploratory Data Analysis for Bank direct marketing dataset  (70 points)
 
