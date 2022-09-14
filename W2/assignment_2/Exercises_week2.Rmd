@@ -19,8 +19,7 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center' )
 ```
 
-**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
-
+**Full Name:** Peter Molnar (11759216)
 **Online Assignments**: 
 There is a new online-assignments at the [DataCamp](https://www.datacamp.com). This online exercise, related to data visualization in **R**, e.g., by using the [*ggplot2*](https://CRAN.R-project.org/package=ggplot2) package. These exercises are useful to prepare yourself for the computer-lab. *The online-assignments at the DataCamp are not mandatory*.
 
@@ -116,7 +115,62 @@ It shows the summary of all the `r ncol(churn)` variables.
 
 **a. For each variable in the churn dataset, specify its type.**
 
+<details class="answer_container">
+  <summary>Answer a</summary>
+  
+  **R Datatypes of variables**
+  
+* `state`         : `Factor`
+* `area.code`     : `Factor`
+* `account.length`: `int`
+* `voice.plan`    : `Factor`
+* `voice.messages`: `int`
+* `intl.plan`     : `Factor`
+* `intl.mins`     : `num`
+* `intl.calls`    : `int`
+* `intl.charge`   : `num`
+* `day.mins`      : `num`
+* `day.calls`     : `int`
+* `day.charge`    : `num`
+* `eve.mins`      : `num`
+* `eve.calls`     : `int`
+* `eve.charge`    : `num`
+* `night.mins`    : `num`
+* `night.calls`   : `int`
+* `night.charge`  : `num`
+* `customer.calls`: `int`
+* `churn`         : `Factor`
+  
+**Statistical datatype of variables**
+  
+* `state`         : categorical - nominal
+* `area.code`     : categorical - nominal
+* `account.length`: numerical - discrete
+* `voice.plan`    : categorical - binary
+* `voice.messages`: numerical - discrete
+* `intl.plan`     : categorical - binary
+* `intl.mins`     : numerical - continuous
+* `intl.calls`    : numerical - discrete
+* `intl.charge`   : numerical - continuous
+* `day.mins`      : numerical - continuous
+* `day.calls`     : numerical - discrete
+* `day.charge`    : numerical - continuous
+* `eve.mins`      : numerical - continuous
+* `eve.calls`     : numerical - discrete
+* `eve.charge`    : numerical - continuous
+* `night.mins`    : numerical - continuous
+* `night.calls`   : numerical - discrete
+* `night.charge`  : numerical - continuous
+* `customer.calls`: numerical - discrete
+* `churn`         : categorical - binary
+</details>
+
 **b. Based on the output of the `summary` function for the churn dataset, what is the number of customers who have an international plan (`intl.plan = "yes"`)?**
+
+<details>
+  <summary>Answer b</summary>
+  473 customers have an international plan.
+</details>
 
 ## Investigate the target variable *churn* 
 
@@ -134,6 +188,19 @@ summary( churn $ churn )
 ```
 
 **Based on the above output, what is the proportion of the churner (customer churn rate)?**
+
+<details>
+  <summary>Answer</summary>
+  
+  $P(churn = no) = 4293$
+  
+  $P(churn = yes) = 707$
+  
+  $n = P(churn = no) + P(churn = yes) = 4293 + 707 = 5000$
+  
+  $P(churn = yes) = \frac{P(churn = yes)}{n} = \frac{707}{5000} = 0.1414 = 14.14%$
+  The proportion of churners is $14.14%$.
+</details>
 
 ## Investigate variable *International Plan*
 
@@ -161,6 +228,13 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above plots?**
 
+<details>
+  <summary>Answer</summary>
+The first plot depicts a bar chart of `intl.plan`, with `churn` overlay. The chart shows that approximately 500 customers have international plan, while the rest 4500 did not choose that plan. Although the proportions of `churn` is not clearly readable, we can somewhat see that approximately half of the customers who have international plan tend to churn. This rate is much smaller for customers who do not have international plan.
+
+The right chart is the standardised version of the bar chart on the left. Hence its y-axis ranges between 0 and 1, and shows the proportions of churners in each `intl.plan` category. From that we can clearly read that approximately 42% of internatinoal plan subscribers go to a different company. Further, we see that this proportion is only approximately 10% for those not holding an international plan. That is, for international plan subscribers churn rate is four times higher than for non subscribers.
+</details>
+
 ## Investigate variable "*voice mail plan*"
 
 Make a table for counts of Churn and Voice Mail Plan
@@ -182,6 +256,17 @@ ggplot( data = churn ) +
 ```
 
 **What would be your interpretation of the above plots?**
+
+<details>
+  <summary>Answer</summary>
+
+On the left is a bar chart for `voice.plan`, with `churn` overlay. We see that approximately 1300 customers have voice mail plan, and 3700 do not. From the graph the churn rate is not clear, therefore its standardised equivalent is needed.
+
+On the right, the standardised bar chart is found, and shows the approximately 8% churns from voice mail plan holders. This rate is roughly twice as much for those not holding a voice mail plan, and is approximately 16%.
+
+Given the above interpretation, it is advised to include `voice.plan` for our data warngling software, since it may explain the overall 14.14% churn rate.
+  
+</details>
 
 ## Investigate variable "*customer service calls*" 
 
@@ -209,6 +294,17 @@ ggplot( data = churn ) +
 ```
 
 **What would be your interpretation of the above plots?**
+
+<details>
+  <summary>Answer</summary>
+
+The histogram above shows the number of times the customer service was called, with `churn` overlay. Since the histogram is not clear for interpretation, we turn to the standardised histogram to be able to read the proportions.
+
+We read from the standardised histogram, that churn rate at least quadruples as the number of phone calls to the service calls exceed 3 calls.
+
+The standardised and non-standardised plots must be used together, since the last bar may be misleading. That is, if we did not know the shape and size of the original histogram, we would conclude that 100% customers who has called the customer service 9 times has churned. However, this only affects just a few observations. 
+
+</details>
 
 ## Investigate variable "*Day Minutes*"
 
@@ -361,6 +457,3 @@ Target variable:
 # **Bonus**: Exploratory Data Analysis for your own dataset (30 points)
 
 In this part, you could apply Exploratory Data Analysis to explore your own dataset. You could follow the same steps as in part 1 (above) of these exercises.
-
-
-
