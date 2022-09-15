@@ -20,6 +20,7 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
 ```
 
 **Full Name:** Peter Molnar (11759216)
+
 **Online Assignments**: 
 There is a new online-assignments at the [DataCamp](https://www.datacamp.com). This online exercise, related to data visualization in **R**, e.g., by using the [*ggplot2*](https://CRAN.R-project.org/package=ggplot2) package. These exercises are useful to prepare yourself for the computer-lab. *The online-assignments at the DataCamp are not mandatory*.
 
@@ -49,6 +50,7 @@ library( ggplot2 )
 library( liver   )  
 library( GGally  )  
 library( psych   )  
+library( skimr   )  
 ```
 
 ## Business Understanding
@@ -115,61 +117,46 @@ It shows the summary of all the `r ncol(churn)` variables.
 
 **a. For each variable in the churn dataset, specify its type.**
 
-<details class="answer_container">
+<details class="answer_panel">
   <summary>Answer a</summary>
-  
-  **R Datatypes of variables**
-  
-* `state`         : `Factor`
-* `area.code`     : `Factor`
-* `account.length`: `int`
-* `voice.plan`    : `Factor`
-* `voice.messages`: `int`
-* `intl.plan`     : `Factor`
-* `intl.mins`     : `num`
-* `intl.calls`    : `int`
-* `intl.charge`   : `num`
-* `day.mins`      : `num`
-* `day.calls`     : `int`
-* `day.charge`    : `num`
-* `eve.mins`      : `num`
-* `eve.calls`     : `int`
-* `eve.charge`    : `num`
-* `night.mins`    : `num`
-* `night.calls`   : `int`
-* `night.charge`  : `num`
-* `customer.calls`: `int`
-* `churn`         : `Factor`
-  
-**Statistical datatype of variables**
-  
-* `state`         : categorical - nominal
-* `area.code`     : categorical - nominal
-* `account.length`: numerical - discrete
-* `voice.plan`    : categorical - binary
-* `voice.messages`: numerical - discrete
-* `intl.plan`     : categorical - binary
-* `intl.mins`     : numerical - continuous
-* `intl.calls`    : numerical - discrete
-* `intl.charge`   : numerical - continuous
-* `day.mins`      : numerical - continuous
-* `day.calls`     : numerical - discrete
-* `day.charge`    : numerical - continuous
-* `eve.mins`      : numerical - continuous
-* `eve.calls`     : numerical - discrete
-* `eve.charge`    : numerical - continuous
-* `night.mins`    : numerical - continuous
-* `night.calls`   : numerical - discrete
-* `night.charge`  : numerical - continuous
-* `customer.calls`: numerical - discrete
-* `churn`         : categorical - binary
+
+|     Variable     |  R Datatype  |  Statistical Datatype   |
+|        :-        |      :-:     |          :-             |
+| `state`          | `Factor`     | categorical - nominal   |
+| `area.code`      | `Factor`     | categorical - nominal   |
+| `account.length` | `int`        | numerical - discrete    |
+| `voice.plan`     | `Factor`     | categorical - binary    |
+| `voice.messages` | `int`        | numerical - discrete    |
+| `intl.plan`      | `Factor`     | categorical - binary    |
+| `intl.mins`      | `num`        | numerical - continuous  |
+| `intl.calls`     | `int`        | numerical - discrete    |
+| `intl.charge`    | `num`        | numerical - continuous  |
+| `day.mins`       | `num`        | numerical - continuous  |
+| `day.calls`      | `int`        | numerical - discrete    |
+| `day.charge`     | `num`        | numerical - continuous  |
+| `eve.mins`       | `num`        | numerical - continuous  |
+| `eve.calls`      | `int`        | numerical - discrete    |
+| `eve.charge`     | `num`        | numerical - continuous  |
+| `night.mins`     | `num`        | numerical - continuous  |
+| `night.calls`    | `int`        | numerical - discrete    |
+| `night.charge`   | `num`        | numerical - continuous  |
+| `customer.calls` | `int`        | numerical - discrete    |
+| `churn`          | `Factor`     | categorical - binary    |
+
 </details>
 
 **b. Based on the output of the `summary` function for the churn dataset, what is the number of customers who have an international plan (`intl.plan = "yes"`)?**
 
 <details>
   <summary>Answer b</summary>
-  473 customers have an international plan.
+  
+```{r}
+intl_plan_holder = length(which(churn $ intl.plan == "yes"))
+intl_plan_holder
+```
+  
+  The customer churn rate is `r intl_plan_holder`.
+
 </details>
 
 ## Investigate the target variable *churn* 
@@ -231,9 +218,13 @@ ggplot( data = churn ) +
 
 <details>
   <summary>Answer</summary>
-The first plot depicts a bar chart of `intl.plan`, with `churn` overlay. The chart shows that approximately 500 customers have international plan, while the rest 4500 did not choose that plan. Although the proportions of `churn` is not clearly readable, we can somewhat see that approximately half of the customers who have international plan tend to churn. This rate is much smaller for customers who do not have international plan.
+  
+The first plot depicts a bar chart of `intl.plan`, with `churn` overlay. The chart shows that approximately 500 customers have an international plan, while the rest do not. The proportions of churners is not clearly readable, but approximately half of the customers who have an international plan tend to churn. The churn rate is much smaller for customers who do not have international plan.
 
-The right chart is the standardised version of the bar chart on the left. Hence its y-axis ranges between 0 and 1, and shows the proportions of churners in each `intl.plan` category. From that we can clearly read that approximately 42% of internatinoal plan subscribers go to a different company. Further, we see that this proportion is only approximately 10% for those not holding an international plan. That is, for international plan subscribers churn rate is four times higher than for non subscribers.
+The right chart is the standardised version of the bar chart on the left. The standardised chart's y-axis ranges between 0 and 1, and it shows the proportions of churners in each `intl.plan` category. This chart allows for more precision; we read that approximately 42% of international plan holders change to a different company, while this number is around 11% for those not having an international plan. 
+
+Conclusively, international plan holders churn rate is about four times higher than for non subscribers. The variable in question may bear with explanatory power, hence it would not come as a surprise if the data mining algorithm would use `intl.plan` in the prediction model.
+
 </details>
 
 ## Investigate variable "*voice mail plan*"
@@ -241,7 +232,7 @@ The right chart is the standardised version of the bar chart on the left. Hence 
 Make a table for counts of Churn and Voice Mail Plan
 
 ```{r}
-table( churn $ churn, churn $ voice.plan, dnn = c( "Churn", "Voice Mail Plan" ) )
+addmargins(table( churn $ churn, churn $ voice.plan, dnn = c( "Churn", "Voice Mail Plan" ) ))
 ```
 
 Bar chart for Voice Mail Plan
@@ -261,11 +252,11 @@ ggplot( data = churn ) +
 <details>
   <summary>Answer</summary>
 
-On the left is a bar chart for `voice.plan`, with `churn` overlay. We see that approximately 1300 customers have voice mail plan, and 3700 do not. From the graph the churn rate is not clear, therefore its standardised equivalent is needed.
+The left plot depicts a barchart for `voice.plan`, with `churn` overlay, groupped by `voice.plan` categories. Those of voice plan holders represent themselves with 1300 customers, while those of non-holders with about 3700 customers.
 
-On the right, the standardised bar chart is found, and shows the approximately 8% churns from voice mail plan holders. This rate is roughly twice as much for those not holding a voice mail plan, and is approximately 16%.
+The right plot is a standardised bar chart, and shows that approximately 8% of voice mail plan holders churn. For those who did not opt for voice mail plan, the churn rate is roughly twice as much, 16%.
 
-Given the above interpretation, it is advised to include `voice.plan` for our data warngling software, since it may explain the overall 14.14% churn rate.
+Conclusively, churn rate is higher amongst customers who do not have voice mail plan, than for those who do have. `voice.plan` may have some explanation for the 14.14% churn rate, and hence we should expect that the data mining algorithm will include it in prediction model.
   
 </details>
 
@@ -299,11 +290,15 @@ ggplot( data = churn ) +
 <details>
   <summary>Answer</summary>
 
-The histogram above shows the number of times the customer service was called, with `churn` overlay. Since the histogram is not clear for interpretation, we turn to the standardised histogram to be able to read the proportions.
+The first plot is a histogram of `customer.calls`, and it is positively skewed, whit a mean of `r mean(churn $ customer.calls)` call(s). The skewness of the data may be explained by that the majority of customers who contacts the customer service desk have their matter solved within one call, and hence there is no need for further calls.
 
-We read from the standardised histogram, that churn rate at least quadruples as the number of phone calls to the service calls exceed 3 calls.
+The second plot is similar to the first histogram, however, it adds `churn` overlay. Since it is challenging to read the proportions of the histogram we turn to the standardised histogram, that is the last plot.
 
-The standardised and non-standardised plots must be used together, since the last bar may be misleading. That is, if we did not know the shape and size of the original histogram, we would conclude that 100% customers who has called the customer service 9 times has churned. However, this only affects just a few observations. 
+The standardised histogram depicts the proportions of churners vs non-churners for each histogram bar. We observe that that churn rate is fairly stable at around 11% for customers who had less than 3 customer service calls. The churn rate, however, at least quadruples for those contacting the customer service desk at least 4 times. It seems, that customers tolerance or satisfaction drops significantly as soon as they need to call at least 4 times the customer service.
+
+It is worth to note, that the standardised and non-standardised plots must be used together, otherwise it may lead to misleading observations. Such as, if we did not take into account the non-stardardised histogram, then we would conclude that customers calling the service desk 9 times churn wiht certainty. However, this would be misleading, since there are only just a handful of 9 count observations.
+
+Given the strong graphical evidence of predictive importance, it is expected that the data mining algorithm will include `service.calls` in the model.
 
 </details>
 
@@ -329,13 +324,27 @@ ggplot( data = churn ) +
 <details>
   <summary>Answer</summary>
 
-The above boxplots depict the locality and spread and skewness of `day.mins` grouped by `churn` categories.
+The above boxplots depict the locality, spread and skewness of `day.mins` grouped by `churn` categories.
 
-We see that `day.mins` is negatively skewed for those who churned.
+**Comparison of location:** For both `churn` categories, that is for churners and non-churners, the distribution is approximately symmetric. This finding bears with the advantage, that we can state that the distributions' mean and median are approximately at the same location. Knowing this, allows us to draw that the daily length of calls for churners is approximately on average 215 minutes. This number, is somewhat lower for those of non-churners — they spent on average around 190 minutes on phone calls daily.
 
-The median of churners is at 215 minutes, which means that the 50% of all observations are below 215 mintues and the other 50% is above that value. Since we established that the data is skewed negatively, it means that the the upper 50% of the data spread out on a smaller range, and thereby its density must increase. This finding let us conclude that as a customer's day minutes increase above 215, its tendency to churn also incrasing. That is, customers who consume more than 215 minutes inclined to churn more than otherwise.
+To allow for a more precise analysis, we need to plot the data as frequency density plot; the below code performs that.
 
-The boxplot for non-churners depicts an approximate symmetry, i.e., the data is cut in half at approximately 175 minutes. This boxplot report some outliers as well below 45 and above 310 minutes.
+```{r}
+ggplot( data = churn) + 
+  geom_density( aes( x = day.mins, fill = churn ), alpha = 0.3)
+```
+
+
+We observe, that churners show bimodality at two locations; at 160 minutes, and 270 minutes. That is, customers with daily phone calls of 160, and 270 minutes churn with the highest rate. Furthermore, we can read that customer churn rate increases as `day.mins` exceeds 200 minutes.
+
+**Comparison of dispersion:** From the boxplots we read that the interquartile range for churners is approximately twice as large than for non-churners. Additionally, we read from the width of the whiskers, that the range of `day.mins` for churners is wider than for non-churners.
+
+**Comparison of skewness:** `day.mins` for churners is skewed to the left - churners spend more on phone calls, than non churners.
+
+**Comparison of potential outliers:** `day.mins`'s whisker spreads from the minima of the data to the maxima of it, and hence it does not have any outliers, or unusual values. This cannot be stated for non-churners, since they have potential outliers beyond the lower and upper whiskers.
+
+`day.minutes` seem to hold relevant information, and therefore we should expect the data mining algorithm to select this variable into the model.
 
 </details>
 
@@ -376,10 +385,23 @@ ggplot( data = churn ) +
 
 <details>
   <summary>Answer</summary>
+  
+The above boxplots depict the locality, spread and skewness of `intl.calls` grouped by `churn` categories.
+  
+**Comparison of location:** Based on the boxplots, we see that the median count of internatinal calls made by churners and non-churners are approximately the same.
 
-The boxplot on the left represents churners, and the right non-churners. Both non- and churners are positively skewed, and have their medians at approximately 4 calls.
+**Comparison of dispersion:** The interquartile range for churners versus non-churners are reasonably similar, as well as the overall range of the data, seen by measuring the whisker lengths.
 
-Both plots report outliers above approximately 10 calls. The boxplot, however, does not indicate strong evidence of the predictive importance of international calls.
+**Comparison of skewness:** Both batches of data are positively skewed, however, for churners it is more severe than for non-churner. Meaning, that churners have a lower count of international calls than that of non-churners.
+
+**Comparison of potential outliers:** Both data contains upper outliers, however, nothing deterministic may be drawn from this observation.
+
+As a general conclusion, the above plots do not indicate strong graphical evidence of the predictive importance of international calls. Therefore, it may be that the data mining algorithm would not include it in the model.
+
+```{r}
+ggplot( data = churn) + 
+  geom_density( aes( x = intl.calls, fill = churn ), alpha = 0.3)
+```
   
 </details>
 
@@ -411,9 +433,11 @@ pairs.panels( churn[ , c( "night.mins", "night.calls", "night.charge" ) ] )
 <details>
   <summary>Answer</summary>
   
-From the above correlation matrix we see that there are 4 problematic variable that shows perfect correlation with another variable.
+From the above correlation matrix we see that there are 4 problematic variables that shows perfect correlation (r=1.0) with another variable.
 
-Namely, `night.charge` is perfectly linearly correlated with `night.mins`, which does not come as surprise, since the former is a function of `night.mins`. The same holds true for `eve.mins` and `eve.charge`, `day.mins` and `day.charge`, `intl.mins` and `intl.charge`.
+Namely, `night.charge` is perfectly linearly correlated with `night.mins`, which does not come as surprise, since the former is a function of `night.mins`. The same holds true for `eve.mins` and `eve.charge`, `day.mins` and `day.charge`, and lastly `intl.mins` and `intl.charge`.
+
+Using correlated variables will overemphasize one data component, or at worst the data may become unstable and deliver unreliable results. Therefore we need to retain only one of the correlated ones.
 
 </details>
 
@@ -486,6 +510,28 @@ Target variable:
 * `deposit`: Indicator of whether the client subscribed a term deposit; binary: "yes" or "no".
 
 **Following Part 1, first, report the summary of the dataset then apply the Exploratory Data Analysis.**
+
+<details>
+  <summary>Answer</summary>
+  
+```{r}
+summary(bank)
+```
+  
+```{r}
+skim(bank)
+```
+  
+```{r}
+variable_list = c( "age", "job", "marital", "education", "default", "balance",
+                   "housing", "loan", "contact", "day", "month",  "duration",
+                   "campaign", "pdays", "previous", "poutcome", "deposit")
+
+ggcorr( data = bank[ , variable_list ], label = TRUE ) 
+
+```
+  
+</details>
 
 # **Bonus**: Exploratory Data Analysis for your own dataset (30 points)
 
