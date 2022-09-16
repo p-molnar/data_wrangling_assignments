@@ -51,6 +51,8 @@ library( liver   )
 library( GGally  )  
 library( psych   )  
 library( skimr   )  
+library( Hmisc   )
+library( plyr    )
 ```
 
 ## Business Understanding
@@ -530,7 +532,202 @@ variable_list = c( "age", "job", "marital", "education", "default", "balance",
 ggcorr( data = bank[ , variable_list ], label = TRUE ) 
 
 ```
-  
+
+<h3>EDA of `deposit`</h3>
+
+```{r}
+ggplot( data = bank ) + 
+    geom_bar( aes( x = deposit ), fill = c( "red", "blue" ) ) +
+    labs( title = "Bar plot for the target variable 'deposit'" )  
+```
+
+From the above bar chart and descriptive statistics we read that the deposit rate after the conducted marketing campaign is about 11.5%. Below we conduct an Exploratory Data Analysis as an attempt to find patterns and explanation for the target variable `deposit`.
+
+We start the exploration of the `age` variable to see if age is deterministic of the deposit rate, and whether there is any focus group that the bank needs to focus on for the next campaign.
+
+<h3>EDA of `age`</h3>
+
+`age` is a discrete numerical variable, representing the age of the customer in the dataset. Below `age`is plotted as a density function groupped by `deposit` categories.
+
+```{r}
+ggplot( data = bank) + 
+  geom_density( aes( x = age, fill = deposit ), alpha = 0.3)
+```
+
+The above graph shows similar characterisitcs for both depositors as well as non-depositors. We read that, customers under 30 and beyond 60 years of age are more likely to become a depositors than those of between 30 and 60 years of age.
+
+To see if we are dealing with any unusual or outlier values, we plot `age` as boxplots for both `deposit` categories.
+
+```{r}
+ggplot( data = bank ) +
+  geom_boxplot( aes( x = deposit, y = age ), fill = c( "red", "blue" ) ) 
+```
+
+**Comparison of location:** The central location of the two boxplots are approximately shared at 40 years. It shows, that the median age for depositors, and non-depositors are approximately the same.
+
+**Comparison of dispersion:** The interquartile range of non-depositors are shorter than that of depositors, and this in general holds for the overall range of age as well. That is, the age range for no depositors is narrower than for depositors.
+
+**Comparison of skewness:** Per above, it was stated that for both groups, the data is positively skewed, that is the bulk of the data is towards range of data where customers are considered older.
+
+**Comparison of potential outliers:** Both categeories report some outliers, however, non-depositors have about twice as many outliers than that of depositors.
+
+Based on the above two graphs, it is advised to include age in our data mining model, and specifically focus on age range of 30 to 60 years old customers as they tend to deposit less likely.
+
+<h3>EDA of `job`</h3>
+
+We first plot `job` categories as a histogram with `deposit` overlay.
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = factor( job ), fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+From the above histogram we can distinguish 3 group of workers based on their frequency in the dataset. Those of total count greater than 750 are blue-collar workers, management personnel, and technicians. The second largest group are more than 375 in the dataset and of administrative workers, and those working in the service sector (to be revised!!). The third group is of every other occupation that represent themselves with less than 250 people.
+
+Given that the proportions are difficult to read, we standardise the histogram and replot it.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = factor( job ), fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+From the standardised plot we read that the campaign was most effective amongst the following job categories: elderly people, students, and those of unknown occupation. This finding is confirmed by the previous variable, `age`, whereby we saw, that the depositor curve was above non-depositors for age below 30 and beyond 60 years of age.
+
+For the rest of the occupations, we see deposit rate ranging between 6% and 12%, however, the plot does not indicate strong graphical evidence of `job` being a general predictor for target variable `deposit`. (revise!)
+
+Next, we move on to `marital` status.
+
+<h3>EDA of `marital`</h3>
+
+We first plot marital status with `deposit` overlay, and then as a standardised histogram.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = marital, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
+
+ggplot( data = bank ) +
+  geom_bar( aes( x = marital, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
+```
+
+From the above plots we see that the married customers are over-represented in the dataset with a count of approximately 2800. Singles are around 1200 in the dataset, while the rest approximately 500 customers are either divorced or widowed.
+
+The standardised plot allows us to read the deposit proportions among marital statuses; we read that the success rate of the campaign accross different relationship statuses are of similar, and ranges between 10% and 12%.
+
+The variable `martial` does not hold strong graphical indiciation of the predictive importance of marital status. Therefore it is likely that the data mining algorithm will not include in the making predictions with it.
+
+Next, we move on to `education`.
+
+<h3>EDA of `education`</h3>
+
+The `education` variable has four categories; "primary", "secondary", "tertiary" and an "unknown" category.
+
+* Primary education or elementary education is typically the first stage of formal education.
+* Secondary education typically takes place after six years of primary education and is followed by higher education, vocational education or employment.
+* Tertiary education refers to all formal post-secondary education, including public and private universities, colleges, technical training institutes, and vocational schools.
+
+We explore `education` by means of regular bar chart and standardised barchart with `deposit` overlay.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = education, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
+```
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = education, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+The above 2 bar charts shows that customers with secondary educations are represented the most in the data set followed by that of tertiary education participants. The deposit rate is not clear from the regular bar chart, therefore, we analyse the standardised graph.
+
+We report that those of tertiary education participants tend to deposit with 15% likelihood after the conducted campaign. The other 3 groups, `primary`, `secondary` and `unknown`, we see almost identical deposit rates, at around 10%.
+
+Next we move on to `default`.
+
+<h3>EDA of `default`</h3>
+
+We explore the `default` through bar charts with `deposit` overlay.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = default, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
+```
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = default, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We read from the regular bar chart that those who did not default on their credit are over-represented in the dataset by 4445 customers, and only 76 defaulted.
+
+The standardised chart reveals that there is no difference in the deposit rate between the two groups, therefore, the EDA of `default` is inconclusive. I.e., `default` does not indicate strong graphical evidence of any predictive importance. Therefore it is likely that the data mining algorithm will not include that in the prediction model.
+
+Next we move on to `balance`.
+
+
+<h3>EDA of `balance`</h3>
+
+`balance` is a continuous numeric variable, hence it is plotted as a histogram. 
+
+```{r}
+ggplot( bank ) +
+    geom_histogram( mapping = aes( x = balance ))
+```
+
+One's balance is closely related to their income, and since we know that income is a positively skewed distribution in general, we expect balance to be similar.
+
+From the above histogram we can confirm that balance is indeed positively skewed, with mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances. Therefore chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing overdraft, which occurs when money is withdrawn in excess of what is in a current account.
+
+Balances around 0 dominate the data, but to see that rest of the distribution in more details we zoom into it by adjusting the limit of the y-axis to [0, 1000].
+
+```{r}
+ggplot( bank ) + 
+  geom_histogram( mapping = aes( x = balance )) +
+  coord_cartesian( ylim = c( 0, 1000 ) )
+```
+
+Unfortunately the zoomed in part does not provide necessarily more information but confirms the existence of outliers around €40000 and and €70000. To see the potential outliers, we plot `balance` as a boxplot.
+
+```{r}
+ggplot( data = bank ) +
+  geom_boxplot( aes( x = balance))
+```
+
+We recognise plenty of outliers, so to be able to interpret it, we need to handle outliers by means of imputation, and then replot the grap.
+
+```{r}
+ggplot( data = bank) + 
+  geom_density( aes( x = balance, fill = deposit ), alpha = 0.3)
+
+
+q1 = boxplot(bank $ balance)$stats[2, ]
+q3 = boxplot(bank $ balance)$stats[4, ]
+iqr = q3 - q1
+whisker_lower = q1 - 1.5 * iqr
+whisker_upper = q3 + 1.5 * iqr
+
+bank = mutate( bank, balance = ifelse( balance < whisker_lower | balance > whisker_upper, NA, balance ) ) 
+
+bank $ balance = impute( bank $ balance, 'random' )
+
+ggplot( data = bank) + 
+  geom_density( aes( x = balance, fill = deposit ), alpha = 0.3)
+```
+
+```{r}
+
+```
+
+From the above graph we see that the deposit rate is higher on customers who have at least approximately €400 euros in their bank account. The campaign is the least successful on customers with sligh overdraft and balance below €400. 
+
 </details>
 
 # **Bonus**: Exploratory Data Analysis for your own dataset (30 points)
