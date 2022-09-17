@@ -53,6 +53,7 @@ library( psych   )
 library( skimr   )  
 library( Hmisc   )
 library( plyr    )
+library( ggpubr  )
 ```
 
 ## Business Understanding
@@ -726,7 +727,170 @@ ggplot( data = bank) +
 
 ```
 
-From the above graph we see that the deposit rate is higher on customers who have at least approximately €400 euros in their bank account. The campaign is the least successful on customers with sligh overdraft and balance below €400. 
+From the above graph we see that the deposit rate is higher on customers who have at least approximately €400 euros in their bank account. The campaign is the least successful on customers with slight overdraft (-€200) and balance below €400.
+
+There is sufficient graphical evidence of the predictive importance of balance, therefore, we can expect the data mining algorithm incorporate the `balance` variable in a model.
+
+Next, we move on `housing`.
+
+<h3>EDA of `housing`</h3>
+
+Given that the `housing` is a binary variable, that stands for whether the person has a mortgage, we can first make a contingency table with the target variable, as well as plot `housing` as a barchart with `deposit` overlay.
+
+```{r}
+addmargins( table( bank $ deposit, bank $ housing, dnn = c( "Deposit", "Housing" ) ) )
+```
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = housing, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+Both the contingency table, and the bar chart gives away that those with housing loan represent the majority of customers. To be able to judge the proprtions between loan takers and deposit subscribers, we need to standardise the barchart.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = housing, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We see that approximately, 15% of those without housing loan subscribe for the deposit deal, while only on 8.5% of loan holders the campaign is effective. The difference between subscribers with and without housing loan is approximately two fold, which constitute to a significant difference. Therefore, it is reasonable to assume that the data mining algorithm will incorporate `housing` into the model.
+
+Next, we move on with `loan`.
+
+<h3>EDA of `loan`</h3>
+Similar to `housing`, `loan` is a binary variable as well, therefore we can follow the exact same analysis that we did for `housing`.
+
+That is, first we report a contingency table, and then plot the data on a bar chart.
+
+```{r}
+addmargins( table( bank $ deposit, bank $ loan, dnn = c( "Deposit", "Loan" ) ) )
+```
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = loan, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+From the above chart we see that approximately 3800 customers do not have a personal loan taken, which represents a significant majority of the customers, while the rest 700 do have a loan.
+
+The proportions from the regular bar chart is not clear, therefore, we generate the standardised equivalent of it.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = loan, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We read, that the success rate of the campaign among customers without personal loan is about 12.5%, while it is only 6% for those with personal loan. In this case the difference is more than two fold between the success rates, so `loan` we shall expect the data mining algorithm to count this variable in the model.
+
+Next we move on with variables related to the last contact of the current campaign.
+
+<h3>EDA of `contact`</h3>
+
+The `contact` variable describes the device on which the customer was contacted. There are 3 categories, that we interpret as follows: the cellular phone refers to the customers wireless mobile phone, while telephone to landline phone. The third category is unknown, which may be via indirect ways, such as brochures, billboards. 
+
+It is a categorical variable, hence we can plot it on barchart.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = contact, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We see that the majority  of customers were reached out to by their cellular phone, or an unknown way.
+
+```{r}
+ggplot( data = bank ) +
+  geom_bar( aes( x = contact, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+
+The standardised chart shows that there is technically no difference between the success rate of cellular and mobile phones, however, the unknown category does not perform well.
+
+The above plot indicates strong graphical evidence of the predictive importance of the device, therefore, the data mining algorithm may as well select `contact` into the model.
+
+We continue the analysis with `day` and `month`.
+
+<h3>EDA of `day`</h3>
+
+The `day` variable represent the given day in a month. When plotted as a barchart, we see the last contact day's frequency. We see that the contacts are the most frequent in the first 2/3 of the month. Towards the end of the month the campaign tunes down a bit. From the grap we cannot see the success rate precised, therefore, we next plot it as a standardised barchart.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = day, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = day, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+We see little to no strong graphical evidence from the standardised chat that day may have predictive importance in `deposit`. It is also worth to note, the `day` is uniformly distributed only until the curernt month's 28th day. This is because, every month is at least 28 days, however, not every month have 30 days. Therefore, this distorts the above data, though it does not change on the verdict, according to which it has little to no predictive importance.
+
+<h3>EDA of `month`</h3>
+
+The `month` variable tells the last contact date in terms of month. First we plot it as a regual barchart to identify which month were the most aggressive from the viewpoint of the campaign. That is, which month has the highest frequency of contacts.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = month, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We see, that There are 5 months that stand out clearly from the rest in terms of contact counts. These are namely May, June, July, August, and November. Next we standardise the chart to see the success rate of the campaign per month. 
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = month, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We see from the above plot that March, October and November were the most successful months, and were able to campaign with nearly 50% success rate. A little bit behind are April and September with success rate of 20% and 30% respectively. The above plot indicates strong graphical evidence of the predictive importance of `month`.
+
+<h3>EDA of `day` and `month` together</h3>
+
+First we take a look at distribution of each month, and try to see if there is any pattern followed. Therefore we plot each plot `day` groupped by `month`
+
+```{r}
+month = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+month_plots = list()
+
+for (cur_month in month)
+{
+  month_plots[[cur_month]] = ggplot( data = bank) +
+    geom_bar(data = subset(bank, month == cur_month), aes( x = day, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) ) + 
+    ggtitle(paste("last contact day in", as.character(cur_month)))
+}
+
+ggarrange(plotlist=month_plots, nrow=4, ncol=3)
+```
+
+We can see from the above plots, that the most intensive period for the campaign was running from May until August. The campaign is less aggressive in the following months: March, September, October and December. Finally, the campaign is in the lowest gear in the following months: January, February, April, November.
+
+It is difficult to see the proportional success rate of the campaigns from the above graphs, so they need to be standardised.
+
+```{r}
+month = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+month_plots = list()
+
+for (cur_month in month)
+{
+  month_plots[[cur_month]] = ggplot( data = bank) +
+    geom_bar(data = subset(bank, month == cur_month), aes( x = day, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) ) + 
+    ggtitle(paste(as.character(cur_month)))
+}
+
+ggarrange(plotlist=month_plots, nrow=4, ncol=3)
+```
+
+The standardised graph we see that February, March, April, June, August, September October and November performed the best. There is enough graphical indication that a day in the month
 
 </details>
 
