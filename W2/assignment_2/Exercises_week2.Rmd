@@ -852,45 +852,6 @@ We see, that There are 5 months that stand out clearly from the rest in terms of
 
 We see from the above plot that March, October and November were the most successful months, and were able to campaign with nearly 50% success rate. A little bit behind are April and September with success rate of 20% and 30% respectively. The above plot indicates strong graphical evidence of the predictive importance of `month`.
 
-<h3>EDA of `day` and `month` together</h3>
-
-First we take a look at distribution of each month, and try to see if there is any pattern followed. Therefore we plot each plot `day` groupped by `month`
-
-```{r}
-month = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
-month_plots = list()
-
-for (cur_month in month)
-{
-  month_plots[[cur_month]] = ggplot( data = bank) +
-    geom_bar(data = subset(bank, month == cur_month), aes( x = day, fill = deposit ), position = "stack" ) +
-    scale_fill_manual( values = c( "red", "blue" ) ) + 
-    ggtitle(paste("last contact day in", as.character(cur_month)))
-}
-
-ggarrange(plotlist=month_plots, nrow=4, ncol=3)
-```
-
-We can see from the above plots, that the most intensive period for the campaign was running from May until August. The campaign is less aggressive in the following months: March, September, October and December. Finally, the campaign is in the lowest gear in the following months: January, February, April, November.
-
-It is difficult to see the proportional success rate of the campaigns from the above graphs, so they need to be standardised.
-
-```{r}
-month = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
-month_plots = list()
-
-for (cur_month in month)
-{
-  month_plots[[cur_month]] = ggplot( data = bank) +
-    geom_bar(data = subset(bank, month == cur_month), aes( x = day, fill = deposit ), position = "fill" ) +
-    scale_fill_manual( values = c( "red", "blue" ) ) + 
-    ggtitle(paste(as.character(cur_month)))
-}
-
-ggarrange(plotlist=month_plots, nrow=4, ncol=3)
-```
-
-The standardised graph we see that February, March, April, June, August, September October and November performed the best. There is enough graphical indication that a day in the month
 
 </details>
 
