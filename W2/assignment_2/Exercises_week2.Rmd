@@ -852,6 +852,51 @@ We see, that There are 5 months that stand out clearly from the rest in terms of
 
 We see from the above plot that March, October and November were the most successful months, and were able to campaign with nearly 50% success rate. A little bit behind are April and September with success rate of 20% and 30% respectively. The above plot indicates strong graphical evidence of the predictive importance of `month`.
 
+Next, we move on with the analysis of `duration` variable.
+
+<h3>EDA of `duration`</h3>
+
+The `duration` variable is the last contact's duration expressed in seconds. Since this variable is continuous, we plot it as a histogram with bin size of 60, because that represents 60 seconds, which is a minute.
+
+```{r}
+ggplot( bank ) +
+    geom_histogram( mapping = aes( x = duration ), binwidth = 60 )
+```
+The wide range of the x-axis tells that the data has some outliers. Furthermore, the distribution of `duration` is positively skewed, which is expected, since most of the customer tend to keep promotional/marketing calls as short as possible.
+
+Next we query some descriptive statistics on the variable in question.
+
+```{r}
+summary(bank $ duration)
+```
+
+We can report that the mean duration of the phone calls were 264 seconds. We can see that 25% of customers kept the phone call under 104 seconds, 50% of them under 185 seconds while 75% just under 329 seconds.
+
+To identify outliers of the data, we will plot it as a boxplo groupped by `deposit`.
+
+```{r}
+ggplot( data = bank ) +
+  geom_boxplot( aes(y = duration ) ) 
+```
+
+The above boxplot identifies outliers beyond `r 329 + 1.5 * (329 - 104)` seconds. Any observation beyond that duration is deemed an outlier. Next, to deal with the outliers, we replace the outliers with NA, impute data, and finally replot it as a density graph groupped by `deposit`.
+
+```{r}
+q1 = boxplot(bank $ duration)$stats[2, ]
+q3 = boxplot(bank $ duration)$stats[4, ]
+iqr = q3 - q1
+
+whisker_lower = q1 - 1.5 * iqr
+whisker_upper = q3 + 1.5 * iqr
+
+bank = mutate( bank, duration = ifelse( duration < whisker_lower | duration > whisker_upper, NA, duration ) ) 
+
+bank $ duration = impute( bank $ duration, 'random' )
+
+ggplot( data = bank) + 
+  geom_density( aes( x = duration, fill = deposit ), alpha = 0.3)
+```
+It is clear from the above graph, that calls that last less than approximately 220 seconds has no success in convincing the customer to subscribe for the deposit. Further, we identify the tendency that the longer the phone call lasts, the better the subscriber rate.
 
 </details>
 
