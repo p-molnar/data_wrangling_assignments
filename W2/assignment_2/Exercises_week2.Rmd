@@ -898,6 +898,151 @@ ggplot( data = bank) +
 ```
 It is clear from the above graph, that calls that last less than approximately 220 seconds has no success in convincing the customer to subscribe for the deposit. Further, we identify the tendency that the longer the phone call lasts, the better the subscriber rate.
 
+Next, we move on with the `campaign` variable. 
+
+<h3>EDA of `campaign`</h3>
+
+The `campaign` variable stands for the number of contacts performed during the campaign.
+
+First we plot it on a bar chart, whereby we identify the distribution's positive skewness. That is, most of the bank customers were only contacted a few times. Furthermore we identify some outliers based on the width of the x-axis. To further deal with the outliers, we first plot the data on a boxplot identify the outliers, then mutate and impute the data and finally plot it as a density graph.
+
+```{r}
+ggplot( data = bank) +
+  geom_bar(aes( x = campaign, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+
+q1 = boxplot(bank $ campaign)$stats[2, ]
+q3 = boxplot(bank $ campaign)$stats[4, ]
+iqr = q3 - q1
+
+whisker_lower = q1 - 1.5 * iqr
+whisker_upper = q3 + 1.5 * iqr
+
+bank = mutate( bank, campaign = ifelse( campaign < whisker_lower | campaign > whisker_upper, NA, campaign ) ) 
+
+bank $ campaign = impute( bank $ campaign, 'random' )
+
+ggplot( data = bank) + 
+  geom_density( aes( x = campaign, fill = deposit ), alpha = 0.3)
+
+ggplot( data = bank) +
+  geom_bar(aes( x = campaign, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+The above plot does not indicate strong graphical evidence of predictive importance of `campaign`.
+
+Next, we move on with `pday`.
+
+<h3>EDA of `pday`</h3>
+
+`pday` stands for the number of days passed since the customer was contacted. It may take on the value `-1`, that means that the customer was not contacted previously, and the current campaign contact is the first.
+
+First we plot the frequency of each day passed as a bar chart.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = pdays, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We not only see that the values along the x-axis spreads out on a wide range but also, that there are a large quantity of `-1` observations, referring that the large amount of customers were not contacted previously.
+
+To see the real distribution, we investigate a subset of customers who were contacted previously. That is, we filter out those with `pdays = -1`, and re-plot the graph as a bar chart and boxplot.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar( data = subset( bank, pdays != -1 ), aes( x = pdays, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+
+ggplot( data = bank ) +
+  geom_boxplot( data = subset( bank, pdays != -1 ), aes(y = pdays )) 
+```
+
+The boxplot identifies some outliers, that we first replace by NA values and then impute them, and finally depict it as a line chart.
+
+```{r}
+bank2 = mutate( bank, pdays = ifelse( pdays == -1, NA, pdays ) ) 
+
+q1 = boxplot(bank2 $ pdays)$stats[2, ]
+q3 = boxplot(bank2 $ pdays)$stats[4, ]
+iqr = q3 - q1
+
+whisker_lower = q1 - 1.5 * iqr
+whisker_upper = q3 + 1.5 * iqr
+
+bank2 = mutate( bank2, pdays = ifelse( pdays < whisker_lower | pdays > whisker_upper, NA, pdays ) ) 
+
+
+bank2 $ pdays = impute( bank2 $ pdays, 'random' )
+
+ggplot( data = bank2) + 
+  geom_density( aes( x = pdays), alpha = 0.3)
+```
+
+From the imputed data we see, that the majority of customers who were contacted previously, were contacted again for a follow up contact between 100 and 350 days.
+
+To see the success rate of each of the `pdays`, we plot it as a density plot groupped by `deposit`.
+
+```{r}
+  ggplot( data = bank2) +
+    geom_bar(aes( x = pdays, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+Based on the above standardised graph, we see no strong graphical evidence of the predictive importantce of `pdays`. Therefore, we do not expect the data mining algorithm to include `pdays` in the model.
+
+Next, we move on with `previous`.
+
+<h3>EDA of `previous`</h3>
+
+The variable `previous` stands for the number of contacts performed before the current campaign. First we plot it as a bar chart.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = previous, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We see that the majority of the customers were not contacted previously. This observation coincides with the findings in `pdays` , since that also shown, that that the majority of the customers were not contacted.
+
+Next, we standardise the data.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = previous, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+From the above plot we read, that until the first 15 contacts, on average the success rate increase. That is, the more call is directed towards the customer, the higher the chance the customer subscribes. (revise!)
+
+Although, the finding above is not strong but considerable, we can expect the data mining algorithm to include it in the model.
+
+Finally, we move on with `poutcome`.
+
+<h3>EDA of `poutcome`</h3>
+
+`poutcome` represents the outcome of the previous campaign.
+
+We first plot it as a bar chart. 
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = poutcome, fill = deposit ), position = "stack" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+We see that the unknown category has the highest count. This category is likely to represent the customers that were not contacted previously, therefore, is coincides with data of `pdays` and `previous`.
+
+Next, we plot `poutcome` as a standardised bar chart.
+
+```{r}
+  ggplot( data = bank) +
+    geom_bar(aes( x = poutcome, fill = deposit ), position = "fill" ) +
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+We interpret the above graph as that those previously subscribed for the deposit are more likely to subscribe again. The above plot indicate strong graphical evidence of the predictive importance of `poutcome`. The data mining algorithm will include `poutcome` in the model.
+
 </details>
 
 # **Bonus**: Exploratory Data Analysis for your own dataset (30 points)
