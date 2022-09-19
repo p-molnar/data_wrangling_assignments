@@ -19,7 +19,16 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center' )
 ```
 
-**Full Name:** Peter Molnar (11759216)
+```{css, echo=FALSE}
+.answer_panel { margin-left: 40px; }
+
+.sub_details { margin-left: 60px; }
+```
+
+**Full Name:** 
+* Peter Molnar (11759216)
+* Lourenço Santos Moitinho de Almeida (12636622)
+
 
 **Online Assignments**: 
 There is a new online-assignments at the [DataCamp](https://www.datacamp.com). This online exercise, related to data visualization in **R**, e.g., by using the [*ggplot2*](https://CRAN.R-project.org/package=ggplot2) package. These exercises are useful to prepare yourself for the computer-lab. *The online-assignments at the DataCamp are not mandatory*.
@@ -255,11 +264,11 @@ ggplot( data = churn ) +
 <details>
   <summary>Answer</summary>
 
-The left plot depicts a barchart for `voice.plan`, with `churn` overlay, groupped by `voice.plan` categories. Those of voice plan holders represent themselves with 1300 customers, while those of non-holders with about 3700 customers.
+The left plot depicts a bar chart for `voice.plan`, with `churn` overlay, grouped by `voice.plan` categories. Those of voice plan holders represent themselves with 1300 customers, while those of non-holders about 3700 customers.
 
-The right plot is a standardised bar chart, and shows that approximately 8% of voice mail plan holders churn. For those who did not opt for voice mail plan, the churn rate is roughly twice as much, 16%.
+The right plot is a standardised bar chart, and shows that approximately 8% of voice mail plan holders churn. For those who did not opt for voice mail plan, the churn rate is approximately twice as much, 16%.
 
-Conclusively, churn rate is higher amongst customers who do not have voice mail plan, than for those who do have. `voice.plan` may have some explanation for the 14.14% churn rate, and hence we should expect that the data mining algorithm will include it in prediction model.
+Conclusively, churn rate is higher among customers who do not have voice mail plan, than for those who do have. `voice.plan` may have some explanation for the 14.14% churn rate, and hence we expect that the data mining algorithm will include it in prediction model.
   
 </details>
 
@@ -293,15 +302,15 @@ ggplot( data = churn ) +
 <details>
   <summary>Answer</summary>
 
-The first plot is a histogram of `customer.calls`, and it is positively skewed, whit a mean of `r mean(churn $ customer.calls)` call(s). The skewness of the data may be explained by that the majority of customers who contacts the customer service desk have their matter solved within one call, and hence there is no need for further calls.
+The first plot is a regular bar chart of `customer.calls`, and it shows positively a skewed distribtuion, whit a mean of `r mean(churn $ customer.calls)` number of calls. The skewness of the data may be explained by that the majority of customers who contacts the customer service desk had their issue resolved within one call, and hence there was no need for further calls.
 
-The second plot is similar to the first histogram, however, it adds `churn` overlay. Since it is challenging to read the proportions of the histogram we turn to the standardised histogram, that is the last plot.
+The second plot is similar to the first chart, however, it adds `churn` overlay. The overlay expresses the count of the specific `customer.calls` bar, how many have versus have not churned. Since it is challenging to read the proportions of the histogram we turn to the standardised chart, which is the last plot of this section.
 
-The standardised histogram depicts the proportions of churners vs non-churners for each histogram bar. We observe that that churn rate is fairly stable at around 11% for customers who had less than 3 customer service calls. The churn rate, however, at least quadruples for those contacting the customer service desk at least 4 times. It seems, that customers tolerance or satisfaction drops significantly as soon as they need to call at least 4 times the customer service.
+The standardised chart depicts the proportions of churners vs non-churners for each customer call counts. We observe that that churn rate is nearly constant at around 11% for customers who had 3 or less customer service calls. The churn rate, however, at least quadruples for those contacting the customer service desk at least 4 times. It seems, that customers tolerance or satisfaction drops significantly as soon as they need to call at least 4 times the customer service.
 
-It is worth to note, that the standardised and non-standardised plots must be used together, otherwise it may lead to misleading observations. Such as, if we did not take into account the non-stardardised histogram, then we would conclude that customers calling the service desk 9 times churn wiht certainty. However, this would be misleading, since there are only just a handful of 9 count observations.
+It is worth to note, that the standardised and non-standardised plots must be used together, otherwise it may lead to misleading observations. Such as, had we not taken into account the non-stardardised bar chart, then we would have concluded that customers calling the service desk 9 times churn with certainty. However, for this observation, the data is not representative, because of the low sample size - i.e, there are only a few customers with 9 customer services calls.
 
-Given the strong graphical evidence of predictive importance, it is expected that the data mining algorithm will include `service.calls` in the model.
+Given the strong graphical evidence of predictive importance of `customer.calls`, it is expected that the data mining algorithm will include `customer.calls` in the model.
 
 </details>
 
@@ -329,7 +338,7 @@ ggplot( data = churn ) +
 
 The above boxplots depict the locality, spread and skewness of `day.mins` grouped by `churn` categories.
 
-**Comparison of location:** For both `churn` categories, that is for churners and non-churners, the distribution is approximately symmetric. This finding bears with the advantage, that we can state that the distributions' mean and median are approximately at the same location. Knowing this, allows us to draw that the daily length of calls for churners is approximately on average 215 minutes. This number, is somewhat lower for those of non-churners — they spent on average around 190 minutes on phone calls daily.
+**Comparison of location:** For both `churn` categories, that is for churners and non-churners, the distribution is approximately symmetric. This finding bears with the advantage, that we can state that the distributions' mean and median are approximately at the same location. Knowing this, allows us to draw that the daily length of calls for churners is approximately on average 215 minutes. The length of the calls for those of non-churners is on average around 190 minutes a day.
 
 To allow for a more precise analysis, we need to plot the data as frequency density plot; the below code performs that.
 
@@ -339,13 +348,13 @@ ggplot( data = churn) +
 ```
 
 
-We observe, that churners show bimodality at two locations; at 160 minutes, and 270 minutes. That is, customers with daily phone calls of 160, and 270 minutes churn with the highest rate. Furthermore, we can read that customer churn rate increases as `day.mins` exceeds 200 minutes.
+We observe, that churners show bimodality; at 160 minutes, and 270 minutes. That is, customers with daily phone calls of 160, and 270 minutes churn with the highest rate. Furthermore, we can read that customer churn rate increases as `day.mins` exceeds 200 minutes.
 
 **Comparison of dispersion:** From the boxplots we read that the interquartile range for churners is approximately twice as large than for non-churners. Additionally, we read from the width of the whiskers, that the range of `day.mins` for churners is wider than for non-churners.
 
-**Comparison of skewness:** `day.mins` for churners is skewed to the left - churners spend more on phone calls, than non churners.
+**Comparison of skewness:** `day.mins` for churners is skewed to the left - churners spend more time on average on phone calls, than non-churners.
 
-**Comparison of potential outliers:** `day.mins`'s whisker spreads from the minima of the data to the maxima of it, and hence it does not have any outliers, or unusual values. This cannot be stated for non-churners, since they have potential outliers beyond the lower and upper whiskers.
+**Comparison of potential outliers:** `day.mins`'s whisker spreads from the minima of the data to the maxima, and hence it does not have any outliers, or unusual values. This cannot be stated for non-churners, since its boxplot reports potential outliers beyond the lower and upper whiskers.
 
 `day.minutes` seem to hold relevant information, and therefore we should expect the data mining algorithm to select this variable into the model.
 
@@ -395,17 +404,12 @@ The above boxplots depict the locality, spread and skewness of `intl.calls` grou
 
 **Comparison of dispersion:** The interquartile range for churners versus non-churners are reasonably similar, as well as the overall range of the data, seen by measuring the whisker lengths.
 
-**Comparison of skewness:** Both batches of data are positively skewed, however, for churners it is more severe than for non-churner. Meaning, that churners have a lower count of international calls than that of non-churners.
+**Comparison of skewness:** Both batch of data are positively skewed, however, for churners it is more than for non-churners. Meaning, that churners have a lower count of international calls than that of non-churners.
 
-**Comparison of potential outliers:** Both data contains upper outliers, however, nothing deterministic may be drawn from this observation.
+**Comparison of potential outliers:** Both data contains outliers beyond the upper whisker, however, nothing deterministic may be drawn from this observation.
 
 As a general conclusion, the above plots do not indicate strong graphical evidence of the predictive importance of international calls. Therefore, it may be that the data mining algorithm would not include it in the model.
 
-```{r}
-ggplot( data = churn) + 
-  geom_density( aes( x = intl.calls, fill = churn ), alpha = 0.3)
-```
-  
 </details>
 
 ## Detect Correlated Variables 
@@ -440,7 +444,7 @@ From the above correlation matrix we see that there are 4 problematic variables 
 
 Namely, `night.charge` is perfectly linearly correlated with `night.mins`, which does not come as surprise, since the former is a function of `night.mins`. The same holds true for `eve.mins` and `eve.charge`, `day.mins` and `day.charge`, and lastly `intl.mins` and `intl.charge`.
 
-Using correlated variables will overemphasize one data component, or at worst the data may become unstable and deliver unreliable results. Therefore we need to retain only one of the correlated ones.
+Using correlated variables will overemphasize one data component, or at worst the data may become unstable and deliver unreliable results. Therefore we need to retain only one of the correlated variables.
 
 </details>
 
@@ -514,27 +518,33 @@ Target variable:
 
 **Following Part 1, first, report the summary of the dataset then apply the Exploratory Data Analysis.**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
   
+  <details class="sub_details">
+    <summary>Summary of the `bank` dataset</summary>
+
+<h3>Summary of the `bank` dataset</h3>
+The below code reports a descriptive statistics of the `bank` dataset.    
+    
 ```{r}
 summary(bank)
 ```
   
-```{r}
-skim(bank)
-```
+  </details>
   
+  <details class="sub_details">
+    <summary>EDA of the target variable, `deposit`</summary>
+    
+<h3>EDA of the target variable, `deposit`</h3>
+
+The variable `deposit` is the target variable, and an indicator of whether the client subscribed to a term deposit or not.
+
+First, `deposit` is concluded in a table, and then plotted on a bar chart.
+
 ```{r}
-variable_list = c( "age", "job", "marital", "education", "default", "balance",
-                   "housing", "loan", "contact", "day", "month",  "duration",
-                   "campaign", "pdays", "previous", "poutcome", "deposit")
-
-ggcorr( data = bank[ , variable_list ], label = TRUE ) 
-
+addmargins( table( bank $ deposit, dnn = c( "Deposit" ) ) )
 ```
-
-<h3>EDA of `deposit`</h3>
 
 ```{r}
 ggplot( data = bank ) + 
@@ -542,41 +552,68 @@ ggplot( data = bank ) +
     labs( title = "Bar plot for the target variable 'deposit'" )  
 ```
 
-From the above bar chart and descriptive statistics we read that the deposit rate after the conducted marketing campaign is about 11.5%. Below we conduct an Exploratory Data Analysis as an attempt to find patterns and explanation for the target variable `deposit`.
+The table and bar chart above reports, that total number of customers that were reached out to is 4521 customers, which is the sum of the height of the bars. Out of the contacted customers, 521 subscribed, and 4000 did not. This comes down to a `r round(521 / 4521 * 100, 2)`% campaign success rate.
 
-We start the exploration of the `age` variable to see if age is deterministic of the deposit rate, and whether there is any focus group that the bank needs to focus on for the next campaign.
 
+  </details>
+  
+  <details class="sub_details">
+    <summary>EDA of `age`</summary>
+    
 <h3>EDA of `age`</h3>
 
-`age` is a discrete numerical variable, representing the age of the customer in the dataset. Below `age`is plotted as a density function groupped by `deposit` categories.
+`age` is a discrete numerical variable, representing the age of the customer in the dataset. Below `age`is plotted as a bar chart, so that we can observe the age distribution of those the campaign targeted. 
 
 ```{r}
-ggplot( data = bank) + 
-  geom_density( aes( x = age, fill = deposit ), alpha = 0.3)
+ggplot( data = bank ) +
+  geom_bar( aes( x = factor( age ) ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+We can report that the target group of the campaign was that of age between 23 and 60. However, we notice that the bank targeted the age range of 30 to 40 the most.
+
+Next, we plot `age` as a regular bar chart, with `deposit` overlay, and as a standardised bar chart with the same overlay.
+
+```{r}
+ggplot( data = bank ) + 
+  geom_bar( aes( x = age, fill = deposit ) ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
+
+ggplot( data = bank ) + 
+  geom_bar( aes( x = age, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
 
-The above graph shows similar characterisitcs for both depositors as well as non-depositors. We read that, customers under 30 and beyond 60 years of age are more likely to become a depositors than those of between 30 and 60 years of age.
+From the above plot we read that, that the target group specifically (those between age of 23 and 60) produced very similar outcomes. Even the mainly targeted age group of 30 to 40 years of age did not stand out with it high subscription rate. That is, on average the subscription rate is approximately 10%, which is only 1% point apart from the overall subscription rate of the campaign.
 
-To see if we are dealing with any unusual or outlier values, we plot `age` as boxplots for both `deposit` categories.
+Outside the target group, the campaign was more successful. Meaning, that under the age of 23 and beyond 60, the campaign shows at least 37.5% success rate on average. Meaning, if a customer falls in the age range of less than 23 or more than 60, the more likely he/she will subscribe.
+
+Next we plot the data as a boxplot, grouped by `deposit`.
 
 ```{r}
 ggplot( data = bank ) +
   geom_boxplot( aes( x = deposit, y = age ), fill = c( "red", "blue" ) ) 
 ```
 
-**Comparison of location:** The central location of the two boxplots are approximately shared at 40 years. It shows, that the median age for depositors, and non-depositors are approximately the same.
+**Comparison of location:** The central location of the two boxplots are approximately shared at 40 years. It shows, that the median age for depositors, as well as non-depositors are approximately the same.
 
-**Comparison of dispersion:** The interquartile range of non-depositors are shorter than that of depositors, and this in general holds for the overall range of age as well. That is, the age range for no depositors is narrower than for depositors.
+**Comparison of dispersion:** The interquartile range of non-depositors are smaller than that of depositors, and this in general holds for the overall age range as well. That is, the age range for no depositors is narrower than for depositors.
 
-**Comparison of skewness:** Per above, it was stated that for both groups, the data is positively skewed, that is the bulk of the data is towards range of data where customers are considered older.
+**Comparison of skewness:** Per above, it was stated that for both groups, the data is positively skewed, that is the bulk of the data is towards the
 
 **Comparison of potential outliers:** Both categeories report some outliers, however, non-depositors have about twice as many outliers than that of depositors.
 
-Based on the above two graphs, it is advised to include age in our data mining model, and specifically focus on age range of 30 to 60 years old customers as they tend to deposit less likely.
+Based on the above two graphs, we see significant graphical indication of the importance of `age`'s predictive importance. Therefore, we expect the data mining model to select this variable into the model.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `job`</summary>
 
 <h3>EDA of `job`</h3>
 
-We first plot `job` categories as a histogram with `deposit` overlay.
+`job` is a categorical variable and describes the type of job the customers have at the time of the campaign.
+
+We first plot `job` categories as a bar chart with `deposit` overlay, so that we can identify the specific target groups per occupation, and see their corresponding deposit rate. 
 ```{r}
 ggplot( data = bank ) +
   geom_bar( aes( x = factor( job ), fill = deposit ), position = "stack" ) +
@@ -584,9 +621,9 @@ ggplot( data = bank ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-From the above histogram we can distinguish 3 group of workers based on their frequency in the dataset. Those of total count greater than 750 are blue-collar workers, management personnel, and technicians. The second largest group are more than 375 in the dataset and of administrative workers, and those working in the service sector (to be revised!!). The third group is of every other occupation that represent themselves with less than 250 people.
+From the above bar chart we can distinguish 3 occupations that stand out in terms of frequency from the dataset. These are jobs of total count greater than 750. Namely, blue-collar workers, management personnel, and technicians. The second largest group are more than 375 counts in the dataset and are of administrative workers, and those working in the service sector. The third group is of every other occupation that represent themselves with less than 250 people.
 
-Given that the proportions are difficult to read, we standardise the histogram and replot it.
+We standardise the barchart above and replot it per below.
 
 ```{r}
 ggplot( data = bank ) +
@@ -595,15 +632,23 @@ ggplot( data = bank ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-From the standardised plot we read that the campaign was most effective amongst the following job categories: elderly people, students, and those of unknown occupation. This finding is confirmed by the previous variable, `age`, whereby we saw, that the depositor curve was above non-depositors for age below 30 and beyond 60 years of age.
+From the standardised plot we read that the campaign was most effective among the following job categories: retired, students, and those with unknown occupation. This finding coincides with the previous variable, `age`, whereby we saw, that the subscription rate was high age below 23 and beyond 60 years of age, which tends to be those who are students and elderly people.
 
-For the rest of the occupations, we see deposit rate ranging between 6% and 12%, however, the plot does not indicate strong graphical evidence of `job` being a general predictor for target variable `deposit`. (revise!)
+We further note, that the 3 most targeted job groups do not necessarily produce a favourable outcome for the campaign. That is, their subscription rate is low for blue-collar workers at around 5%, 12.5% for management personel and around 11% for those working in services. The latter two job categories do not deviate a significantly from the overall success rate of the campaign.
 
-Next, we move on to `marital` status.
+For the rest of the occupations, we see deposit rate ranging between 6% and 12%. Since we deemed `age` an important predictor, we claim that there is strong graphical indication for `job` being a relevant explanatory variable for target variable `deposit`. Therefore, we expect `job` to be included in the data mining model too. 
+
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `marital`</summary>
 
 <h3>EDA of `marital`</h3>
 
-We first plot marital status with `deposit` overlay, and then as a standardised histogram.
+The variable `marital` stands for marital status of the customer. The attribut can take either of the following stautses "married”, “divorced”, “single”, “divorced” which means divorced or widowed.
+
+We first plot marital status with `deposit` overlay, and then as a standardised bar chart to observe it there is any noticable pattern.
 
 ```{r}
 ggplot( data = bank ) +
@@ -615,17 +660,21 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
 
-From the above plots we see that the married customers are over-represented in the dataset with a count of approximately 2800. Singles are around 1200 in the dataset, while the rest approximately 500 customers are either divorced or widowed.
+From the above plots we see that those with married status are over-represented in the dataset with a count of approximately 2800. The dataset contains approximately 1200 singles, while the rest statuses are approximately 500 that are either divorced or widowed.
 
-The standardised plot allows us to read the deposit proportions among marital statuses; we read that the success rate of the campaign accross different relationship statuses are of similar, and ranges between 10% and 12%.
+The standardised plot allows us to read the deposit proportions among marital statuses; we read that the success rate of the campaign across different marital statuses are of similar, and ranges between 10% and 12%. We further interpret, that married customers are less keen on subscribing that those with either of the other marital statuses.
 
-The variable `martial` does not hold strong graphical indiciation of the predictive importance of marital status. Therefore it is likely that the data mining algorithm will not include in the making predictions with it.
+Since the the variable `martial` does not show strong graphical indication of predictive importance, it is likely that the data mining algorithm will not include it in the model.
 
-Next, we move on to `education`.
 
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `education`</summary>
+    
 <h3>EDA of `education`</h3>
 
-The `education` variable has four categories; "primary", "secondary", "tertiary" and an "unknown" category.
+The `education` variable has four categories; "primary", "secondary", "tertiary" and an "unknown".
 
 * Primary education or elementary education is typically the first stage of formal education.
 * Secondary education typically takes place after six years of primary education and is followed by higher education, vocational education or employment.
@@ -645,15 +694,22 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-The above 2 bar charts shows that customers with secondary educations are represented the most in the data set followed by that of tertiary education participants. The deposit rate is not clear from the regular bar chart, therefore, we analyse the standardised graph.
+The above bar charts show that customers with secondary educations are represented the most in the data set followed by tertiary education, and primary education participants.
 
-We report that those of tertiary education participants tend to deposit with 15% likelihood after the conducted campaign. The other 3 groups, `primary`, `secondary` and `unknown`, we see almost identical deposit rates, at around 10%.
+Upon analysing the standardised chart, we report that those with tertiary education tend to subscribe with higher likelihood than customers with different educational level. Additionally, we notice that the success rate of the campaign is almost identical for those with primary, secondary and unknown education.
 
-Next we move on to `default`.
+Although, the graphical evidence is not strong, but may  be significant enough to consider `education` as having predictive importance in the model.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `default`</summary>
 
 <h3>EDA of `default`</h3>
 
-We explore the `default` through bar charts with `deposit` overlay.
+The `default` variable is a binary attribute that stands for whether the customer has defaulted on hi/her credit or not.
+
+We explore the `default` through bar charts: first as a regular chart with `deposit` overlay, and then as standardised one.
 
 ```{r}
 ggplot( data = bank ) +
@@ -667,25 +723,27 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We read from the regular bar chart that those who did not default on their credit are over-represented in the dataset by 4445 customers, and only 76 defaulted.
+We read from the regular bar chart that those who did not default on their credit are over-represented in the dataset by 4445 customers, and only 76 have defaulted. It is understandable from the standpoint of the bank that they target those with good credit history, since those customers tend to be more reliable, and have the relevan financial means to subscribe for the deposit.
 
 The standardised chart reveals that there is no difference in the deposit rate between the two groups, therefore, the EDA of `default` is inconclusive. I.e., `default` does not indicate strong graphical evidence of any predictive importance. Therefore it is likely that the data mining algorithm will not include that in the prediction model.
 
-Next we move on to `balance`.
+  </details>
 
-
+  <details class="sub_details">
+    <summary>EDA of `balance`</summary>
+    
 <h3>EDA of `balance`</h3>
 
-`balance` is a continuous numeric variable, hence it is plotted as a histogram. 
+The `balance` attribute represents the average balance of the customer's account annually.
 
 ```{r}
 ggplot( bank ) +
     geom_histogram( mapping = aes( x = balance ))
 ```
 
-One's balance is closely related to their income, and since we know that income is a positively skewed distribution in general, we expect balance to be similar.
+One's balance is closely related to their income. The general consensus over income distribution is that it is positively skewed, we expect balance to be similarly shaped.
 
-From the above histogram we can confirm that balance is indeed positively skewed, with mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances. Therefore chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing overdraft, which occurs when money is withdrawn in excess of what is in a current account.
+From the above histogram we can confirm that balance is indeed positively skewed, with mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances, i.e., chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing an overdraft, which occurs when money is withdrawn in excess of what is in a current account.
 
 Balances around 0 dominate the data, but to see that rest of the distribution in more details we zoom into it by adjusting the limit of the y-axis to [0, 1000].
 
@@ -702,13 +760,9 @@ ggplot( data = bank ) +
   geom_boxplot( aes( x = balance))
 ```
 
-We recognise plenty of outliers, so to be able to interpret it, we need to handle outliers by means of imputation, and then replot the grap.
+We identify the outliers represented by the dots in the above plot. To draw any meaningful interpretation, we need to handle outliers by means of imputation, and then replot the graph.
 
 ```{r}
-ggplot( data = bank) + 
-  geom_density( aes( x = balance, fill = deposit ), alpha = 0.3)
-
-
 q1 = boxplot(bank $ balance)$stats[2, ]
 q3 = boxplot(bank $ balance)$stats[4, ]
 iqr = q3 - q1
@@ -720,22 +774,30 @@ bank = mutate( bank, balance = ifelse( balance < whisker_lower | balance > whisk
 bank $ balance = impute( bank $ balance, 'random' )
 
 ggplot( data = bank) + 
-  geom_density( aes( x = balance, fill = deposit ), alpha = 0.3)
+  geom_histogram( aes( x = balance, fill = deposit ), position = "stack") + 
+  scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
+
+The plotting of the imputed data shows symmetry. Also, we read from the chart above, that the count for the deposit follows the shape of the overall histogram, from which we infer that the deposit rate across the several balances is approximately constant. To confirm that, we plot it as a standardised histogram.
 
 ```{r}
-
+ggplot( data = bank) + 
+  geom_histogram( aes( x = balance, fill = deposit ), position = "fill") + 
+  scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
 
-From the above graph we see that the deposit rate is higher on customers who have at least approximately €400 euros in their bank account. The campaign is the least successful on customers with slight overdraft (-€200) and balance below €400.
+The above expectation set, is confirmed. The subscription rate of the campaign is between 9% and 12% and is approximately constant over the difference account balances. Therefore, there is no strong graphical evidence that `balance` is an important factor in determining `deposit`. Therefore, we do not expect the data mining algorithm to incorporate this `balance` in the model.
+  
+  
+  </details>
 
-There is sufficient graphical evidence of the predictive importance of balance, therefore, we can expect the data mining algorithm incorporate the `balance` variable in a model.
 
-Next, we move on `housing`.
+  <details class="sub_details">
+    <summary>EDA of `housing`</summary>
 
 <h3>EDA of `housing`</h3>
 
-Given that the `housing` is a binary variable, that stands for whether the person has a mortgage, we can first make a contingency table with the target variable, as well as plot `housing` as a barchart with `deposit` overlay.
+Given that the `housing` is a binary variable, that stands for whether the person has a mortgage, we can first make a contingency table with the target variable, as well as plot `housing` as a regular bar chart and a standardised one with `deposit` overlay.
 
 ```{r}
 addmargins( table( bank $ deposit, bank $ housing, dnn = c( "Deposit", "Housing" ) ) )
@@ -747,7 +809,7 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-Both the contingency table, and the bar chart gives away that those with housing loan represent the majority of customers. To be able to judge the proprtions between loan takers and deposit subscribers, we need to standardise the barchart.
+Both the contingency table, and the bar chart gives away that those with housing loan represent the majority of customers. To be able to judge the proprtions between loan takers and deposit subscribers, we move on to the standardised bar chart.
 
 ```{r}
 ggplot( data = bank ) +
@@ -755,9 +817,12 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We see that approximately, 15% of those without housing loan subscribe for the deposit deal, while only on 8.5% of loan holders the campaign is effective. The difference between subscribers with and without housing loan is approximately two fold, which constitute to a significant difference. Therefore, it is reasonable to assume that the data mining algorithm will incorporate `housing` into the model.
+We see that approximately, 15% of those without a mortgage subscribe for the deposit deal, while only on 8% of loan holders the campaign is effective. The difference between subscribers with and without housing loan is approximately two fold, which constitute to a significant difference. Therefore, it is reasonable to assume that the data mining algorithm will incorporate `housing` into the model.
 
-Next, we move on with `loan`.
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `loan`</summary>
 
 <h3>EDA of `loan`</h3>
 Similar to `housing`, `loan` is a binary variable as well, therefore we can follow the exact same analysis that we did for `housing`.
@@ -774,9 +839,9 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-From the above chart we see that approximately 3800 customers do not have a personal loan taken, which represents a significant majority of the customers, while the rest 700 do have a loan.
+From the above chart we see that approximately 3800 customers do not have a personal loan, which represents a significant majority of the customers, while the rest 700 do have a loan.
 
-The proportions from the regular bar chart is not clear, therefore, we generate the standardised equivalent of it.
+The proportions from the regular bar chart is not clear, therefore, we look at the standardised equivalent of the above chart.
 
 ```{r}
 ggplot( data = bank ) +
@@ -784,15 +849,18 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We read, that the success rate of the campaign among customers without personal loan is about 12.5%, while it is only 6% for those with personal loan. In this case the difference is more than two fold between the success rates, so `loan` we shall expect the data mining algorithm to count this variable in the model.
+We read, that the success rate of the campaign among customers without personal loan is about 12.5%, while it is only 6% for those with personal loan. In this case the difference is more than two fold between the success rates for the two groups, hence we shall expect the data mining algorithm to count `loan` in the model.
 
-Next we move on with variables related to the last contact of the current campaign.
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `contact`</summary>
 
 <h3>EDA of `contact`</h3>
 
-The `contact` variable describes the device on which the customer was contacted. There are 3 categories, that we interpret as follows: the cellular phone refers to the customers wireless mobile phone, while telephone to landline phone. The third category is unknown, which may be via indirect ways, such as brochures, billboards. 
+The `contact` variable describes the device on which the customer was contacted. There are 3 categories, that we interpret as follows: the cellular phone refers to the customers' wireless mobile phone, while telephone to landline phone. The third category is unknown, which may be via indirect ways, such as brochures, billboards etc.
 
-It is a categorical variable, hence we can plot it on barchart.
+It is a categorical variable, hence we can plot it on bar chart.
 
 ```{r}
 ggplot( data = bank ) +
@@ -809,15 +877,20 @@ ggplot( data = bank ) +
 ```
 
 
-The standardised chart shows that there is technically no difference between the success rate of cellular and mobile phones, however, the unknown category does not perform well.
+The standardised chart shows that there is technically no difference between the success rate of cellular and mobile phones, however, the campaign was is not deemed successful on the unknown group.
+
+Cellular and telephone performed beyond the overall campaign's success rate, therefore, it may be advised to the campaign team to allocate the resources from the unknown contact way to cellular of telephone to elevate the subscription rate.
 
 The above plot indicates strong graphical evidence of the predictive importance of the device, therefore, the data mining algorithm may as well select `contact` into the model.
 
-We continue the analysis with `day` and `month`.
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `day`</summary>
 
 <h3>EDA of `day`</h3>
 
-The `day` variable represent the given day in a month. When plotted as a barchart, we see the last contact day's frequency. We see that the contacts are the most frequent in the first 2/3 of the month. Towards the end of the month the campaign tunes down a bit. From the grap we cannot see the success rate precised, therefore, we next plot it as a standardised barchart.
+The `day` variable represent the given day in a month. When plotted as a bar chart, we see the last contact day's frequency.
 
 ```{r}
   ggplot( data = bank) +
@@ -825,16 +898,24 @@ The `day` variable represent the given day in a month. When plotted as a barchar
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
+We see that the contact points are more frequent in the first 2/3 of the month compared with the last 1/3 of it. We standardise the plot to be able to read the proportions of subscription rate precisely.
+
 ```{r}
   ggplot( data = bank) +
     geom_bar(aes( x = day, fill = deposit ), position = "fill" ) +
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
-We see little to no strong graphical evidence from the standardised chat that day may have predictive importance in `deposit`. It is also worth to note, the `day` is uniformly distributed only until the curernt month's 28th day. This is because, every month is at least 28 days, however, not every month have 30 days. Therefore, this distorts the above data, though it does not change on the verdict, according to which it has little to no predictive importance.
+
+From the standardised plot, we see little to no pattern that would allude graphical evidence that `day` may have predictive importance in `deposit`. There are few days, that stand out in terms of success, but it may very well be just random noise.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `month`</summary>
 
 <h3>EDA of `month`</h3>
 
-The `month` variable tells the last contact date in terms of month. First we plot it as a regual barchart to identify which month were the most aggressive from the viewpoint of the campaign. That is, which month has the highest frequency of contacts.
+The `month` variable indicates the last contact point in terms of month. First we plot it as a regular bar chart to identify the number of contact points made per month.
 
 ```{r}
   ggplot( data = bank) +
@@ -842,7 +923,7 @@ The `month` variable tells the last contact date in terms of month. First we plo
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We see, that There are 5 months that stand out clearly from the rest in terms of contact counts. These are namely May, June, July, August, and November. Next we standardise the chart to see the success rate of the campaign per month. 
+We see, that there are 5 months that are significantly different in terms of the number of contacts reached out to, and these are May, June, July, August, and November. These are the months, where the campaign was the most aggressive and reached out to many contacts. Next we standardise the chart to see the success rate of the campaign per month.
 
 ```{r}
   ggplot( data = bank) +
@@ -850,13 +931,17 @@ We see, that There are 5 months that stand out clearly from the rest in terms of
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We see from the above plot that March, October and November were the most successful months, and were able to campaign with nearly 50% success rate. A little bit behind are April and September with success rate of 20% and 30% respectively. The above plot indicates strong graphical evidence of the predictive importance of `month`.
+We see from the above plot that March, September, October and December were the most successful months, and were able to campaign with more than 40% success rate on average. With a little bit lower subscription rate are February and April; their respective success rate are 15% to 20%. We see that the above plot indicates strong graphical evidence of the predictive importance of `month`.
 
-Next, we move on with the analysis of `duration` variable.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `duration`</summary>
 
 <h3>EDA of `duration`</h3>
 
-The `duration` variable is the last contact's duration expressed in seconds. Since this variable is continuous, we plot it as a histogram with bin size of 60, because that represents 60 seconds, which is a minute.
+The `duration` variable is the last contact's duration expressed in seconds. We plot the data as a histogram with bin size of 60 seconds, so that each bar in the chart would represent a minute of duration.
 
 ```{r}
 ggplot( bank ) +
@@ -872,14 +957,14 @@ summary(bank $ duration)
 
 We can report that the mean duration of the phone calls were 264 seconds. We can see that 25% of customers kept the phone call under 104 seconds, 50% of them under 185 seconds while 75% just under 329 seconds.
 
-To identify outliers of the data, we will plot it as a boxplo groupped by `deposit`.
+To identify outliers of the data, we will plot it as a boxplot groupped by `deposit`.
 
 ```{r}
 ggplot( data = bank ) +
   geom_boxplot( aes(y = duration ) ) 
 ```
 
-The above boxplot identifies outliers beyond `r 329 + 1.5 * (329 - 104)` seconds. Any observation beyond that duration is deemed an outlier. Next, to deal with the outliers, we replace the outliers with NA, impute data, and finally replot it as a density graph groupped by `deposit`.
+The above boxplot identifies outliers beyond `r 329 + 1.5 * (329 - 104)` seconds. Any observation beyond that duration is deemed an outlier. Next, to deal with the outliers, we replace the outliers with NA, impute data, and finally re-plot the graph groupped by `deposit`.
 
 ```{r}
 q1 = boxplot(bank $ duration)$stats[2, ]
@@ -894,23 +979,50 @@ bank = mutate( bank, duration = ifelse( duration < whisker_lower | duration > wh
 bank $ duration = impute( bank $ duration, 'random' )
 
 ggplot( data = bank) + 
-  geom_density( aes( x = duration, fill = deposit ), alpha = 0.3)
+    geom_histogram( mapping = aes( x = duration, fill = deposit) , binwidth = 60 ) + 
+    scale_fill_manual( values = c( "red", "blue" ) )
 ```
-It is clear from the above graph, that calls that last less than approximately 220 seconds has no success in convincing the customer to subscribe for the deposit. Further, we identify the tendency that the longer the phone call lasts, the better the subscriber rate.
+It is worth to note, that the imputed data held its positively skewed shape, however, the the number of successful contacts per minute follows a symmetric distribution, with a peak at approximately 220 seconds.
 
-Next, we move on with the `campaign` variable. 
+Next we standardise the above histogram.
+
+```{r}
+ggplot( data = bank) + 
+    geom_histogram( mapping = aes( x = duration, fill = deposit) , position = "fill", binwidth = 60 ) + 
+    scale_fill_manual( values = c( "red", "blue" ) )
+```
+
+From the standardised histogram we clearly identify that the longer the duration of the call, the higher the proportion of subscribers for deposit.
+
+Therefore, there is a strong graphical evidence of the predictive importance of `duration`, so we expect the data mining algorithm to incorporate this variable into the model.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `campaign`</summary>
 
 <h3>EDA of `campaign`</h3>
 
-The `campaign` variable stands for the number of contacts performed during the campaign.
+The `campaign` variable stands for the number of contacts performed during the campaign for specific contacts.
 
-First we plot it on a bar chart, whereby we identify the distribution's positive skewness. That is, most of the bank customers were only contacted a few times. Furthermore we identify some outliers based on the width of the x-axis. To further deal with the outliers, we first plot the data on a boxplot identify the outliers, then mutate and impute the data and finally plot it as a density graph.
+First, we plot the data as a bar chart.
 
 ```{r}
 ggplot( data = bank) +
   geom_bar(aes( x = campaign, fill = deposit ), position = "stack" ) +
   scale_fill_manual( values = c( "red", "blue" ) )
+```
+We identify, that number of times customers were contacted is heavily positively skewed. That is, most of the targeted people were only contacted a few times. Furthermore, based on the width of the x-axis, we see a clear indication of outliers.
+To deal with the outliers, we first plot the data on a boxplot, confirm the existense of outliers, and only then mutate and impute the data and finally re-plot it.
 
+```{r}
+ggplot( data = bank ) +
+  geom_boxplot( aes( x = campaign) ) 
+```
+
+The above boxplot confirms the existene of outliers, represented by the dots beyond the right whisker.
+
+```{r}
 q1 = boxplot(bank $ campaign)$stats[2, ]
 q3 = boxplot(bank $ campaign)$stats[4, ]
 iqr = q3 - q1
@@ -922,23 +1034,35 @@ bank = mutate( bank, campaign = ifelse( campaign < whisker_lower | campaign > wh
 
 bank $ campaign = impute( bank $ campaign, 'random' )
 
-ggplot( data = bank) + 
-  geom_density( aes( x = campaign, fill = deposit ), alpha = 0.3)
+ggplot( data = bank) +
+  geom_bar(aes( x = campaign, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
+```
+We report that observations beyond count 6 contact points are eliminated, yet the original distribution skewness kept its shape. That it, after the imputation, the data shows that the majority of customers were reached out only a few times.
 
+Next we standardise the above distribution to report the subscription rate per the number of contact points in the campaign.
+
+```{r}
 ggplot( data = bank) +
   geom_bar(aes( x = campaign, fill = deposit ), position = "fill" ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
+The above plot shows that the subscription rate is approximately constant during the first 4 contact points, at around 10% on average. To be more precise, we see that the first contact point yield a bit over 12.5% success rate, while it drops to around 10% for the second and third call, and eventually picks up to again 12.5% for the fourth call.
 
-The above plot does not indicate strong graphical evidence of predictive importance of `campaign`.
+The major drop is after the fifth contact point, where the success rate is consistently below 10%
 
-Next, we move on with `pday`.
+Although there are some learning of the above graphs, the plot does not indicate strong graphical evidence of predictive importance of `campaign`.
+
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `pday`</summary>
 
 <h3>EDA of `pday`</h3>
 
-`pday` stands for the number of days passed since the customer was contacted. It may take on the value `-1`, that means that the customer was not contacted previously, and the current campaign contact is the first.
+`pday` stands for the number of days passed since the customer was last contacted. The field value may take on `-1`, which means that the customer was not contacted previously, and the current campaign contact is the first.
 
-First we plot the frequency of each day passed as a bar chart.
+First, we report the frequency of each day passed as a bar chart.
 
 ```{r}
   ggplot( data = bank) +
@@ -946,20 +1070,26 @@ First we plot the frequency of each day passed as a bar chart.
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We not only see that the values along the x-axis spreads out on a wide range but also, that there are a large quantity of `-1` observations, referring that the large amount of customers were not contacted previously.
+We not only see that the values along the x-axis spreads out on a wide range but also, that there are a significant overweight of `-1` observations, referring to that the the majority of customers were not contacted previously.
 
-To see the real distribution, we investigate a subset of customers who were contacted previously. That is, we filter out those with `pdays = -1`, and re-plot the graph as a bar chart and boxplot.
+It is an advised to filter out those contacts from the data who were not reached out earlier, otherwise we areunable to draw a meaningful conclusion whether the `pday` is deterministic for the outcome for `deposit`
+
+We achieve this by plotting `pdays` only for those who were reached out in the previous campaign.
 
 ```{r}
   ggplot( data = bank) +
     geom_bar( data = subset( bank, pdays != -1 ), aes( x = pdays, fill = deposit ), position = "stack" ) +
     scale_fill_manual( values = c( "red", "blue" ) )
+```
 
+Next, we plot a boxplot for the same observations, to see the outliers.
+
+```{r}
 ggplot( data = bank ) +
   geom_boxplot( data = subset( bank, pdays != -1 ), aes(y = pdays )) 
 ```
 
-The boxplot identifies some outliers, that we first replace by NA values and then impute them, and finally depict it as a line chart.
+The boxplot identifies some outliers, that we first replace by NA values and then impute them, and finally re-plot it as a bar chart.
 
 ```{r}
 bank2 = mutate( bank, pdays = ifelse( pdays == -1, NA, pdays ) ) 
@@ -976,23 +1106,27 @@ bank2 = mutate( bank2, pdays = ifelse( pdays < whisker_lower | pdays > whisker_u
 
 bank2 $ pdays = impute( bank2 $ pdays, 'random' )
 
-ggplot( data = bank2) + 
-  geom_density( aes( x = pdays), alpha = 0.3)
+ggplot( data = bank2) +
+  geom_bar( aes( x = pdays, fill = deposit ), position = "stack" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-From the imputed data we see, that the majority of customers who were contacted previously, were contacted again for a follow up contact between 100 and 350 days.
+From the imputed data we see, that the majority of customers who were contacted previously, were contacted again for a follow up call between 35 and 375 days.
 
-To see the success rate of each of the `pdays`, we plot it as a density plot groupped by `deposit`.
+To see the success rate of each of the `pdays`, we plot it as a bar chart grouped by `deposit`.
 
 ```{r}
-  ggplot( data = bank2) +
-    geom_bar(aes( x = pdays, fill = deposit ), position = "fill" ) +
-    scale_fill_manual( values = c( "red", "blue" ) )
+ggplot( data = bank2) +
+  geom_bar(aes( x = pdays, fill = deposit ), position = "fill" ) +
+  scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-Based on the above standardised graph, we see no strong graphical evidence of the predictive importantce of `pdays`. Therefore, we do not expect the data mining algorithm to include `pdays` in the model.
+Based on the above standardised graph, we see no strong graphical evidence of the predictive importance of `pdays`. Therefore, we do not expect the data mining algorithm to include `pdays` in the model.
 
-Next, we move on with `previous`.
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `previous`</summary>
 
 <h3>EDA of `previous`</h3>
 
@@ -1004,7 +1138,7 @@ The variable `previous` stands for the number of contacts performed before the c
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We see that the majority of the customers were not contacted previously. This observation coincides with the findings in `pdays` , since that also shown, that that the majority of the customers were not contacted.
+We see that the majority of the customers were not contacted previously. This observation coincides with the findings in `pdays`, where these observations were denoted by the value of `-1`.
 
 Next, we standardise the data.
 
@@ -1014,15 +1148,19 @@ Next, we standardise the data.
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-From the above plot we read, that until the first 15 contacts, on average the success rate increase. That is, the more call is directed towards the customer, the higher the chance the customer subscribes. (revise!)
+From the above plot we read, that the more the customer were contacted in the previous campaign but less than 10 times, then on average the likelihood of subscribing is higher for the current campaign. Although there are some valleys in the deposit rate for `previous` within the range of [0, 10], but the overall trend is upward sloping.
 
-Although, the finding above is not strong but considerable, we can expect the data mining algorithm to include it in the model.
+In this case, we find strong enough graphical evidence that previous is may serve as a good predictor for `deposit`, and hence expect the data mining algorithm to incorporate `previous` in the model.
 
-Finally, we move on with `poutcome`.
 
+  </details>
+
+  <details class="sub_details">
+    <summary>EDA of `poutcome`</summary>
+    
 <h3>EDA of `poutcome`</h3>
 
-`poutcome` represents the outcome of the previous campaign.
+`poutcome` represents the outcome of the previous campaign, and can take on either of the following 4 values: "failure", "success", "unknown", "other".
 
 We first plot it as a bar chart. 
 
@@ -1031,7 +1169,7 @@ We first plot it as a bar chart.
     geom_bar(aes( x = poutcome, fill = deposit ), position = "stack" ) +
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
-We see that the unknown category has the highest count. This category is likely to represent the customers that were not contacted previously, therefore, is coincides with data of `pdays` and `previous`.
+We see that the unknown category has the highest count, which again is likely to represent the customers that were not contacted previously, and thereby coincides with data of `pdays` and `previous`.
 
 Next, we plot `poutcome` as a standardised bar chart.
 
@@ -1041,7 +1179,28 @@ Next, we plot `poutcome` as a standardised bar chart.
     scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We interpret the above graph as that those previously subscribed for the deposit are more likely to subscribe again. The above plot indicate strong graphical evidence of the predictive importance of `poutcome`. The data mining algorithm will include `poutcome` in the model.
+We interpret the above graph as that those previously subscribed for the deposit are more likely to subscribe again in the current campaign. The above plot indicates strong graphical evidence of the predictive importance of `poutcome`, and so the data mining algorithm will include `poutcome` in the model.
+
+  </details>
+  
+  <details>
+    <summary>Conclusion</summary>
+    <h3>Conclusion</h3>
+    
+In the above exploratory data analysis we analysed 17 variables, out of which we found the following ones graphically indicative enough to consider as a relevant predictor for `deposit`.
+
+* `age`: Customers under age of 23 or above 60 are more likely to subscribe.
+* `job`: Customers with unknown, student or retired occupation are the most likely to deposit. Next to that, customers with administrative, housemaid, management, or technician occupation are the second most likely to deposit.
+* `education`: Customers with tertiary educational background are the most likely to subscribe for the deposit deal.
+* `housing`: Customers with mortgage tend to subscribe twice as likely as those without a mortgage.
+* `loan`: Customers with personal loan tend to subscribe twice as likely as those without a personal loan
+* `contact`: Customers reached out via cellular or telephone tend to be a subscriber more than those reached by unknown means. 
+* `month`: Customers that were contacted last in March, September, October or December are the most likely to respond positively to the campaign and subscribe.
+* `duration`: The higher the duration of the phone call, the more likely the customer subscribes.
+* `previous`: The more times the customer was contacted in the previous campaign (but less than 10 times), the more likely he/she will subscribe in the current campaign.
+* `poutcome`: If the customer subscribed for the deal in the previous campaign, it is likely the he/she will do it again in the current campaign.
+    
+  </details>
 
 </details>
 
