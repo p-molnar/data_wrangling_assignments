@@ -444,7 +444,7 @@ From the above correlation matrix we see that there are 4 problematic variables 
 
 Namely, `night.charge` is perfectly linearly correlated with `night.mins`, which does not come as surprise, since the former is a function of `night.mins`. The same holds true for `eve.mins` and `eve.charge`, `day.mins` and `day.charge`, and lastly `intl.mins` and `intl.charge`.
 
-Using correlated variables will overemphasize one data component, or at worst the data may become unstable and deliver unreliable results. Therefore we need to retain only one of the correlated variables.
+Using correlated variables will overemphasize one data component, or at worst the data may become unstable and deliver unreliable results. Therefore we need to retain only one of the correlated variables. Furthermore, including highly correlated variables would result in multicollinearity which would result in unreliable regression model coefficients. 
 
 </details>
 
@@ -552,7 +552,7 @@ ggplot( data = bank ) +
     labs( title = "Bar plot for the target variable 'deposit'" )  
 ```
 
-The table and bar chart above reports, that total number of customers that were reached out to is 4521 customers, which is the sum of the height of the bars. Out of the contacted customers, 521 subscribed, and 4000 did not. This comes down to a `r round(521 / 4521 * 100, 2)`% campaign success rate.
+The table and bar chart above reports, that total number of customers that were reached out to was 4521 customers, which is the sum of the height of the bars. Out of the contacted customers, 521 subscribed, and 4000 did not. This comes down to a `r round(521 / 4521 * 100, 2)`% campaign success rate.
 
 
   </details>
@@ -583,7 +583,7 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
 
-From the above plot we read that, that the target group specifically (those between age of 23 and 60) produced very similar outcomes. Even the mainly targeted age group of 30 to 40 years of age did not stand out with it high subscription rate. That is, on average the subscription rate is approximately 10%, which is only 1% point apart from the overall subscription rate of the campaign.
+From the above plot we read that the target group specifically those between age of 23 and 60 produced very similar outcomes. Even the mainly targeted age group of 30 to 40 years of age did not stand out with its high subscription rate. That is, on average the subscription rate is approximately 10%, which is only 1% point apart from the overall subscription rate of the campaign.
 
 Outside the target group, the campaign was more successful. Meaning, that under the age of 23 and beyond 60, the campaign shows at least 37.5% success rate on average. Meaning, if a customer falls in the age range of less than 23 or more than 60, the more likely he/she will subscribe.
 
@@ -594,15 +594,15 @@ ggplot( data = bank ) +
   geom_boxplot( aes( x = deposit, y = age ), fill = c( "red", "blue" ) ) 
 ```
 
-**Comparison of location:** The central location of the two boxplots are approximately shared at 40 years. It shows, that the median age for depositors, as well as non-depositors are approximately the same.
+**Comparison of location:** The central location of the two boxplots are approximately shared at 40 years of age. It shows, that the median age for depositors, as well as non-depositors are approximately the same.
 
 **Comparison of dispersion:** The interquartile range of non-depositors are smaller than that of depositors, and this in general holds for the overall age range as well. That is, the age range for no depositors is narrower than for depositors.
 
-**Comparison of skewness:** Per above, it was stated that for both groups, the data is positively skewed, that is the bulk of the data is towards the
+**Comparison of skewness:** Per above, it was stated that for both groups, the data is positively skewed.
 
 **Comparison of potential outliers:** Both categeories report some outliers, however, non-depositors have about twice as many outliers than that of depositors.
 
-Based on the above two graphs, we see significant graphical indication of the importance of `age`'s predictive importance. Therefore, we expect the data mining model to select this variable into the model.
+Based on the above two graphs, we see significant graphical indication of the importance of `age`'s predictive importance. Therefore, we expect the data mining model to include this variable into the model.
 
   </details>
 
@@ -621,9 +621,9 @@ ggplot( data = bank ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-From the above bar chart we can distinguish 3 occupations that stand out in terms of frequency from the dataset. These are jobs of total count greater than 750. Namely, blue-collar workers, management personnel, and technicians. The second largest group are more than 375 counts in the dataset and are of administrative workers, and those working in the service sector. The third group is of every other occupation that represent themselves with less than 250 people.
+From the above bar chart we can distinguish 3 occupations that stand out in terms of frequency from the dataset. These are jobs of total count greater than 750. Namely, blue-collar workers, management personnel, and technicians. The second largest group has more than 375 counts in the dataset and are of administrative workers, and those working in the service sector. The third group is of every other occupation that represent themselves with less than 250 people.
 
-We standardise the barchart above and replot it per below.
+We standardise the barchart above and replotted it below.
 
 ```{r}
 ggplot( data = bank ) +
@@ -646,9 +646,9 @@ For the rest of the occupations, we see deposit rate ranging between 6% and 12%.
 
 <h3>EDA of `marital`</h3>
 
-The variable `marital` stands for marital status of the customer. The attribut can take either of the following stautses "married”, “divorced”, “single”, “divorced” which means divorced or widowed.
+The variable `marital` stands for marital status of the customer. The attribute can take either of the following stautses "married”, “divorced”, “single”, “divorced” which means divorced or widowed.
 
-We first plot marital status with `deposit` overlay, and then as a standardised bar chart to observe it there is any noticable pattern.
+We first plot marital status with a `deposit` overlay, and then standardised in a bar chart to observe it there are any noticeable patterns.
 
 ```{r}
 ggplot( data = bank ) +
@@ -662,9 +662,9 @@ ggplot( data = bank ) +
 
 From the above plots we see that those with married status are over-represented in the dataset with a count of approximately 2800. The dataset contains approximately 1200 singles, while the rest statuses are approximately 500 that are either divorced or widowed.
 
-The standardised plot allows us to read the deposit proportions among marital statuses; we read that the success rate of the campaign across different marital statuses are of similar, and ranges between 10% and 12%. We further interpret, that married customers are less keen on subscribing that those with either of the other marital statuses.
+The standardised plot allows us to read the deposit proportions among marital statuses; we read that the success rate of the campaign across different marital statuses are similar with ranges between 10% and 12%. We further interpret, that married customers are less keen on subscribing than those with either of the other marital statuses.
 
-Since the the variable `martial` does not show strong graphical indication of predictive importance, it is likely that the data mining algorithm will not include it in the model.
+Since the variable `martial` does not show strong graphical indication of predictive importance, it is likely that the data mining algorithm will not include it in the model.
 
 
   </details>
@@ -698,7 +698,7 @@ The above bar charts show that customers with secondary educations are represent
 
 Upon analysing the standardised chart, we report that those with tertiary education tend to subscribe with higher likelihood than customers with different educational level. Additionally, we notice that the success rate of the campaign is almost identical for those with primary, secondary and unknown education.
 
-Although, the graphical evidence is not strong, but may  be significant enough to consider `education` as having predictive importance in the model.
+Although, the graphical evidence is not strong it is difficult to conclude whether or not the variable `education` is significant enough to include in the model.
 
   </details>
 
@@ -707,9 +707,9 @@ Although, the graphical evidence is not strong, but may  be significant enough t
 
 <h3>EDA of `default`</h3>
 
-The `default` variable is a binary attribute that stands for whether the customer has defaulted on hi/her credit or not.
+The `default` variable is a binary attribute that stands for whether the customer has defaulted on his/her credit or not.
 
-We explore the `default` through bar charts: first as a regular chart with `deposit` overlay, and then as standardised one.
+We explore the `default` through bar charts: first as a regular chart with a `deposit` overlay, and then as a standardised bar chart.
 
 ```{r}
 ggplot( data = bank ) +
@@ -723,7 +723,7 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We read from the regular bar chart that those who did not default on their credit are over-represented in the dataset by 4445 customers, and only 76 have defaulted. It is understandable from the standpoint of the bank that they target those with good credit history, since those customers tend to be more reliable, and have the relevan financial means to subscribe for the deposit.
+We read from the regular bar chart that those who did not default on their credit are over-represented in the dataset by 4445 customers, and only 76 have defaulted. It is understandable from the standpoint of the bank that they target those with good credit history since those customers tend to be more reliable and have the necessary financial means to subscribe for the deposit.
 
 The standardised chart reveals that there is no difference in the deposit rate between the two groups, therefore, the EDA of `default` is inconclusive. I.e., `default` does not indicate strong graphical evidence of any predictive importance. Therefore it is likely that the data mining algorithm will not include that in the prediction model.
 
@@ -743,7 +743,7 @@ ggplot( bank ) +
 
 One's balance is closely related to their income. The general consensus over income distribution is that it is positively skewed, we expect balance to be similarly shaped.
 
-From the above histogram we can confirm that balance is indeed positively skewed, with mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances, i.e., chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing an overdraft, which occurs when money is withdrawn in excess of what is in a current account.
+From the above histogram we can confirm that balance is indeed positively skewed, with a mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances, i.e., chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing an overdraft, which occurs when money is withdrawn in excess of what is in a current account.
 
 Balances around 0 dominate the data, but to see that rest of the distribution in more details we zoom into it by adjusting the limit of the y-axis to [0, 1000].
 
@@ -753,7 +753,7 @@ ggplot( bank ) +
   coord_cartesian( ylim = c( 0, 1000 ) )
 ```
 
-Unfortunately the zoomed in part does not provide necessarily more information but confirms the existence of outliers around €40000 and and €70000. To see the potential outliers, we plot `balance` as a boxplot.
+Unfortunately the zoomed in part does not provide necessarily more information but confirms the existence of outliers between the range of €40000 and €70000. To see the potential outliers, we plot `balance` as a boxplot.
 
 ```{r}
 ggplot( data = bank ) +
@@ -786,7 +786,7 @@ ggplot( data = bank) +
   scale_fill_manual( values = c( "red", "blue" ) ) 
 ```
 
-The above expectation set, is confirmed. The subscription rate of the campaign is between 9% and 12% and is approximately constant over the difference account balances. Therefore, there is no strong graphical evidence that `balance` is an important factor in determining `deposit`. Therefore, we do not expect the data mining algorithm to incorporate this `balance` in the model.
+The above expectation set is confirmed. The subscription rate of the campaign is between 9% and 12% and is approximately constant over the difference account balances. Therefore, there is no strong graphical evidence that `balance` is an important factor in determining `deposit`. Therefore, we do not expect the data mining algorithm to incorporate the `balance` variable in the model.
   
   
   </details>
@@ -797,7 +797,7 @@ The above expectation set, is confirmed. The subscription rate of the campaign i
 
 <h3>EDA of `housing`</h3>
 
-Given that the `housing` is a binary variable, that stands for whether the person has a mortgage, we can first make a contingency table with the target variable, as well as plot `housing` as a regular bar chart and a standardised one with `deposit` overlay.
+Given that the `housing` is a binary variable, that stands for whether the person has a mortgage, we can first make a contingency table with the target variable, as well as plot `housing` as a regular bar chart then standardised it with a `deposit` overlay.
 
 ```{r}
 addmargins( table( bank $ deposit, bank $ housing, dnn = c( "Deposit", "Housing" ) ) )
@@ -817,7 +817,7 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We see that approximately, 15% of those without a mortgage subscribe for the deposit deal, while only on 8% of loan holders the campaign is effective. The difference between subscribers with and without housing loan is approximately two fold, which constitute to a significant difference. Therefore, it is reasonable to assume that the data mining algorithm will incorporate `housing` into the model.
+We see that approximately 15% of those without a mortgage subscribe for the deposit deal, while only 8% of loan holders subscribe. The difference between subscribers with and without housing loan is approximately two fold, which constitute to a significant difference. Therefore, it is reasonable to assume that the data mining algorithm will incorporate `housing` into the model.
 
   </details>
 
@@ -849,7 +849,7 @@ ggplot( data = bank ) +
   scale_fill_manual( values = c( "red", "blue" ) )
 ```
 
-We read, that the success rate of the campaign among customers without personal loan is about 12.5%, while it is only 6% for those with personal loan. In this case the difference is more than two fold between the success rates for the two groups, hence we shall expect the data mining algorithm to count `loan` in the model.
+We read, that the success rate of the campaign among customers without a personal loan is about 12.5%, while it is only 6% for those with a personal loan. In this case the difference is more than two fold between the success rates for the two groups, hence we shall expect the data mining algorithm to include `loan` in the model.
 
   </details>
 
@@ -1191,9 +1191,9 @@ In the above exploratory data analysis we analysed 17 variables, out of which we
 
 * `age`: Customers under age of 23 or above 60 are more likely to subscribe.
 * `job`: Customers with unknown, student or retired occupation are the most likely to deposit. Next to that, customers with administrative, housemaid, management, or technician occupation are the second most likely to deposit.
-* `education`: Customers with tertiary educational background are the most likely to subscribe for the deposit deal.
-* `housing`: Customers with mortgage tend to subscribe twice as likely as those without a mortgage.
-* `loan`: Customers with personal loan tend to subscribe twice as likely as those without a personal loan
+* `education`: Customers with a tertiary educational background are the most likely to subscribe for the deposit deal.
+* `housing`: Customers with a mortgage tend to subscribe twice as likely as those without a mortgage.
+* `loan`: Customers with a personal loan tend to subscribe twice as likely as those without a personal loan.
 * `contact`: Customers reached out via cellular or telephone tend to be a subscriber more than those reached by unknown means. 
 * `month`: Customers that were contacted last in March, September, October or December are the most likely to respond positively to the campaign and subscribe.
 * `duration`: The higher the duration of the phone call, the more likely the customer subscribes.
