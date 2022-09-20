@@ -1,0 +1,266 @@
+---
+title: "<center> Exercises of Week 3 - Statistical Inference & Hypothesis testing <center>"
+author: '<center> Reza Mohammadi <center>'
+date: '<center> `r Sys.Date()` <center>'
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 7
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, 
+                         comment = " ", error = FALSE, fig.align = 'center'  )
+```
+
+**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+  
+**Online Assignments**: 
+There is a new online-assignment at the [DataCamp](https://www.datacamp.com). These exercises are useful to prepare yourself for the computer-lab. *The online-assignments at the DataCamp are not mandatory*.
+
+**Your task** is to answer the questions in this R-markdown file. Submit both your R-markdown (.Rmd) file and the HTML file on Canvas. 
+
+# Practical Examples for Statistical Inference
+
+Download the file *Practial_Examples_week3.Rmd* at the [Canvas > Modules > Week3 - Statistical Inference and Hypothesis Testing](https://canvas.uva.nl/courses/27164/modules#module_216114).
+
+This file includes several examples (with the R code) regarding the lecture of this week; see the slides of Week 3. Open the file in RStudio and create the HTML file for this file. Try to understand how it works and interpret the outputs. 
+
+# Exercises: Hypothesis test and Confidence Interval (100 points)
+
+**Your task** is to answer the following questions (in this part) in this R-markdown file. Please upload both your R-markdown ( .Rmd file) and the HTML files separately on Canvas. 
+
+Here, we use the following datasets: 
+
+* *churn*: which is the same dataset that we've used for the Explonatry Data Analysis on week 2. You can find the description on the dataset [here](https://rdrr.io/cran/liver/man/churn.html).
+* *bank*: which is related to direct marketing campaigns of a Portuguese banking institution. You can find the description on the dataset [here](https://rdrr.io/cran/liver/man/bank.html).
+* *advertising*: which is related to the Social Media Ad Campaign marketing. You can find the description on the dataset [here](https://www.kaggle.com/loveall/clicks-conversion-tracking).
+
+These datasets are available in the [**liver**](https://CRAN.R-project.org/package=liver) package. Here, we first load the **liver** and **ggplot2** packages:
+```{r}
+library( liver   )   
+library( ggplot2 )   
+```
+
+Now, we import the datasets as follows
+```{r}
+data( churn )  
+data( bank  )  
+data( advertising )  
+```
+
+## Overview of the *churn* dataset
+
+To see the overview of the dataset in **R**, we could use the following functions: 
+
+* `str`  to see a compact display of the structure of the data. 
+* `head` to see the first part of the data (first 6 rows of the data).
+* `summary` to see the summary of each variable.
+
+Here we use the `str` function to see the structure of the *churn* dataset as follows:
+
+```{r}
+str( churn )
+```
+
+a. **Specify the number of variables and the number of observations?**
+
+b. **Name the binary, nominal, and numerical variables in this dataset.**
+
+c. **By using the `summary` function report the summary of the *churn* dataset.**
+
+## Confidence interval for mean
+
+We are interested to know the 95% confidence interval for the population mean of the variable “customer.calls”. In **R**, by using function `t.test`, we can have a confidence interval for the population mean as follows
+
+```{r}
+t.test( x = churn $ customer.calls, conf.level = 0.95 ) $ "conf.int"
+```
+
+**Report the 95% confidence interval? What is your interpretation of this confidence interval?**
+
+## Confidence interval for mean
+
+Data analysts often perform subgroup analyses. This is, to estimate the behavior of specific subsets of customers instead of the entire customer base.
+
+Here, in the *churn* dataset, we want to estimate the mean number of customer service call for customers who have both options *International Plan* and the *Voice Mail Plan* also called the company more than 220 minutes during the days.
+
+Since we want to work with the subset of the dataset for customers with the International Plan and the Voice Mail Plan and who have more than 220 day minutes. By the following code we create a subset of the data:
+
+```{r}
+sub_data = subset( churn, ( intl.plan == "yes" ) & ( voice.plan == "yes" ) & ( day.mins > 220 ) ) 
+```
+
+Now, by using the function `t.test` we run our two-sided hypothesis test as following with a level of significance $\alpha$=0.05
+
+```{r}
+t.test( x = sub_data $ customer.calls, conf.level = 0.95 ) $ "conf.int"
+```
+
+**Report the 95% confidence interval? What is your interpretation of this confidence interval?**
+
+## Hypothesis testing for mean
+
+Here, based on the churn dataset, we want to test whether the mean number of Customer Service Calls for customers with the International Plan and the Voice Mail Plan and who have more than 220 day minutes differs from 2.4, with a level of significance $\alpha$=0.05.
+
+In this case, our hypothesis is:
+
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \mu = 2.4 \\
+          H_a:  \mu \neq 2.4
+\end{matrix}
+\]
+
+Since we want to work with the subset of the dataset for customers with the International Plan and the Voice Mail Plan and who have more than 220 day minutes. By the following code we create a subset of the data:
+
+```{r}
+sub_data = subset( churn, ( intl.plan == "yes" ) & ( voice.plan == "yes" ) & ( day.mins > 220 ) ) 
+```
+
+Now, by using the function `t.test` we run our two-sided hypothesis test as following with a level of significance $\alpha$=0.05
+
+```{r}
+t.test( x = sub_data $ customer.calls, 
+        mu = 2.4, 
+        alternative = "two.sided", 
+        conf.level = 0.95 )
+```
+
+**Report the value of *p*-value. Explain you accept or reject the null hypothesis, at $\alpha=0.05$.**
+
+## Hypothesis testing for mean
+
+For the variable “customer.calls”, we are interested to test whether the mean number of customer service calls differs from 1.5. Set the level of significance to be 0.05. 
+
+Our hypothesis is two-side test as follow
+\[
+\bigg\{
+\begin{matrix}
+    H_0: \mu = 1.5   \\
+    H_a: \mu \neq 1.5 
+\end{matrix}
+\]
+
+and the level of significance is $\alpha = 0.05$ thus confidence level is $1-\alpha =0.95$.
+
+```{r}
+t.test( x = churn $ customer.calls, 
+        mu = 1.5, 
+        alternative = "two.sided", 
+        conf.level = 0.95 )
+```
+
+**Report the value of *p*-value. Explain you accept or reject the null hypothesis, at $\alpha=0.05$.**
+
+## Hypothesis testing for mean
+
+For the variable “customer.calls”, we want to test whether the mean number of customer service calls is greater than 1.5. Set the level of significance to be 0.01.
+
+Our hypothesis is right-tailed test as follow
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \mu \leq 1.5 \\
+          H_a:  \mu > 1.5
+\end{matrix}
+\]
+
+Note that the alternative hypothesis is the claim to be tested. The level of significance is $\alpha = 0.01$ thus confidence level is $1-\alpha =0.99$.
+
+```{r}
+t.test( x = churn $ customer.calls, 
+        mu = 1.5, 
+        alternative = "greater", 
+        conf.level = 0.99 )
+```
+
+**Report the value of *p*-value. Explain you accept or reject the null hypothesis, at $\alpha=0.01$.**
+
+## Confidence interval for proportion
+
+We are interested to know a 95% confidence interval for the population mean of the 
+proportion $\pi$ of churners among the entire population of the company’s customers. 
+
+In **R**, by using function `prop.test`, we can have a confidence interval for the proportion $\pi$ of the population as follows
+
+```{r}
+prop.test( table( churn $ churn ), conf.level = 0.95 ) $ "conf.int"
+```
+
+**Report the 95% confidence interval? What is your interpretation of this confidence interval?**
+
+## Hypothesis testing for proportion
+
+In the *churn* dataset, the target variable is the *churn* variable. For this variable we want to test at $\alpha=0.01$ weather the proportion of customer churn $\pi$ is less than 0.14.
+
+Note that the alternative hypothesis is the claim to be tested. The level of significance is $\alpha = 0.01$ thus confidence level is $1-\alpha =0.99$. In **R**, for the hypothesis testing of proportion we use the `prop.test` function as follows: 
+
+```{r}
+prop.test( table( churn $ churn ), 
+           p = 0.14, 
+           alternative = "less", 
+           conf.level = 0.99 )
+```
+
+a. **Specify the null and alternative hypotheses?**
+
+b. **Explain you accept or reject the null hypothesis, at $\alpha=0.01$.**
+
+## Two-Sample T-Test
+
+In the churn dataset, is there a relationship between the target variable (churn) and the variable "*customer service call*" (`customer.calls`)?
+
+We run the two-sample t-test for the difference in means for the number of international calls of churners and non-churners as follow:
+
+```{r}
+t.test( customer.calls ~ churn, data = churn )
+```
+
+a. **Report the hypotheses $H_0$ and $H_1$. Report the value of *p*-value. Explain you accept or reject the null hypothesis, at $\alpha=0.05$.**
+
+b. **What conclusions can be drawn regarding "a relationship between the two varibles".**
+
+## Correlation Test
+
+In the *advertising* dataset, test whether there is a *positive* relationship between the target variable “`approved`” and the variable “`spend`” with $\alpha=0.025$. 
+
+For the correlation test, we use the function `cor.test` as follows
+
+```{r}
+cor.test( x = advertising $ spend, y = advertising $ approved, 
+          alternative = "greater", conf.level = 0.975 )
+```
+
+a. **Report the hypotheses $H_0$ and $H_1$. Report the value of *p*-value. Explain you accept or reject the null hypothesis, at $\alpha=0.025$.**
+
+b. **What conclusions can be drawn regarding "a *positive* relationship between the two variables".**
+
+## Hypothesis testing for mean
+
+In the *churn* dataset, for the variable “day.mins”, test whether the mean number of "Day Minutes" is greater than 180. Set the level of significance to be 0.05.
+
+## Hypothesis testing for proportion
+
+In the *churn* dataset, for the variable "`intl.plan`" test at $\alpha=0.05$ weather the proportion of customers who have international plan is less than 0.15.
+
+## Hypothesis testing for proportion
+
+In the *churn* dataset, test whether there is a relationship between the target variable “`churn`” and the variable “`intl.charge`” with $\alpha=0.05$. 
+
+## Chi-Square Test
+
+In the *bank* dataset, test whether there is a relationship between the target variable “`deposit`” and the variable “`education`” with $\alpha=0.05$. 
+
+# **Bonus**: Hypothesis testing for your own dataset (30 points)
+
+In this part, apply hypothesis testing to test whether there is a relationship between the target variable and potential predictors in your dataset.
+
+
