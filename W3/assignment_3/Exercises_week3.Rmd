@@ -81,7 +81,7 @@ a. **Specify the number of variables and the number of observations?**
 
 <details class="answer_panel">
   <summary>Answer a</summary>
-The `churn` dataset contains 20 variables, and 5000 observations.
+The `churn` dataset, as a data frame, contains 5000 rows (customers/observations) and 20 columns (variables/features).
   
 </details>
 
@@ -125,7 +125,7 @@ t.test( x = churn $ customer.calls, conf.level = 0.95 ) $ "conf.int"
 
 **Confidence interval:** $\mu \in [1.534181, 1.606619]$
 
-**Interpretation:** There is $95\%$ probability that the true population mean is included in $[1.534181, 1.606619]$.
+**Interpretation:** We are $95\%$ confident that the true population mean is included in the range $[1.534181, 1.606619]$.
 
 </details>
 
@@ -155,7 +155,7 @@ t.test( x = sub_data $ customer.calls, conf.level = 0.95 ) $ "conf.int"
 
 **Confidence interval:** $\mu \in [0.9084033, 2.0915967]$
 
-**Interpretation:** There is $95\%$ probability that the true population mean is included in $[0.9084033, 2.0915967]$.
+**Interpretation:** We are $95\%$ confident that the true population mean is included in the range $[0.9084033, 2.0915967]$.
 
 
 </details>
@@ -197,7 +197,7 @@ t.test( x = sub_data $ customer.calls,
 
 **p-value:** $0.003926 = 0.3926\%$
 
-**Statistical conclusion:** Given that p-value = $0.3926\%$ < $\alpha/2 = 2.5\%$, there is sufficient evidence found to reject the $H_0$, and infer that population mean of the number of customer service calls is different from $2.4$.
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $0.3926\%$ < $\frac{\alpha}{2}= 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population mean of the number of customer service calls is different from $2.4$ calls.
 
 </details>
 
@@ -231,7 +231,7 @@ t.test( x = churn $ customer.calls,
 
 **p-value:** $0.0001403 = 0.01403\%$
 
-**Statistical conclusion:** Given that p-value = $0.01403\%$ < $\alpha/2 = 2.5\%$, there is sufficient evidence found to reject the $H_0$, and infer that population mean of the number of customer cervice calls is different from $1.5$.
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $0.01403\%$ < $\frac{\alpha}{2}= 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population mean of the number of customer service calls is different from $1.5$ calls.
 
 </details>
 
@@ -262,10 +262,11 @@ t.test( x = churn $ customer.calls,
 <details class="answer_panel">
   <summary>Answer</summary>
 
+**Statistical conclusion:** Given that p-value = $7.015 * 10^{-3}\%$ < $\alpha = 1\%$, there is sufficient evidence found to reject the $H_0$, and infer that population mean of the number of customer service calls is greater than $1.5$.
 
 **p-value:** $7.015 * 10^{-5} = 7.015 * 10^{-3}\%$
 
-**Statistical conclusion:** Given that p-value = $7.015 * 10^{-3}\%$ < $\alpha = 1\%$, there is sufficient evidence found to reject the $H_0$, and infer that population mean of the number of customer service calls is greater than $1.5$.
+**Statistical conclusion:** Given significance level of $\alpha = 0.01$ , and p-value = $7.015 * 10^{-3}\%$ < $\alpha= 1\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and infer that population mean of the number of customer service calls is greater than $1.5$ calls.
 
 </details>
 
@@ -287,7 +288,7 @@ prop.test( table( churn $ churn ), conf.level = 0.95 ) $ "conf.int"
 
 **Confidence interval:** $\pi \in [0.1319201, 0.1514362]$
 
-**Interpretation:** There is $95\%$ probability that the true population proportion is included in $[0.1319201, 0.1514362]$.
+**Interpretation:** We are $95\%$ confident that the true population proportion is included in the range $[0.1319201, 0.1514362]$.
 
 </details>
 
@@ -309,11 +310,13 @@ a. **Specify the null and alternative hypotheses?**
 <details class="answer_panel">
   <summary>Answer a</summary>
 
+**Hypotheses:**
+
 \[
 \bigg\{
 \begin{matrix}
-          H_0:  \pi < 0.14 \\
-          H_a:  \pi > 0.14
+          H_0:  \pi \geq 0.14 \\
+          H_a:  \pi < 0.14
 \end{matrix}
 \]
 
@@ -321,10 +324,11 @@ a. **Specify the null and alternative hypotheses?**
 </details>
 
 b. **Explain you accept or reject the null hypothesis, at $\alpha=0.01$.**
+
 <details class="answer_panel">
   <summary>Answer b</summary>
 
-**Statistical conclusion:** Given that p-value = $60.45\%$ > $\alpha = 1\%$, there is insufficient evidence found to reject the $H_0$, and infer that population proportion of churners is less than $0.14$.
+**Statistical conclusion:** Given significance level of $\alpha = 0.01$ , and p-value = $60.45\%$ > $\alpha= 1\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population proportion of churners greater than or equal to $0.14$.
 
 </details>
 
@@ -356,7 +360,7 @@ a. **Report the hypotheses $H_0$ and $H_1$. Report the value of *p*-value. Expla
 
 **p-value:** $2.2 * 10 ^{-16} = 2.2 * 10 ^{-14}\%$
 
-**Statistical conclusion:** Given that p-value = $2.2 * 10 ^{-14}\%$ < $\alpha/2 = 2.5\%$, there is sufficient evidence found to reject the $H_0$, and infer that the population mean of `customer.call` for churners versus non-churners is different from each other.
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $2.2 * 10 ^{-14}\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population mean of the number of customer service calls for churners is different from that of non-churners.
 
 </details>
 
@@ -366,7 +370,9 @@ b. **What conclusions can be drawn regarding "a relationship between the two var
 <details class="answer_panel">
   <summary>Answer b</summary>
 
-**Conclusion:** We can conclude statistical relationship between `customer.call` and `churn`, given that those of churners have 2.25 customers calls on average, that is significantly different from those of non-churners with 1.45 calls on average.
+**Conclusion:** There is statistical relationship between `customer.call` and `churn`, given that the mean  number of customer service calls are significantly different (with $\alpha = 0.05$) for churners and non-churners. 
+
+Based on the statistical output above, we see a higher mean number of customer service calls for churners (2.254597), than for non-churners (1.457722). That is, there is a positive statistical relation between churning and number of customer service calls.
 
 </details>
 
@@ -391,14 +397,14 @@ a. **Report the hypotheses $H_0$ and $H_1$. Report the value of *p*-value. Expla
 \[
 \bigg\{
 \begin{matrix}
-          H_0:  \rho_{approved, spend} > 0 \\
-          H_a:  \rho_{approved, spend} < 0 \\
+          H_0:  \rho_{approved, spend} \leq 0 \\
+          H_a:  \rho_{approved, spend} > 0
 \end{matrix}
 \]
 
 **p-value:** $2.2 * 10 ^{-16} = 2.2 * 10 ^{-14}\%$
 
-**Statistical conclusion:** Given that p-value = $2.2 * 10 ^{-14}\%$ < $\alpha = 2.5\%$, there is sufficient evidence found to reject the $H_0$, and infer that the correlation between `approved` and `spent` is not positive.
+**Statistical conclusion:** Given significance level of $\alpha = 0.025$ , and p-value = $2.2 * 10 ^{-14}\%$ < $\alpha= 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that correlation between `approved` and `spend` is positive.
 
 </details>
 
@@ -407,7 +413,7 @@ b. **What conclusions can be drawn regarding "a *positive* relationship between 
 <details class="answer_panel">
   <summary>Answer b</summary>
 
-**Conclusion:**We cannot conclude with 2.5% statistical significance that the correlation between `approved` and `spent` is positive.
+**Conclusion:** We can conclude (at significance level of $2.5\%$) that the correlation between `approved` and `spent` is positive.
 
 </details>
 
@@ -415,17 +421,116 @@ b. **What conclusions can be drawn regarding "a *positive* relationship between 
 
 In the *churn* dataset, for the variable “day.mins”, test whether the mean number of "Day Minutes" is greater than 180. Set the level of significance to be 0.05.
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+```{r}
+t.test( x = churn $ day.mins, 
+        mu = 180, 
+        alternative = "greater", 
+        conf.level = 0.95 )
+```
+
+**Hypotheses:**
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \mu_{day.mins}  \leq 180 \\
+          H_a:  \mu_{day.mins}  > 180 \\
+\end{matrix}
+\]
+
+**p-value:** $0.3523 = 35.23\%$
+
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $35.23\%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the mean number of day minutes is not greater than 180 minutes.
+
+</details>
+
 ## Hypothesis testing for proportion
 
 In the *churn* dataset, for the variable "`intl.plan`" test at $\alpha=0.05$ weather the proportion of customers who have international plan is less than 0.15.
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+```{r}
+prop.test( table( churn $ intl.plan ), 
+           p = 0.15, 
+           alternative = "less", 
+           conf.level = 0.95 )
+```
+
+**Hypotheses:**
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \pi_{intl.plan}  \geq 0.15 \\
+          H_a:  \pi_{intl.plan}  < 0.15 
+\end{matrix}
+\]
+
+**p-value:** $2.2 * 10^{-16} = 2.2 * 10^{-14}\%$
+
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $2.2 * 10^{-14}\%$ < $\alpha = 5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the proportion of customers subscribed to the international plan is less than 0.15.
+
+</details>
 
 ## Hypothesis testing for proportion
 
 In the *churn* dataset, test whether there is a relationship between the target variable “`churn`” and the variable “`intl.charge`” with $\alpha=0.05$. 
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+```{r}
+t.test( intl.charge ~ churn, data = churn, 
+        alternative = "two.sided",
+        conf.level = 0.95 )
+```
+
+**Hypotheses:**
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \mu_{intl.charge, yes}  = \mu_{intl.charge, no}\\
+          H_a:  \mu_{intl.charge, yes}  \neq \mu_{intl.charge, no}
+\end{matrix}
+\]
+
+**p-value:** $1.04 * 10^{-5}  = 1.04 * 10^{-3}\%$
+
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $1.04 * 10^{-3}\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the mean international charges differs for churners and non-churners.
+
+
+**Conclusion:** There is statistical relationship between international charges and churn, given that the mean international charges are significantly different (with $\alpha=0.05$) for churners and non-churners.
+
+</details>
+
 ## Chi-Square Test
 
 In the *bank* dataset, test whether there is a relationship between the target variable “`deposit`” and the variable “`education`” with $\alpha=0.05$. 
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+```{r}
+chisq.test( table( bank $ deposit, bank $ education ) )
+```
+
+**Hypotheses:**
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \pi_{primary, yes}  = \pi_{secondary, yes} = \pi_{tertiary, yes} = \pi_{unknown, yes} \\
+          H_a: \text{at least one of the claims under } H_0 \text{ is wrong}
+\end{matrix}
+\]
+
+**p-value:** $0.001625  = 0.1625\%$
+
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $0.1625\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that there is statistical relationship between `education` and `deposit`.
+
+</details>
 
 # **Bonus**: Hypothesis testing for your own dataset (30 points)
 
