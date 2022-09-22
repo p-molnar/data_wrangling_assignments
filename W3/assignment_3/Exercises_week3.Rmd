@@ -328,7 +328,7 @@ b. **Explain you accept or reject the null hypothesis, at $\alpha=0.01$.**
 <details class="answer_panel">
   <summary>Answer b</summary>
 
-**Statistical conclusion:** Given significance level of $\alpha = 0.01$ , and p-value = $60.45\%$ > $\alpha= 1\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population proportion of churners greater than or equal to $0.14$.
+**Statistical conclusion:** Given significance level of $\alpha = 0.01$ , and p-value = $60.45\%$ > $\alpha= 1\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that population proportion of churners are greater than or equal to $0.14$.
 
 </details>
 
@@ -365,14 +365,12 @@ a. **Report the hypotheses $H_0$ and $H_1$. Report the value of *p*-value. Expla
 </details>
 
 
-b. **What conclusions can be drawn regarding "a relationship between the two varibles".**
+b. **What conclusions can be drawn regarding "a relationship between the two variables".**
 
 <details class="answer_panel">
   <summary>Answer b</summary>
 
 **Conclusion:** There is statistical relationship between `customer.call` and `churn`, given that the mean  number of customer service calls are significantly different (with $\alpha = 0.05$) for churners and non-churners. 
-
-Based on the statistical output above, we see a higher mean number of customer service calls for churners (2.254597), than for non-churners (1.457722). That is, there is a positive statistical relation between churning and number of customer service calls.
 
 </details>
 
@@ -489,6 +487,7 @@ t.test( intl.charge ~ churn, data = churn,
 ```
 
 **Hypotheses:**
+
 \[
 \bigg\{
 \begin{matrix}
@@ -499,7 +498,7 @@ t.test( intl.charge ~ churn, data = churn,
 
 **p-value:** $1.04 * 10^{-5}  = 1.04 * 10^{-3}\%$
 
-**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $1.04 * 10^{-3}\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the mean international charges differs for churners and non-churners.
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $1.04 * 10^{-3}\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the mean international charges differ for churners and non-churners.
 
 
 **Conclusion:** There is statistical relationship between international charges and churn, given that the mean international charges are significantly different (with $\alpha=0.05$) for churners and non-churners.
@@ -518,13 +517,12 @@ chisq.test( table( bank $ deposit, bank $ education ) )
 ```
 
 **Hypotheses:**
+
 \[
-\bigg\{
-\begin{matrix}
-          H_0:  \pi_{primary, yes}  = \pi_{secondary, yes} = \pi_{tertiary, yes} = \pi_{unknown, yes} \\
-          H_a: \text{at least one of the claims under } H_0 \text{ is wrong}
-\end{matrix}
-\]
+\left\{ \begin{array}{l}
+         \mbox{$H_0:  \pi_{primary, yes}  = \pi_{secondary, yes} = \pi_{tertiary, yes} = \pi_{unknown, yes}$} \\
+         \mbox{$H_a:$ at least one of the claims under $H_0$ is wrong} \end{array} \right.
+\] 
 
 **p-value:** $0.001625  = 0.1625\%$
 
