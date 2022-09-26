@@ -26,9 +26,10 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
 ```
 
 **Full Name:** 
+
 * Peter Molnar (11759216)
 * Lourenço Santos Moitinho de Almeida (12636622)
-
+* Ettore Conti (12357669)
 
 **Online Assignments**: 
 There is a new online-assignments at the [DataCamp](https://www.datacamp.com). This online exercise, related to data visualization in **R**, e.g., by using the [*ggplot2*](https://CRAN.R-project.org/package=ggplot2) package. These exercises are useful to prepare yourself for the computer-lab. *The online-assignments at the DataCamp are not mandatory*.
@@ -159,7 +160,7 @@ It shows the summary of all the `r ncol(churn)` variables.
 
 **b. Based on the output of the `summary` function for the churn dataset, what is the number of customers who have an international plan (`intl.plan = "yes"`)?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer b</summary>
   
 ```{r}
@@ -188,7 +189,7 @@ summary( churn $ churn )
 
 **Based on the above output, what is the proportion of the churner (customer churn rate)?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
   
   $P(churn = no) = 4293$
@@ -228,7 +229,7 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above plots?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
   
 The first plot depicts a bar chart of `intl.plan`, with `churn` overlay. The chart shows that approximately 500 customers have an international plan, while the rest do not. The proportions of churners is not clearly readable, but approximately half of the customers who have an international plan tend to churn. The churn rate is much smaller for customers who do not have international plan.
@@ -261,7 +262,7 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above plots?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
 
 The left plot depicts a bar chart for `voice.plan`, with `churn` overlay, grouped by `voice.plan` categories. Those of voice plan holders represent themselves with 1300 customers, while those of non-holders about 3700 customers.
@@ -299,7 +300,7 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above plots?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
 
 The first plot is a regular bar chart of `customer.calls`, and it shows positively a skewed distribtuion, whit a mean of `r mean(churn $ customer.calls)` number of calls. The skewness of the data may be explained by that the majority of customers who contacts the customer service desk had their issue resolved within one call, and hence there was no need for further calls.
@@ -333,7 +334,7 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above boxplot?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
 
 The above boxplots depict the locality, spread and skewness of `day.mins` grouped by `churn` categories.
@@ -395,7 +396,7 @@ ggplot( data = churn ) +
 
 **What would be your interpretation of the above boxplot?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
   
 The above boxplots depict the locality, spread and skewness of `intl.calls` grouped by `churn` categories.
@@ -437,7 +438,7 @@ pairs.panels( churn[ , c( "night.mins", "night.calls", "night.charge" ) ] )
 
 **What would be your interpretation of the above correlation matrix plots?**
 
-<details>
+<details class="answer_panel">
   <summary>Answer</summary>
   
 From the above correlation matrix we see that there are 4 problematic variables that shows perfect correlation (r=1.0) with another variable.
@@ -743,7 +744,7 @@ ggplot( bank ) +
 
 One's balance is closely related to their income. The general consensus over income distribution is that it is positively skewed, we expect balance to be similarly shaped.
 
-From the above histogram we can confirm that balance is indeed positively skewed, with a mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances, i.e., chances are that there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing an overdraft, which occurs when money is withdrawn in excess of what is in a current account.
+From the above histogram we can confirm that balance is indeed positively skewed, with a mean balance of €1423. The wide range of balances gives away that the dataset contains unusually high balances, i.e., chances are there are outliers in the dataset. Furthermore, we report that balance may also be negative, representing an overdraft, which occurs when money is withdrawn in excess of what is in a current account.
 
 Balances around 0 dominate the data, but to see that rest of the distribution in more details we zoom into it by adjusting the limit of the y-axis to [0, 1000].
 
