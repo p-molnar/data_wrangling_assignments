@@ -1,0 +1,338 @@
+---
+title: '<center> The Exercises of Week 4 - Classification and Model Evaluation <center>'
+author: '<center> Reza Mohammadi <center>'
+date: '<center> `r Sys.Date()` <center>'
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 7
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, 
+                         comment = " ", error = FALSE, fig.align = 'center'  )
+```
+
+**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+  
+**Online Assignment**: There is a new online assignment at the [DataCamp](https://www.datacamp.com) with the name “*Chapter 1: k-Nearest Neighbors (kNN)*” which is a part of the online course “Supervised Learning in R: Classification” at the DataCamp. *The online assignments at the DataCamp are not mandatory*.
+
+**Your task** is to answer the following questions in *Part 1* and *Part 2* in this R-markdown file. Please upload both your R-markdown (.Rmd file) and the HTML files separately on Canvas. Note that your R-markdown (.Rmd file) and the HTML files have to be in the right format.
+
+Here, we are going to use the following R packages:
+
+* **[liver](https://CRAN.R-project.org/package=liver)**: the *bank* and *churn* datasets are in this package. We also use the `partition()`, `kNN()` functions in this package.
+* **[ggplot2](https://ggplot2.tidyverse.org/index.html)**: we use this package for visualization.
+* **[pROC](https://CRAN.R-project.org/package=pROC)**: to create ROC curve and compute AUC values, we use the `roc()` and `auc()` functions in this package.
+
+If it’s needed, install these packages on your computer. Here we load them:
+```{r}
+if( !require( liver   ) ) install.packages( "liver" )
+if( !require( ggplot2 ) ) install.packages( "ggplot2" )
+if( !require( pROC    ) ) install.packages( "pROC" )
+
+library( liver )  
+library( ggplot2 )   
+library( pROC )   
+```
+
+# Classification for Bank direct marketing dataset (40 points)
+
+By using different classification algorithms, we want to detect customers who are more likely to acquire the product.
+
+## Business Understanding
+
+Find the best strategies to improve for the next marketing campaign. How can the financial institution have greater effectiveness for future marketing campaigns? To make a data-driven decision, we need to analyze the last marketing campaign the bank performed and identify the patterns that will help us find conclusions to develop future strategies.
+
+### Bank direct marketing info
+
+Two main approaches for enterprises to promote products/services are: 
+
+* *mass campaigns*: targeting general indiscriminate public,
+* *directed marketing*, targeting a specific set of contacts. 
+
+In general, positive responses to mass campaigns are typically very low (less than 1%). On the other hand, direct marketing focuses on targets that are keener to that specific product/service, making this kind of campaign more effective. However, direct marketing has some drawbacks, for instance, it may trigger a negative attitude towards banks due to the intrusion of privacy.
+
+Banks are interested to increase financial assets. One strategy is to offer attractive long-term deposit applications with good interest rates, in particular, by using directed marketing campaigns. Also, the same drivers are pressing for a reduction in costs and time. Thus, there is a need for an improvement in efficiency: lesser contacts should be done, but an approximate number of successes (clients subscribing to the deposit) should be kept.
+
+### What is a Term Deposit?
+
+A Term Deposit is a deposit that a bank or a financial institution offers with a fixed rate (often better than just opening a deposit account), in which your money will be returned at a specific maturity time. For more information with regards to Term Deposits please check [here](https://www.investopedia.com/terms/t/termdeposit.asp).
+
+## Data Undestanding
+
+The *bank* dataset is related to direct marketing campaigns of a Portuguese banking institution. You can find more information related to this dataset at: [https://rdrr.io/cran/liver/man/bank.html](https://rdrr.io/cran/liver/man/bank.html)
+
+The marketing campaigns were based on phone calls. Often, more than one contact (to the same client) was required, to access if the product (bank term deposit) would be (or not) subscribed. The classification goal is to predict if the client will subscribe to a term deposit (variable deposit).
+
+We import the *bank* dataset:
+```{r}
+data( bank )      
+```
+
+We can see the structure of the dataset by using the `str()` function:
+```{r}
+str( bank )
+```
+
+It shows that the *bank* dataset as a `data.frame` has `r ncol( bank )` variables and `r nrow( bank )` observations. The dataset has `r ncol( bank ) - 1` predictors along with the target variable `deposit` which is a binary variable with 2 levels "yes" and "no". The variables in this dataset are:
+
+* `age`: numeric.
+* `job`: type of job; categorical: "admin.", "unknown", "unemployed", "management", "housemaid", "entrepreneur", "student", "blue-collar, "self-employed", "retired", "technician", "services".
+* `marital`: marital status; categorical: "married", "divorced", "single"; note: "divorced" means divorced or widowed.
+* `education`: categorical: "secondary", "primary", "tertiary", "unknown".
+* `default`: has credit in default?; binary: "yes","no".
+* `balance`: average yearly balance, in euros; numeric.
+* `housing`: has housing loan? binary: "yes", "no".
+* `loan`: has personal loan? binary: "yes", "no".
+
+Related with the last contact of the current campaign:
+
+* `contact`: contact: contact communication type; categorical: "unknown","telephone","cellular". 
+* `day`: last contact day of the month; numeric.
+* `month`: last contact month of year; categorical: "jan", "feb", "mar", ..., "nov", "dec".
+* `duration`: last contact duration, in seconds; numeric.
+
+Other attributes:
+
+* `campaign`: number of contacts performed during this campaign and for this client; numeric, includes last contact.
+* `pdays`: number of days that passed by after the client was last contacted from a previous campaign; numeric, -1 means client was not previously contacted.
+* `previous`: number of contacts performed before this campaign and for this client; numeric.
+* `poutcome`: outcome of the previous marketing campaign; categorical: "success", "failure", "unknown", "other".
+
+Target variable:
+
+* `deposit`: Indicator of whether the client subscribed a term deposit; binary: "yes" or "no".
+
+Here we report the summary of the dataset:
+```{r}
+summary( bank )
+```
+
+## Data Preparation
+
+We partition the *bank* dataset randomly into two groups: train set (80%) and test set (20%). Here, we use the `partition()` function from the *liver* package:
+
+```{r}
+set.seed( 5 )
+
+data_sets = partition( data = bank, prob = c( 0.8, 0.2 ) )
+
+train_set = data_sets $ part1
+test_set  = data_sets $ part2
+
+actual_test  = test_set $ deposit
+```
+
+Note that here we are using the `set.seed()` function to create reproducible results. 
+
+We want to validate the partition by testing whether the proportion of the target variable `deposit` differs between the two data sets. We use a Two-Sample Z-Test for the difference in proportions. To run the test, we use the `prop.test()` function in **R**:
+```{r}
+x1 = sum( train_set $ deposit == "yes" )
+x2 = sum( test_set  $ deposit == "yes" )
+
+n1 = nrow( train_set )
+n2 = nrow( test_set  )
+
+prop.test( x = c( x1, x2 ), n = c( n1, n2 ) )
+```
+
+Based on the output, answer the following questions:
+
+a. **Why is the above hypothesis test suitable for the above research question? Provide your reasons.**
+
+b. **Specify the null and alternative hypotheses?**
+
+c. **Explain that you reject or do not reject the null hypothesis, at $\alpha=0.05$. What would be your statistical conclusion?**
+
+d. **What would be a non-statistical interpretation of your findings in c?**
+
+## Classification using the kNN algorithm
+
+The results from the "Exploratory Data Analysis (EDA)" (from last week) indicate that the following predictors from `r ncol( bank ) - 1` predictors in the *bank* dataset are important to predict `deposit`.
+
+`age`, `default`, `balance`, `housing`, `loan`, `duration`, `campaign`, `pdays`, and `previous`.
+
+Thus, here, based on the training dataset, we want to apply kNN algorithm, by using above predictors in our model. We use the following formula:
+```{r}
+formula = deposit ~ age + default + balance + housing + loan + duration + campaign + pdays + previous
+```
+
+**NOTE:** The above formula means `deposit` is the target variable and the rest of the variables in the right side of tilde ("`~`") are independent variables. 
+
+Based on the training dataset, we want to find the k-nearest neighbor for the test data set. Here we use two different values for k (k = 3 and k = 10). We use the `kNN()` function from the *R* package **liver**:
+```{r}
+predict_knn_3  = kNN( formula, train = train_set, test = test_set, k = 3  )
+
+predict_knn_10 = kNN( formula, train = train_set, test = test_set, k = 10 )
+```
+
+To have an overview of the prediction result, we report *Confusion Matrix* for two different values of k by using the `conf.mat` function: 
+```{r}
+( conf_knn_3 = conf.mat( predict_knn_3, actual_test ) )
+
+( conf_knn_10 = conf.mat( predict_knn_10, actual_test ) )
+```
+
+We also could report *Confusion Matrix* by using the `conf.mat.plot()` command:
+```{r fig.show = "hold", out.width = "50%", fig.align = 'default'}
+conf.mat.plot( predict_knn_3, actual_test, main = "kNN with k = 3" )
+
+conf.mat.plot( predict_knn_10, actual_test, main = "kNN with k = 10" )
+```
+
+**What do these values mean? Explain what conclusion you will draw.**
+
+## Model evaluation by MSE
+
+To evaluate the accuracy of the predictions, we calculate the Mean Square Error (MSE) by using the `mse()` function from the **liver** package:
+
+```{r}
+MSE_3 = mse( predict_knn_3, actual_test  )
+MSE_3 
+
+MSE_10 = mse( predict_knn_10, actual_test )
+MSE_10
+```
+
+**For the case k=3, the MSE = `r round( MSE_3 , 3 )` and for the case k = 10, the MSE = `r round( MSE_10, 3 )`. What do these values mean? Explain what conclusion you will draw.**
+
+## Visualizing Model Performance by ROC curve
+
+To report the ROC curve, we need the probability of our classification prediction. We can have it by using:
+```{r}
+prob_knn_3  = kNN( formula, train = train_set, test = test_set, k = 3 , type = "prob" )[ , 1 ]
+
+prob_knn_10 = kNN( formula, train = train_set, test = test_set, k = 10, type = "prob" )[ , 1 ]
+```
+
+To visualize the model performance, we could report the ROC curve plot by using the `plot.roc()` function from the **pROC** package:
+
+```{r}
+roc_knn_3 = roc( actual_test, prob_knn_3 )
+
+roc_knn_10 = roc( actual_test, prob_knn_10 )
+
+ggroc( list( roc_knn_3, roc_knn_10 ), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for kNN") +
+    scale_color_manual( values = c( "red", "blue" ), 
+    labels = c( paste( "k=3 ; AUC=", round( auc( roc_knn_3  ), 3 ) ),
+                paste( "k=10; AUC=", round( auc( roc_knn_10 ), 3 ) )
+                ) ) +
+    theme( legend.title = element_blank() ) +
+    theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+
+In the above plot, '<span style="color:red">red</span>' curve is for the case k = 3 and the '<span style="color:blue">blue</span>' curve is for the case k = 10.
+
+**Explain what conclusion you will draw. Do we need to report AUC (Area Under the Curve) as well?**
+
+## kNN algorithm with data transformation
+
+The predictors that we used in the previous question, do not have the same scale. For example, variable `duration` change between `r min( bank $ duration )` and `r max( bank $ duration )`, whereas the variable `loan` is binary. In this case, the values of variable `duration` will overwhelm the contribution of the variable `loan`. To avoid this situation we use normalization. So, we use min-max normalization and transfer the predictors. 
+
+Now, we find the k-nearest neighbor for the test set, based on the training dataset, for the k = 10:
+
+```{r}
+predict_knn_10_trans = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 10 )
+
+conf.mat.plot( predict_knn_10_trans, actual_test )
+```
+
+## ROC curve and AUC for transformed data
+
+To report the ROC curve, we need the probability of our classification prediction. We can have it by using:
+```{r}
+prob_knn_10 = kNN( formula, train = train_set, test = test_set, k = 10, type = "prob" )[ , 1 ]
+
+prob_knn_10_trans = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 10, type = "prob" )[ , 1 ]
+```
+
+To visualize the model performance between the raw data and the transformed data, we could report the ROC curve plot as well as AUC (Area Under the Curve) by using the `plot.roc()` function from the **pROC** package:
+
+```{r}
+roc_knn_10 = roc( actual_test, prob_knn_10 )
+
+roc_knn_10_trans = roc( actual_test, prob_knn_10_trans )
+
+ggroc( list( roc_knn_10, roc_knn_10_trans ), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for kNN") +
+    scale_color_manual( values = c( "red", "blue" ), 
+      labels = c( paste( "Raw data             ; AUC=", round( auc( roc_knn_10 ), 3 ) ), 
+                  paste( "Transformed data; AUC=", round( auc( roc_knn_10_trans ), 3 ) ) ) ) +
+  theme( legend.title = element_blank() ) +
+  theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+In the above plot black curve is for the *raw* dataset and the red curve is for the *transformed* dataset.
+
+**Explain what conclusion you will draw. Based on the values of AUC (Area Under the Curve), explain what conclusion you will draw.**
+
+## Optimal value of k for the kNN algorithm
+
+In the previous questions, for finding the k-nearest neighbor for the test set, we set k = 10. But why 10? Here, we want to find out the optimal value of k based on our dataset. 
+
+To find out the optimal value of `k` based on *Error Rate*, for the different values of k from 1 to 30, we run the k-nearest neighbor for the test set and compute the *Error Rate* for these models, by running `kNN.plot()` command 
+
+```{r}
+kNN.plot( formula, train = train_set, test = test_set, transform = "minmax", 
+          k.max = 30, set.seed = 7 )
+```
+
+**Based on the plot, what value of k is optimal? Provide your reasons.**
+
+# Applying kNN algorithm for *churn* dataset (60 points)
+
+Apply the kNN algorithm to analyze the *churn* dataset which is available in the **R** package [**liver**](https://CRAN.R-project.org/package=liver). 
+
+The R code for this part is available in the file "Rcode_W4_part2.R" at "Canvas > Modules > Week 4 - Classification \& Model Evaluation".
+   
+## Import the *churn* dataset
+
+Import the *churn* dataset in R and report the summary of the dataset. 
+
+## Data Preparation
+
+First, partition the *churn* dataset randomly into two groups as a train set (80%) and test set (20%). Then, validate the partition for a couple of variables; for example, you could validate the partition by testing whether the proportion of churners differs between the two datasets. Or you could validate the partition by testing whether the population means for the number of customer service calls differs between the two datasets.
+
+## Applying the kNN algorithm using all predictors
+
+Based on the training dataset, find the k-nearest neighbor for the test data set, for the case k = 10; For this question, use all the 19 predictors of the *churn* dataset for the analysis. Note that you should use min-max normalization and transfer the predictors. Then, evaluate the accuracy of the predictions by reporting 
+
+* Confusion Matrix
+* MSE
+* ROC curve
+* AUC
+
+## Applying the KNN algorithm using part of predictors
+
+In the previous exercises for the *churn* dataset, you suppose to use all the 19 predictors for the analysis. But we know based on the lecture of week 2, we should use only those predictors that have a relationship with the target variable. So, here we use the following predictors:
+
+`account.length`, `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`.
+
+First, based on the above predictors, find the k-nearest neighbor for the test set, based on the training dataset, for the k = 10. Note that you should use min-max normalization and transfer the predictors. Then, evaluate the accuracy of the predictions by reporting 
+
+* Confusion Matrix
+* MSE
+* ROC curve
+* AUC
+
+Compare the results with the previous section. What would be your conclusion? 
+
+## Optimal value of k for the kNN algorithm
+
+In the previous questions, to find the k-nearest neighbor for the test set, we set k = 10. But why 10? Find out the optimal value of `k`.
+   
+# **Bonus**: Applying the kNN algorithm for your own dataset (30 points)
+
+In this part, apply the kNN algorithm to analyze your own dataset. You could follow the same steps as in part 1 (above) of these exercises.
+
+Note: to apply the kNN algorithm to your own dataset, the target variable has to be categorical, preferably Binary, similar to the above example.
+  
