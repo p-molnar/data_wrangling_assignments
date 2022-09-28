@@ -19,7 +19,16 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center'  )
 ```
 
-**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+
+```{css, echo=FALSE}
+.answer_panel { margin-left: 40px; }
+
+.sub_details { margin-left: 60px; }
+```
+
+**Full Name:**
+
+* Peter Molnar (11759216)
   
 **Online Assignment**: There is a new online assignment at the [DataCamp](https://www.datacamp.com) with the name “*Chapter 1: k-Nearest Neighbors (kNN)*” which is a part of the online course “Supervised Learning in R: Classification” at the DataCamp. *The online assignments at the DataCamp are not mandatory*.
 
@@ -39,7 +48,8 @@ if( !require( pROC    ) ) install.packages( "pROC" )
 
 library( liver )  
 library( ggplot2 )   
-library( pROC )   
+library( pROC )
+library( caret )
 ```
 
 # Classification for Bank direct marketing dataset (40 points)
@@ -147,11 +157,53 @@ Based on the output, answer the following questions:
 
 a. **Why is the above hypothesis test suitable for the above research question? Provide your reasons.**
 
+<details class="answer_panel">
+  <summary>Answer a</summary>
+Above we want to validate whether the two partitions, training set and test set are independent. Since the type of `deposit` is of binary/flag, and we aim to compare the two subsets, we carry out a two-sample Z-Test for the difference is proportions.
+  
+If the proportions are significantly different between training set and test set, then this may lead to bias or come at the cost of prediction/classification precision. Else, if the proportions are approximately the same, we can conclude that the training set is a representative set of the test set.
+
+**Reasons:**
+
+* 2 samples: training set, test set
+* data type: binary/flag variables
+* sufficiently large sample size $N_{train} = 3617, N_{test} = 904$, so that $Z \stackrel{approx}{\sim} N(\mu_{deposit}, \sigma_{depost})$
+
+</details>
+
 b. **Specify the null and alternative hypotheses?**
+
+<details class="answer_panel">
+  <summary>Answer b</summary>
+
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \pi_{training}  = \pi_{test} \\
+          H_a:  \pi_{training}  \neq \pi_{test} \\
+\end{matrix}
+\]
+
+</details>
 
 c. **Explain that you reject or do not reject the null hypothesis, at $\alpha=0.05$. What would be your statistical conclusion?**
 
+<details class="answer_panel">
+  <summary>Answer c</summary>
+
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$, and $p-value = 0.1217 > \alpha = 0.05$, there is insufficient evidence found to reject $H_0$, and we infer that the population proportions of the number of people subscribed to the term deposit is not different between the training and the test partitions.
+
+</details>
+
 d. **What would be a non-statistical interpretation of your findings in c?**
+
+<details class="answer_panel">
+  <summary>Answer d</summary>
+
+**Non-statistical conclusion:** At $\alpha = 0.05$, we infer that the population proportions of the number of people subscribed to the term deposit is not different between the training and the test partitions, and hence the training set is a representative partition of the data
+
+</details>
+
 
 ## Classification using the kNN algorithm
 
@@ -189,6 +241,59 @@ conf.mat.plot( predict_knn_10, actual_test, main = "kNN with k = 10" )
 
 **What do these values mean? Explain what conclusion you will draw.**
 
+<details>
+  <summary>Answer</summary>
+  
+* There are 2 possible predicted classes: "yes" and "no"
+  * "yes" meaning that we predicted that the targeted person would subscribe to the term deposit
+  * "no" meaning that we predicted that the targeted person would not subscribe to the term deposit
+* The classifier made a total of 946 predictions
+
+<h3>k=3</h3>
+
+The classifier 
+
+* predicted "no" for 882 people
+* predicted "yes" for 64 people
+* correctly predicted the outcome 806 + 19 = 825 times, these values are true positives
+* incorrectly predicted the outcome 45 + 76 = 121 times, these values are false negatives
+  
+Below we report a list of model evaluation ratios to draw a conclusion:
+```{r}
+confusionMatrix(data = predict_knn_3, reference = actual_test)
+```
+We identify the following:
+
+* **Accuracy**: overall the classifier is correct 87.21% of the time
+* **Misclassification rate**: overall the classifier is wrong 12.79% of the time
+* **Sensitivity**: The classifier predicts "yes"-es 94.71% of the time
+* **Specificity**: The classifier correctly predicts "no"-s 20.00% of the time
+
+<h3>k=10</h3>
+The classifier 
+
+* predicted "no" for 908 people
+* predicted "yes" for 38 people
+* correctly predicted the outcome 834 + 21 = 855 times, these values are true positives
+* incorrectly predicted the outcome 17 + 74 = 91 times, these values are false negatives
+  
+Below we report a list of model evaluation ratios to draw a conclusion:
+```{r}
+confusionMatrix(data = predict_knn_10, reference = actual_test)
+```
+We identify the following:
+
+* **Accuracy**: overall the classifier is correct 90.38% of the time
+* **Misclassification rate**: overall the classifier is wrong 0.0962% of the time
+* **Sensitivity**: The classifier predicts "yes"-es 98.00% of the time
+* **Specificity**: The classifier correctly predicts "no"-s 22.11% of the time
+</details>
+
+
+<h3>Conclusion</h3>
+
+Based on the rate of accuracy, sensitivity, and specificity, the kNN algorithm with k=10 is a better predictor.
+
 ## Model evaluation by MSE
 
 To evaluate the accuracy of the predictions, we calculate the Mean Square Error (MSE) by using the `mse()` function from the **liver** package:
@@ -202,6 +307,18 @@ MSE_10
 ```
 
 **For the case k=3, the MSE = `r round( MSE_3 , 3 )` and for the case k = 10, the MSE = `r round( MSE_10, 3 )`. What do these values mean? Explain what conclusion you will draw.**
+
+<details>
+  <summary>Answer</summary>
+
+The Mean Squared Error combines the variance and bias into one formula and measures the squared difference between the observed value and the predicted value of a continuous target variable. Given that in our case that target variable is binary, the interpretation may be inaccurate.
+
+For k=3, MSE of 0.128 means that the on average our prediction is approximately 12.8% off.
+For k=10, MSE of 0.096 means that the on average our prediction is approximately 9.6% off.
+
+Between the two competing models, the one with the lower MSE is preferred, that is kNN with k=10.
+  
+</details>
 
 ## Visualizing Model Performance by ROC curve
 
@@ -233,6 +350,17 @@ ggroc( list( roc_knn_3, roc_knn_10 ), size = 0.8 ) +
 In the above plot, '<span style="color:red">red</span>' curve is for the case k = 3 and the '<span style="color:blue">blue</span>' curve is for the case k = 10.
 
 **Explain what conclusion you will draw. Do we need to report AUC (Area Under the Curve) as well?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+In question 1.4, we reported that kNN with k=10 has higher sensitivity and specificity ratios than kNN with k=3. This means, that the former curve will always lie above (except in sensitivity=1 and specificity=1) the latter, and hence will have a larger area enclosed under the curve.
+
+The conclusion is the same as above, given that the area under the blue curve is greater than for red, we infer that the blue k=10 bears with smaller bias and smaller variance, and hence a better predictor than kNN with k=3.
+
+Do we need to report AUC???
+
+</details>
 
 ## kNN algorithm with data transformation
 
@@ -275,6 +403,15 @@ In the above plot black curve is for the *raw* dataset and the red curve is for 
 
 **Explain what conclusion you will draw. Based on the values of AUC (Area Under the Curve), explain what conclusion you will draw.**
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+Given that the different variables are now standardised, none of them will overwhelm the contribution of others. We observe, that AUC for k=10 has improved by 0.017, result in in an AUC of 0.814 for the transformed data.
+
+Between competing models, the one with higher AUC is preferred, therefore, the transformed data is deemed a better predictor.
+
+</details>
+
 ## Optimal value of k for the kNN algorithm
 
 In the previous questions, for finding the k-nearest neighbor for the test set, we set k = 10. But why 10? Here, we want to find out the optimal value of k based on our dataset. 
@@ -287,6 +424,13 @@ kNN.plot( formula, train = train_set, test = test_set, transform = "minmax",
 ```
 
 **Based on the plot, what value of k is optimal? Provide your reasons.**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+  
+Between competing models, the one with the lowest error rate is preferred over others. That is, the optimal value of k for the `bank` dataset is k=8.
+
+</details>
 
 # Applying kNN algorithm for *churn* dataset (60 points)
 
