@@ -268,12 +268,7 @@ We identify the following:
 
 The classifier 
 
-* predicted "no" for 908 people
-* predicted "yes" for 38 people
-* correctly predicted the outcome 834 + 21 = 855 times
-* incorrectly predicted the outcome 17 + 74 = 91 times
-
-* predicted "no" for 908 people, out of which 834 was correctly predicted, while 74 was incorreclty.
+* predicted "no" for 908 people, out of which 834 was correctly predicted, while 74 was incorrectly.
 * predicted "yes" for 38 people, out of which 21 was correctly predicted, and 17 was incorrectly.
 * Out of the 946 predictions, the model correctly predicted the outcome 834 + 21 = 855 times.
 * Out of the 946 predictions, the model incorrectly predicted the outcome 17 + 74 = 91 times
@@ -313,7 +308,7 @@ MSE_10
 
 The Mean Squared Error combines the variance and bias into one formula and measures the squared difference between the observed value and the predicted value of a continuous target variable. Given that in our case that target variable is binary, the interpretation may not be as accurate as for a continuous variable.
 
-Currently, MSE is measured in squared percentages, an dto interpret it, we need to take the root of MSE to interpret in the same unit as the original data is in.
+Currently, MSE is measured in squared percentages, and to interpret it, we need to take the root of MSE to interpret in the same unit as the original data is in.
 
 $RMSE_{k=3} = \sqrt{MSE_{k=3}} = \sqrt{0.128} = 0.3578$
 $RMSE_{k=10} = \sqrt{MSE_{k=10}} = \sqrt{0.096} = 0.3098$
@@ -321,7 +316,7 @@ $RMSE_{k=10} = \sqrt{MSE_{k=10}} = \sqrt{0.096} = 0.3098$
 Given that the target variable is binary, we can loosely state that it ranges between [0, 1], and therefore RMSE is (again loosely) interpretable as percentage error in the estimation. That is, for k=3, RMSE of 0.3578 means that the on average the model prediction is approximately 35.78% off.
 Similarly, for k=10, RMSE of 0.3098 means that the on average our prediction is approximately 30.98% off.
 
-Between the two competing models, the lower the RMSE, the better the forecast, hence kNN with k=10 is the more optimal choice for prediction.
+Between the two competing models, the lower the (R)MSE, the better the forecast. Therefore kNN with k=10 is a more optimal choice for prediction.
   
 </details>
 
@@ -431,7 +426,8 @@ kNN.plot( formula, train = train_set, test = test_set, transform = "minmax",
 <details class="answer_panel">
   <summary>Answer</summary>
   
-Between competing models, one is preferred over that other that produces low error rate and and does not overfit neither underfit the data. Since the differences in error rates on the above graph is small (vertical distance), an optimal k-value, with decent level of fitting, can be anywhere between 18 and 22. 
+Between competing models, one is preferred over another that produces low error rate, yet does not overfit neither underfit the data. Since the differences in error rates on the above graph is small (vertical distance is minor), an optimal k-value, with decent level of fitting, can be anywhere between 18 and 22. So, $ k \in [18, 22]$.
+
 </details>
 
 # Applying kNN algorithm for *churn* dataset (60 points)
@@ -483,7 +479,7 @@ actual_test  = test_set $ churn
 
 Next, we validate the partitioned sets by means of hypothesis testing.
 
-For that, first we prepare the variables necessary for a proportion test.
+For that, first we prepare the variables `x1`, `x2`, `n1`, `n2` to test the differences in the proportions.
 
 ```{r}
 x1 = sum( train_set $ churn == "yes" )
@@ -579,8 +575,8 @@ The classifier
 
 * predicted "no" for 1040 people, out of which 888 was correctly predicted, while 152 was incorreclty.
 * predicted "yes" for 3 people, out of which all 3 was correctly predicted, and 0 was incorrectly.
-* Out of the 1040 predictions, the model correctly predicted the outcome 888 + 3 = 891 times.
-* Out of the 1040 predictions, the model incorrectly predicted the outcome 152 times
+* Out of the 1043 predictions, the model correctly predicted the outcome 888 + 3 = 891 times.
+* Out of the 1043 predictions, the model incorrectly predicted the outcome 152 times
   
 Below we report a list of model evaluation ratios to draw a conclusion:
 ```{r}
@@ -757,23 +753,22 @@ In the following comparison we refer to the model where all 19 independent varia
 
 Based on the above summary we can conclude the following:
 
-* The restricted model bears with approximately 6.7% better error rate, than the complete model. That is, on average the restricted model is a better predictor, and is preferred over the complete model.
-* The accuracy rate of the restricted model is higher by approximately 4.5%, and similary the misspecificaiton rate is lower by the same percentage for the restricted model.
-* the restricted model shows significantly higher sensitivity rate than the complete model. That is, the restricted model predicts the positive records approximately 20 times better than the complete model. 
-* In terms of specificity, the complete model performs better, however, the margin is about 1.2%, i.e., insiginificant.
-* The area under the curve for the restricted model is almost 3 fold, therefore, it is a superior model to its competitor.
+* The restricted model bears with approximately 6.7% lower error rate, than the complete model. That is, on average the restricted model is a less erroneous predictor, and hence is preferred over the complete model.
+* The accuracy rate of the restricted model is higher by approximately 4.5%. Given, then that the misspecification rate is the complement of accuracy, the restricted model has a lower misspecification rate by 4.5% as well.
+* The restricted model shows significantly higher sensitivity rate than the complete model. That is, the restricted model predicts the positive records approximately 20 times better than the complete model. 
+* In terms of specificity, the complete model performs better, however, the margin is about 1.2%, i.e., small enough and insignificant to still prefer the restricted model over the complete one.
+* The area under the curve for the restricted model is almost 3 fold compared to the complete model, therefore the restricted is the superior model.
 
-Based on the above summary, we can conclude that the restricted model is a better predictor. Furthermore, we can conclude that in the complete model `state`, `area.code`, `intl.calls`, `intl.charge`, `day.mins`, `day.charge`, `eve.calls`, `eve.charge`, `night.mins`, `night.calls`, `night.charge` in this comnbination do not bear with significant predictive importance.
+Based on the above summary, we can conclude that the restricted model is a better predictor. Furthermore, we can conclude that in the complete model `state`, `area.code`, `intl.calls`, `intl.charge`, `day.mins`, `day.charge`, `eve.calls`, `eve.charge`, `night.mins`, `night.calls`, `night.charge` in this combination do not bear with significant predictive importance.
 
 </details>
-
 
 </details>
 
 
 ## Optimal value of k for the kNN algorithm
 
-In the previous questions, to find the k-nearest neighbor for the test set, we set k = 10. But why 10? Find out the optimal value of `k`.
+In the previous questions, to find the k-nearest neighbour for the test set, we set k = 10. But why 10? Find out the optimal value of `k`.
 
 <details>
   <summary>Answer</summary>
@@ -783,7 +778,7 @@ kNN.plot( formula, train = train_set, test = test_set, transform = "minmax",
           k.max = 30, set.seed = 13 )
 ```
   
-To find the optimal value for k, we plot it the vlaue of k against the error rate the particlar k produces. We find, that the local minimum of the graph is for k = 8. Given the small error difference between the local minimum and the values in its neighbourhood, we may prefer a higher k value, for instance 9 or 10, though values in the range [8, 10] are all acceptable. 
+To find the optimal value for k, we plot it the value of k against the error rate the particular k produces. We find, that the local minimum of the graph is for k = 8. Given the small error difference between the local minimum and the values in its neighbourhood, we may prefer a higher k value, for instance 9 or 10, though the values in the range [8, 10] are all acceptable. 
   
 </details>
    
