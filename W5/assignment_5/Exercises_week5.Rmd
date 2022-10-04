@@ -1,0 +1,328 @@
+---
+title: '<center> The Exercises of Week 5 - Decision Trees <center>'
+author: '<center> Reza Mohammadi <center>'
+date: '<center> `r Sys.Date()` <center>'
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 7
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, 
+                         comment = " ", error = FALSE, fig.align = 'center'  )
+```
+
+**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+   
+**Online Assignment**: There is a new online-assignment at the [DataCamp](https://www.datacamp.com) with the name “*Chapter 4: Classification Trees*” which is a part of the online course “Supervised Learning in R: Classification” at the DataCamp. *The online-assignments at the DataCamp are not mandatory*.
+
+**Your task** is to answer the following questions in *Part 1* and *Part 2* in this R-markdown file. Please upload both your R-markdown ( .Rmd file) and the HTML files separately on Canvas. 
+
+# Who can earn more than 50K per year? (40 points)
+
+We want to explore the Income Prediction problem associated with the Adult Income Census dataset which is available in the [**liver**](https://CRAN.R-project.org/package=liver) package as the *adult* dataset. The prediction task is to determine whether a person makes over $50K a year. For this classification task, we are going to apply the *Decision Tree* using the *CART* and *C5.0* algorithms as well as the *Random Forest* algorithm by using the following R packages:
+
+* **rpart**: we use the `rpart()` function in this package for the *CART* algorithm.
+* **rpart.plot**: we use the `rpart.plot()` function in this package to plotting a decision tree.
+* **C50**: we use the `C5.0()` function in this package for the *C5.0* algorithm.
+* **randomForest**: we use the `randomForest()` function in this package for the *Random Forest* algorithm.
+* **liver**: the *adult* dataset is in this package. We also use the `partition()` function in this package.
+* **pROC**: to create ROC curve with AUC, we use the `plot.roc()` function in this package.
+
+If it’s needed, install these packages on your computer. Here we load them:
+
+```{r}
+library( rpart )         # For the "CART" algorithm
+library( rpart.plot )    # To plot decision trees
+library( C50 )           # For the "C5.0" algorithm
+library( randomForest )  # For the "Random Forest" algorithm
+library( liver )         # For the "adult" dataset & the "partition" function
+library( pROC )          # For ROC plot using "plot.roc" function
+library( ggplot2 )       # For ggroc plot
+```
+
+## Data Understanding
+
+The *adult* dataset is from the [US Census Bureau](https://www.census.gov) with the primary task to predict whether a given adult makes more than $50K a year based on attributes such as education, hours of work per week, etc. The target feature is *income* with two levels "`<=50K`" and "`>50K`", and the remaining 14 variables are predictors.
+
+We import the dataset and report the structure of the dataset:
+
+```{r}
+data( adult ) 
+
+str( adult )
+```
+
+It shows the dataset contains `r nrow( adult )` records and `r ncol( adult )` variables/features. The dataset has `r ncol( adult ) - 1` predictors along with a target variable `income` as a binary variable with two levels "`<=50K`" and "`>50K`". The variables/features (columns) are:
+
+* `age`: age in years (numerical).
+* `workclass`: a factor with 6 levels (categorical-nominal). 
+* `demogweight`: the demographics to describe a person (categorical-nominal).
+* `education`: a factor with 16 levels (categorical-nominal).
+* `education.num`: number of years of education (numerical-discrete).
+* `marital.status`: a factor with 5 levels (categorical-nominal).
+* `occupation`: a factor with 15 levels (categorical-nominal).
+* `relationship`: a factor with 6 levels (categorical-nominal).
+* `race`: a factor with 5 levels (categorical-nominal).
+* `gender`: a factor with levels "Female","Male" (categorical-binary).
+* `capital.gain`: capital gains  (numerical-discrete).
+* `capital.loss`: capital losses  (numerical-discrete).
+* `hours.per.week`: number of hours of work per week (numerical-discrete).
+* `native.country`: a factor with 42 levels (categorical-nominal).
+* `income`: yearly income as a factor with levels "`<=50K`" and "`>50K`" (categorical-binary).
+
+You can find more information related to this dataset at:
+
+[https://www.rdocumentation.org/packages/liver/versions/1.3/topics/adult](https://www.rdocumentation.org/packages/liver/versions/1.3/topics/adult)
+
+## Data Preparation
+
+We partition the *adult* dataset randomly into two groups as a train set (80%) and a test set (20%). Here, we use the `partition()` function from the *liver* package:
+
+```{r}
+set.seed( 6 )
+
+data_sets = partition( data = adult, prob = c( 0.8, 0.2 ) )
+
+train_set = data_sets $ part1
+test_set  = data_sets $ part2
+
+actual_test  = test_set $ income
+```
+
+Note that here we are using the `set.seed()` function to create reproducible results. 
+
+## Decision tree using CART algorithm
+
+Here, we want to classify whether or not a person’s income is less than $50K, based on the following set of predictor fields: 
+
+`age`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`, `marital.status`, `workclass`, `race`, and `gender`. 
+
+So, we produce a decision tree based on the CART algorithm. Here, we use the `rpart()` function from the [**rpart**](https://CRAN.R-project.org/package=rpart) package:
+
+```{r}
+formula = income ~ age + education.num + capital.gain + capital.loss + 
+                   hours.per.week + marital.status + workclass + race + gender
+
+tree_cart = rpart( formula = formula, data = train_set, method = "class" )
+
+print( tree_cart )
+```
+
+To plot the decision tree, we use the `rpart.plot()` function from the [**rpart.plot**](https://CRAN.R-project.org/package=rpart.plot) package:
+
+```{r fig.height = 6, fig.width = 10}
+rpart.plot( tree_cart, type = 4, extra = 104 )
+```
+
+Based on the output, answer the following questions: 
+
+a. **What is the number of decision nodes? What is the number of leaves?** 
+
+b. **Interpret the first leaf on the left (bottom left).**
+
+c. **In general, how do you interpret the above decision tree?**
+
+## Decision tree using C5.0 algorithm
+
+By using the C5.0 algorithm, we want to classify whether or not a person’s income is less than $50K. Here, first, for simplicity, we use only two predictors: `marital.status` and `education.num`. We produce a decision tree based on the C5.0 algorithm by using the `C5.0()` function from the [**C50**](https://CRAN.R-project.org/package=C50) package:
+
+```{r}
+tree_C50_small = C5.0( income ~ marital.status + education.num, data = train_set ) 
+
+plot( tree_C50_small )
+```
+
+Based on the output, answer the below questions:
+
+**What is the number of decision nodes? What is the number of leaves? Interpret the first leaf on the right (bottom right). In general, how do you interpret the above decision tree?** 
+
+## Random Forest
+
+*CART* and *C5.0* algorithms both produce a single decision tree based on all of the records, and the specified variables, in the training data set. On the other hand, *random forest* algorithm builds a series of decision trees and combine the trees disparate classifications of each record into one final classification. 
+
+Here, we want to classify whether or not a person’s income is less than $50K, based on the following set of predictor fields: `age`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`, `marital.status`, `workclass`, `race`, and `gender`. By considering these set of predictors, we run the *random forest* algorithm, using the `randomForest()` function from the [**randomForest**](https://CRAN.R-project.org/package=randomForest) package:
+
+```{r}
+random_forest = randomForest( formula = formula, data = train_set, ntree = 10 )
+```
+
+We can visualize the dot-chart of variable importance as measured by the *random forest* algorithm as follow
+
+```{r}
+varImpPlot( random_forest )
+```
+
+```{r  fig.height = 3, fig.width = 3}
+predict_random_forest = predict( random_forest, test_set )
+
+conf.mat( predict_random_forest, actual_test )
+
+conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest" )
+
+mse( predict_random_forest, actual_test )
+```
+
+Based on the output, answer the following questions: 
+
+**You see that in the `randomForest()` function we set the number of trees to 10 (`ntree = 10`). Change this value to 100 and run the code for this case (`ntree = 100`). Explain what conclusion you will draw.** 
+
+## Model Evaluation
+
+So far we've applied three different classification algorithms (*CART*, *C5.0*, and *random forest*) for the *adult* dataset. Now, you may ask "well, which one is more suable for this dataset?". In another word, which model has more accuracy? To answer this question, we evaluate the performance of the decision trees in parts 1.4, 1.5, and 1.6. Basically, by using the training dataset, we want to estimate (predict) whether or not a person’s *income* in the test set is less (higher) than $50K. We evaluate the accuracy of the predictions by reporting:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+
+* We run the **CART algorithm**, using the same *formula* input as before:
+
+```{r fig.height = 3, fig.width = 3}
+formula = income ~ age + education.num + capital.gain + capital.loss + 
+                   hours.per.week + marital.status + workclass + race + gender
+
+tree_cart = rpart( formula = formula, data = train_set, method = "class" )
+
+predict_cart = predict( tree_cart, test_set, type = "class" )
+
+conf.mat( predict_cart, actual_test )
+conf.mat.plot( predict_cart, actual_test )
+
+( mse_cart = mse( predict_cart, actual_test ) )
+```
+
+* We run the **C5.0 algorithm**, using the same *formula* input as before:
+
+```{r fig.height=3, fig.width=3}
+tree_C50 = C5.0( formula = formula, data = train_set, type = "class" ) 
+
+predict_C50 = predict( tree_C50, test_set, type = "class" )
+
+conf.mat( predict_C50, actual_test )
+conf.mat.plot( predict_C50, actual_test )
+
+( mse_C50 = mse( predict_C50, actual_test ) )
+```
+
+* We run the **random forest**, using the same *formula* input as before:
+
+```{r fig.height=3, fig.width=3}
+random_forest = randomForest( formula = formula, data = train_set, ntree = 100 )
+
+predict_random_forest = predict( random_forest, test_set )
+
+conf.mat( predict_random_forest, actual_test )
+conf.mat.plot( predict_random_forest, actual_test )
+
+( mse_random_forest = mse( actual_test, predict_random_forest ) )
+```
+
+Here we report the ROC curves as well as AUC for the above classification algorithm as follows:
+
+```{r}
+prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
+prob_C50 = predict( tree_C50, test_set, type = "prob" )[ , 1 ]
+prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
+
+roc_cart = roc( actual_test, prob_cart )
+roc_C50 = roc( actual_test, prob_C50 )
+roc_random_forest = roc( actual_test, prob_random_forest )
+
+ggroc( list( roc_cart, roc_C50, roc_random_forest ), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for 3 outcomes") +
+  scale_color_manual( values = 1:3, 
+    labels = c( paste( "CART; AUC=", round( auc( roc_cart ), 3 ) ), 
+                paste( "C50; AUC=", round( auc( roc_C50 ), 3 ) ), 
+                paste( "Random Forest; AUC=", round( auc( roc_random_forest ), 3 ) ) ) ) +
+  theme( legend.title = element_blank() ) +
+  theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+In the above plot **black** curve is for CART algorithm, <span style="color:red">**red**</span> curve is for C50 algorithm, and <span style="color:green">**green**</span> curve is for random forest algorithm. 
+
+**Based on the result of above four model evaluaiton reports (Confusion Matrix, MSE, ROC cuve, and UCA), what conclusion you will draw.**
+
+# Decision Tree analysis for churn dataset (60 points)
+
+We want to apply the decision tree analysis to the [*churn*](https://rdrr.io/cran/liver/man/churn.html) dataset that is available in the **R** package [**liver**](https://CRAN.R-project.org/package=liver). We want to classify whether or not a customer leaving the service of one company in favor of another company. Use the code from the questions in Part 2.
+
+The *churn* dataset has 19 predictors but we are not going to use all of the predictors. We know based on the lecture of week 2, we should use only the predictors that have a relationship with the target variable. So, here we use the following predictors:
+
+`account.length`, `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`.
+
+For this classification task, we want to apply the following algorithms:
+
+* *CART* algorithm,
+* *C5.0* algorithm,
+* *Random Forest* algorithm,
+* *kNN* algorithm.
+
+Ultimately, **we want to see which of the above classification algorithms are more suitable here**, by evaluating the accuracy of the predictions with:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+
+## Data Preparation
+
+After importing the *churn* dataset in R, partition the *churn* dataset randomly into two groups as a train set (80%) and a test set (20%). Here, for the partition, you could use the `partition()` function from the *liver* package. You should use the `set.seed()` function in R; similar to the data preparation in section 1 for adult dataset.
+
+## Applying Decision Tree algorithms
+
+For the classification task, by using the training dataset, run the following algorithms:
+
+* *CART algorithm* using the `rpart()` function in the **rpart** R package and plot the decision tree using the `rpart.plot()` function in the **rpart.plot** R package; Similar to part 1.3.
+
+* *C5.0 algorithm* using the `C5.0()` function in the R package **C50**; Similar to part 1.4.
+
+* *Random Forest* using the `randomForest()` function from the R package **randomForest**; Similar to part 1.5.
+
+Based on the training dataset and the above models predict for the test set. For the prediction, you could use the `predict()` function; Similar to part 1.6.
+
+## Applying kNN algorithm
+
+Find the k-nearest neighbor for the test set, based on the training dataset, for the case k = 13. For the kNN algorithm, use min-max normalization to transfer the predictors, similar to the exercises of week 4.
+
+## Model Evaluation
+
+Based on your results so far, which of the four classification algorithms is more suitable here for the *churn* dataset based on:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+
+# **Bonus**: Applying the Decision Tree and Random Forest for your own dataset (30 points)
+
+In this part, similar to the above sections, apply the following algorithms for your own dataset:
+
+* *CART* algorithm,
+* *C5.0* algorithm,
+* *Random Forest* algorithm,
+* *kNN* algorithm.
+
+Check which of the above classification algorithms are more suitable for your dataset, by evaluating the accuracy of the predictions with:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+
+You could consider to follow these steps:
+
+1. Load your dataset in RStudio environment and select the predictors (See the slide of Week 1);
+2. Partition the dataset for modeling and validate the partition (Similar to part 1.2);
+3. Apply the *CART*, *C5.0*, *Random Forest*, *kNN* algorithms (Similar to parts 1.3, 1.4, and 1.5);
+4. Evaluate the models by reporting *Confusion Matrix*, *MSE*, *ROC curve*, and the value of *AUC* (Similar to part 1.6).
+
+*Note*: to apply the classification algorithms to your own dataset, the target variable has to be categorical, preferably Binary, similar to the above examples.
+   
