@@ -19,7 +19,15 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center'  )
 ```
 
-**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+```{css, echo=FALSE}
+.answer_panel { margin-left: 40px; }
+
+.sub_details { margin-left: 60px; }
+```
+
+**Full Name:** 
+
+* Peter Molnar (11759216)
    
 **Online Assignment**: There is a new online-assignment at the [DataCamp](https://www.datacamp.com) with the name “*Chapter 4: Classification Trees*” which is a part of the online course “Supervised Learning in R: Classification” at the DataCamp. *The online-assignments at the DataCamp are not mandatory*.
 
@@ -46,6 +54,7 @@ library( randomForest )  # For the "Random Forest" algorithm
 library( liver )         # For the "adult" dataset & the "partition" function
 library( pROC )          # For ROC plot using "plot.roc" function
 library( ggplot2 )       # For ggroc plot
+library( caret )
 ```
 
 ## Data Understanding
@@ -126,9 +135,48 @@ Based on the output, answer the following questions:
 
 a. **What is the number of decision nodes? What is the number of leaves?** 
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+
+* Number of decision nodes: 6
+* Number of decision leaves: 7
+
+</details>
+
 b. **Interpret the first leaf on the left (bottom left).**
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+
+The left most leaf represents 53% of the whoel dataset and classifies as low income with 96% accuracy, and 4% error rate. This subgroup is of unmarried, and has capital gain less than $7056.
+  
+</details>
+
 c. **In general, how do you interpret the above decision tree?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+
+The above decision tree is constructed by the use of CART algorithm.
+
+The following binary splits are made:
+
+* The root node splits on `marital.status`, and 76% have income less than \$50K.
+  * 53% of the whole dataset is of unmarried, and splits on `capital.gain`. 94% have income less than \$50k, while the rest 6% have income more than \$50k
+    * 52% of the whole dataset is of unmarried with capital gain less than \$7056, and 95% have less than \$50k income, while the rest 5% have more than \$50k.
+    * 1 % of the whole dataset is of unmarried with capital gain more than \$7056, and 97% of them have more than \$50K income, while the rest 3% have less than \$50K
+  * 47% of the whole dataset is of married, and splits on `education.num`. 57% have income less than \$50K and 43% have income more than \$50K
+    * 33% of the whole dataset have less than 13 years of education, and splits on `capital.gain`. 68% have less than $50K, and 32% have more than \$50K
+      * 32% of the whole dataset has `capital.gain` less than $5096 and splits on `education.num`. 71% of them have \$50K income while the rest 29% have more than \$50K.
+        * 6% of the whole dataset have years in education less than 9 years, and 90% of them earn less than \$50K per year, while the rest 10% earn more than \$50k.
+        * 26% of the whole dataset spent more than 9 years in education and splits on `capital.loss`. 67% of them earn less than \$50K and the rest 33% earn more than that.
+          * 25% of the whole dataset suffered less than \$1821 of capital loss. 60% of them earns less than \$50K a year, while the rest 31% earns more than that. 
+          * 1% of the whole dataset lost registered \$1821 as capital loss. 75% of them makes more than \$50K a year, while the rest 25% makes less than that.
+    * 2% of the whole dataset has capital gains over $5096. 2% of them have income less than \$50K income while the rest, 98% have income more than \$50k income.
+    * 14% of the whole dataset have years in education more than 13 years. 30% of them, have less than \$50K of income and the rest 70% has more than \$50k
+    
+
+</details>
 
 ## Decision tree using C5.0 algorithm
 
@@ -142,7 +190,36 @@ plot( tree_C50_small )
 
 Based on the output, answer the below questions:
 
-**What is the number of decision nodes? What is the number of leaves? Interpret the first leaf on the right (bottom right). In general, how do you interpret the above decision tree?** 
+**What is the number of decision nodes? What is the number of leaves?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+* Number of decision nodes: 2
+* Number of leaves: 3
+  
+</details>
+
+**Interpret the first leaf on the right (bottom right).**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+* 5306 observations belong to the `married` group with at least 13 years of education, out of which 70% makes more than \$50K while the rest 30% makes less than that.
+  
+</details>
+
+**In general, how do you interpret the above decision tree?**
+
+<details class="answer_panel">
+  <summary>Answer</summary>
+
+* The root node splits on `marital.status`. 20543 observations are of unmarried, out of which approximately 95% makes less than \$50K a year, while the rest 5% makes more than that.
+
+* Those of married splits on `education.num`. 12933 observations spent maximum 12 years in education, out of which 70% makes less than \$50k a year, while the rest 30% makes more than that.
+
+* 5306 observations spent at least 13 years of education, out of which 70% makes more than \$50K while the rest 30% makes less than that.
+  
+  
+</details>
 
 ## Random Forest
 
@@ -172,7 +249,94 @@ mse( predict_random_forest, actual_test )
 
 Based on the output, answer the following questions: 
 
-**You see that in the `randomForest()` function we set the number of trees to 10 (`ntree = 10`). Change this value to 100 and run the code for this case (`ntree = 100`). Explain what conclusion you will draw.** 
+**You see that in the `randomForest()` function we set the number of trees to 10 (`ntree = 10`). Change this value to 100 and run the code for this case (`ntree = 100`). Explain what conclusion you will draw.**
+
+<details>
+  <summary>Answer</summary>
+
+* There are 2 possible predicted classes: “<=50K” and “>50K”
+* “<=50K” meaning that the model predicted that the person earns maximum of $50.000 annually.
+* “>50K” meaning that the model predicted that the person earns more than$50.000 annually.
+* In total the classifier made 9816 predictions
+
+
+<h3>n=10</h3>
+
+The classifier
+
+* predicted “<=50K” for 8008 people, out of which 7064 was correctly predicted, while 944 was incorrectly.
+* predicted “>50K” for 1808 people, out of which 1377 was correctly predicted, and 431 was incorrectly.
+* Out of the 9816 predictions, the model correctly predicted the outcome 7064 + 1377 = 8441 times.
+* Out of the 9816 predictions, the model incorrectly predicted the outcome 944 + 431 = 1375 times
+
+```{r}
+confusionMatrix(data = predict_random_forest, reference = actual_test)
+```
+
+We identify the following:
+
+* **Accuracy:** overall the classifier is correct 85.84% of the time
+* **Misclassification rate:** overall the classifier is incorrect 14.16% of the time
+* **Sensitivity:** the model correctly classifies positive records 93.97% of the time
+* **Specificity:** the model correctly classifies negative records 59.59% of the time
+
+<h3>n=100</h3>
+
+```{r}
+random_forest_100 = randomForest( formula = formula, data = train_set, ntree = 100 )
+varImpPlot( random_forest_100 )
+predict_random_forest_100 = predict( random_forest_100, test_set )
+```
+
+```{r fig.height = 3, fig.width = 3}
+conf.mat( predict_random_forest_100, actual_test )
+
+conf.mat.plot( predict_random_forest_100, actual_test, main = "Random Forest" )
+
+mse( predict_random_forest_100, actual_test )
+```
+
+The classifier
+
+* predicted “<=50K” for 8002 people, out of which 7060 was correctly predicted, while 942 was incorrectly.
+* predicted “>50K” for 1814 people, out of which 1379 was correctly predicted, and 435 was incorrectly.
+* Out of the 9816 predictions, the model correctly predicted the outcome 7060 + 942 = 8002 times.
+* Out of the 9816 predictions, the model incorrectly predicted the outcome 944 + 431 = 1814 times
+
+
+```{r}
+confusionMatrix(data = predict_random_forest_100, reference = actual_test)
+```
+
+* **Accuracy:** overall the classifier is correct 85.97% of the time
+* **Misclassification rate:** overall the classifier is incorrect 14.03% of the time
+* **Sensitivity:** the model correctly classifies positive records 94.20% of the time
+* **Specificity:** the model correctly classifies negative records 59.41% of the time
+
+
+<h3>Conclusion</h3>
+
+| | n=10 | n=100 |
+| :- | :-: | :-: |
+|MSE | 0.1416 | 0.1402 |
+|Accuracy |85.84% | 85.97%|
+|Misclassification rate | 14.16% | 14.03% |
+|Sensitivity |93.97% | 94.20% |
+|Specificity |59.59% | 59.41% |
+
+Based on the above summary we can conclude the following:
+
+* The random forest with n=10 bears with slightly higher error rate, than the model with n=100. Between competing models, the one with lower error rate is preferred, that is, n=100.
+* The accuracy rate of the model with n=10 is again slightly lower than that of n=100. Given, then that the misspecification rate is the complement of accuracy, the model with n=10 has a higher misspecification rate. The higher accuracy and lower misspecification is preferred, therefore, the model with n=100.
+* The model with n=10 has lower sensitivity than that of n=100. That is, the former model predicts the positive records less than its competitor model, n=100. Hence, the latter is preferred.
+* In terms of specificity, the model with n=10 performs better, however, the margin is very little, i.e., small enough and insignificant to still prefer the model with n=100, since it outcompeted in the rest of the metrics.
+
+
+In conclusion, the model with n=100 shows a slightly better predictability than the model with n=10. Since the margin is so little, that it may still be preferred to use n=10, so that n=100 would not come at the cost of computational complexity.
+
+</details>
+
+
 
 ## Model Evaluation
 
@@ -249,6 +413,41 @@ ggroc( list( roc_cart, roc_C50, roc_random_forest ), size = 0.8 ) +
 In the above plot **black** curve is for CART algorithm, <span style="color:red">**red**</span> curve is for C50 algorithm, and <span style="color:green">**green**</span> curve is for random forest algorithm. 
 
 **Based on the result of above four model evaluaiton reports (Confusion Matrix, MSE, ROC cuve, and UCA), what conclusion you will draw.**
+
+
+<details>
+  <summary>Answer</summary>
+
+In order to compare the competing models, we run the following code to report the accuracy, misclassification rate, sensitivity and specificity.
+
+```{r}
+confusionMatrix(data = predict_random_forest, reference = actual_test)
+confusionMatrix(data = predict_cart, reference = actual_test)
+confusionMatrix(data = predict_C50, reference = actual_test)
+```
+
+| | CART | C50 | Random Forest| 
+| :- | :-: | :-: | :-:|
+|MSE | 0.1519 | 0.1391 |0.1390|
+|Accuracy |0.8481 | 0.8609 |0.8609 |
+|Misclassification rate | 0.1519 | 0.1391 | 0.1391 |
+|Sensitivity | 0.9428 | 0.9429  |0.9454 | 
+|Specificity |0.5424 | 0.5963  | 0.5881 |
+|AUC | 0.8550 | 0.8950 | 0.8800|
+
+Based on the above summary we can conclude the following:
+
+* Random forest has the lowest Mean Squared Error, that is, it bears with the lower error on average
+* C50 and the random forest has the same level accuracy, they are preferred over CART. The conclusion is the same for the misspecification rate.
+* The random forest algorithm has the highest rate of sensitivity, it is preferred over others
+* the C50 algorithm has the highest specificity rate, it is preferred over other
+* C50 has the highest AUC, therefore it is deemed to be a superior model to others.
+
+
+In conclusion, the C50 algorithm is the preferred model.
+  
+
+</details>
 
 # Decision Tree analysis for churn dataset (60 points)
 
