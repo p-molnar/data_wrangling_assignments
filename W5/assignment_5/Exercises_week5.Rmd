@@ -1,3 +1,4 @@
+
 ---
 title: '<center> The Exercises of Week 5 - Decision Trees <center>'
 author: '<center> Reza Mohammadi <center>'
@@ -139,7 +140,7 @@ a. **What is the number of decision nodes? What is the number of leaves?**
   <summary>Answer</summary>
 
 * Number of decision nodes: 6
-* Number of decision leaves: 7
+* Number of leaves: 7
 
 </details>
 
@@ -148,7 +149,7 @@ b. **Interpret the first leaf on the left (bottom left).**
 <details class="answer_panel">
   <summary>Answer</summary>
 
-The left most leaf represents 53% of the whoel dataset and classifies as low income with 96% accuracy, and 4% error rate. This subgroup is of unmarried, and has capital gain less than $7056.
+The left most leaf consists of a subset of observation that are of unmarried with capital gain less than \$7056 a year, and represents 52% of the whole dataset. The leaf in question classifies as low income (<=\$50K) with 96% accuracy, and 4% error rate. In other words, 96% of the unmarried with capital gain less than \$7056 a year earn <=\$50K a year and the rest 4% earn >\$50K.
   
 </details>
 
@@ -156,25 +157,26 @@ c. **In general, how do you interpret the above decision tree?**
 
 <details class="answer_panel">
   <summary>Answer</summary>
+  
+In general a CART decision tree is interpreted as follows:
 
-The above decision tree is constructed by the use of CART algorithm.
+1. we start with the top decision node (root node), and follow along an edge, whereby the next nodes and the edges tell which subsets we are looking at
+2. once a leaf node is reached, it tells the predicted outcome
+3. all the edges are connected by ‘AND’.
 
-The following binary splits are made:
-
-* The root node splits on `marital.status`, and 76% have income less than \$50K.
-  * 53% of the whole dataset is of unmarried, and splits on `capital.gain`. 94% have income less than \$50k, while the rest 6% have income more than \$50k
-    * 52% of the whole dataset is of unmarried with capital gain less than \$7056, and 95% have less than \$50k income, while the rest 5% have more than \$50k.
-    * 1 % of the whole dataset is of unmarried with capital gain more than \$7056, and 97% of them have more than \$50K income, while the rest 3% have less than \$50K
-  * 47% of the whole dataset is of married, and splits on `education.num`. 57% have income less than \$50K and 43% have income more than \$50K
-    * 33% of the whole dataset have less than 13 years of education, and splits on `capital.gain`. 68% have less than $50K, and 32% have more than \$50K
-      * 32% of the whole dataset has `capital.gain` less than $5096 and splits on `education.num`. 71% of them have \$50K income while the rest 29% have more than \$50K.
-        * 6% of the whole dataset have years in education less than 9 years, and 90% of them earn less than \$50K per year, while the rest 10% earn more than \$50k.
-        * 26% of the whole dataset spent more than 9 years in education and splits on `capital.loss`. 67% of them earn less than \$50K and the rest 33% earn more than that.
-          * 25% of the whole dataset suffered less than \$1821 of capital loss. 60% of them earns less than \$50K a year, while the rest 31% earns more than that. 
-          * 1% of the whole dataset lost registered \$1821 as capital loss. 75% of them makes more than \$50K a year, while the rest 25% makes less than that.
-    * 2% of the whole dataset has capital gains over $5096. 2% of them have income less than \$50K income while the rest, 98% have income more than \$50k income.
-    * 14% of the whole dataset have years in education more than 13 years. 30% of them, have less than \$50K of income and the rest 70% has more than \$50k
-    
+* The root node represents 100% of the whole dataset, out of which 76% classify as low income, and the rest 24% as high income. This node is a decision node, and splits on `marital.status`.
+  * Those of unmarried represent 53% of the whole dataset, out of which 94% classifies as low income, and the rest 6% as high income. This node is a decision node, and splits on `capital.gain`.
+    * Those of unmarried with `capital.gain` < 7056 represent 52% of the whole dataset, out of which 95% classify as low income and the rest 5% as high income.
+    * Those of unmarried with `capital.gain` >= 7056 represent 1% of the whole dataset, out of which 97% classify as high income and the rest 3% as low income.
+  * Those of married, represent 47% of the whole dataset, out of which 57% classify as low income and 43% as high income. This node is a decision node, and splits on `education.num`
+    * Those of married, with `education.num` < 13 represents 33% of the whole dataset, out of which 68% are of low income earners, and the rest 32% are high income earners. This node is a decision node, and splits on `capital.gain`
+      * Those of married, with `education.num` < 13 and `capital.gain` < 5096 represents 32% of the whole dataset, out of which 71% classify as low income and the rest 29% as high income. This node is a decision node and splits on `education.num`
+        * Those of married, with `education.num` < 9 and `capital.gain` < 5096 represent 6% of the whole dataset, out of which 90% classify as low income and the rest 10% as high income
+        * Those of married, with 9 <= `education.num` < 13 represents 26% of the whole dataset, out of which 67% classify as low income, and the rest 33% as high income. This node is a decision node, and splits on `capital.loss`
+          * Those of married with 9 <= `education.num` < 13, and `capital.gain` < 5096, and `capital.loss` < 1821 represent 25% of the whole dataset, out of which 69% classify as low income and the rest 31% as high income
+          * Those of married with 9 <= `education.num` < 13, and `capital.gain` < 5096, and `capital.loss` >= 1821 represent 1% of the whole dataset, out of which 75% classify as high income and the rest 25% as low income
+      * Those of married with `education.num` < 13 with `capital.gain` >= 5096 represents 2% of the whole dataset, out of which 98% classify as high income and the rest 2% as low income
+    * Those of married with `education.num` >=13 represents 14% of the whole dataset, out of which 70% classify as high income earners, and the rest 30% are of low income earners.
 
 </details>
 
@@ -203,7 +205,7 @@ Based on the output, answer the below questions:
 
 <details class="answer_panel">
   <summary>Answer</summary>
-* 5306 observations belong to the `married` group with at least 13 years of education, out of which 70% makes more than \$50K while the rest 30% makes less than that.
+* 5306 observations are of `married` and has more than 12 years of education, out of which approximately 70% classify as high income earners and the rest 30% as low income.
   
 </details>
 
@@ -212,12 +214,12 @@ Based on the output, answer the below questions:
 <details class="answer_panel">
   <summary>Answer</summary>
 
-* The root node splits on `marital.status`. 20543 observations are of unmarried, out of which approximately 95% makes less than \$50K a year, while the rest 5% makes more than that.
+* The root node represents 38782 observations (100%). This node is a decision node, and splits on `marital.status` into 2 groups, married and unmarried.
+  * Those of unmarried represent 20543 observations, 52.97% of the whole dataset, out of which approximately 95% classify as low income and the rest 5% as high income.
+  * Those of married represent 18239 observations, 47.02% of the whole dataset. This node is a decision node, and splits on `education.num`.
+    * Those of married with `education.num` <= 12 represent 12933 observations, 33.35% of the whole dataset, out of which approximately 70% classify as low income and the rest 30% as high income.
+    * Those of married with `education.num` > 12 represent 5306 observations, 13.68% of the whole dataset, out of which approximately 70% classify as high income and the rest 30% as low income.
 
-* Those of married splits on `education.num`. 12933 observations spent maximum 12 years in education, out of which 70% makes less than \$50k a year, while the rest 30% makes more than that.
-
-* 5306 observations spent at least 13 years of education, out of which 70% makes more than \$50K while the rest 30% makes less than that.
-  
   
 </details>
 
@@ -242,7 +244,7 @@ predict_random_forest = predict( random_forest, test_set )
 
 conf.mat( predict_random_forest, actual_test )
 
-conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest" )
+conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest n =10" )
 
 mse( predict_random_forest, actual_test )
 ```
@@ -256,7 +258,7 @@ Based on the output, answer the following questions:
 
 * There are 2 possible predicted classes: “<=50K” and “>50K”
 * “<=50K” meaning that the model predicted that the person earns maximum of $50.000 annually.
-* “>50K” meaning that the model predicted that the person earns more than$50.000 annually.
+* “>50K” meaning that the model predicted that the person earns more than $50.000 annually.
 * In total the classifier made 9816 predictions
 
 
@@ -264,10 +266,10 @@ Based on the output, answer the following questions:
 
 The classifier
 
-* predicted “<=50K” for 8008 people, out of which 7064 was correctly predicted, while 944 was incorrectly.
-* predicted “>50K” for 1808 people, out of which 1377 was correctly predicted, and 431 was incorrectly.
-* Out of the 9816 predictions, the model correctly predicted the outcome 7064 + 1377 = 8441 times.
-* Out of the 9816 predictions, the model incorrectly predicted the outcome 944 + 431 = 1375 times
+* predicted “<=50K” for 7981 people, out of which 7043 was correctly predicted, while 938 was incorrectly.
+* predicted “>50K” for 1835 people, out of which 1383 was correctly predicted, and 452 was incorrectly.
+* Out of the 9816 predictions, the model correctly predicted the outcome 7043 + 1383 = 8426 times.
+* Out of the 9816 predictions, the model incorrectly predicted the outcome 938 + 452 = 1390 times
 
 ```{r}
 confusionMatrix(data = predict_random_forest, reference = actual_test)
@@ -291,7 +293,7 @@ predict_random_forest_100 = predict( random_forest_100, test_set )
 ```{r fig.height = 3, fig.width = 3}
 conf.mat( predict_random_forest_100, actual_test )
 
-conf.mat.plot( predict_random_forest_100, actual_test, main = "Random Forest" )
+conf.mat.plot( predict_random_forest_100, actual_test, main = "Random Forest n=100" )
 
 mse( predict_random_forest_100, actual_test )
 ```
@@ -300,8 +302,8 @@ The classifier
 
 * predicted “<=50K” for 8002 people, out of which 7060 was correctly predicted, while 942 was incorrectly.
 * predicted “>50K” for 1814 people, out of which 1379 was correctly predicted, and 435 was incorrectly.
-* Out of the 9816 predictions, the model correctly predicted the outcome 7060 + 942 = 8002 times.
-* Out of the 9816 predictions, the model incorrectly predicted the outcome 944 + 431 = 1814 times
+* Out of the 9816 predictions, the model correctly predicted the outcome 7060 + 1379 = 8439 times.
+* Out of the 9816 predictions, the model incorrectly predicted the outcome 942 + 435 = 1377 times
 
 
 ```{r}
@@ -318,7 +320,7 @@ confusionMatrix(data = predict_random_forest_100, reference = actual_test)
 
 | | n=10 | n=100 |
 | :- | :-: | :-: |
-|MSE | 0.1416 | 0.1402 |
+|MSE | 0.1416 | 0.1403 |
 |Accuracy |85.84% | 85.97%|
 |Misclassification rate | 14.16% | 14.03% |
 |Sensitivity |93.97% | 94.20% |
@@ -328,11 +330,11 @@ Based on the above summary we can conclude the following:
 
 * The random forest with n=10 bears with slightly higher error rate, than the model with n=100. Between competing models, the one with lower error rate is preferred, that is, n=100.
 * The accuracy rate of the model with n=10 is again slightly lower than that of n=100. Given, then that the misspecification rate is the complement of accuracy, the model with n=10 has a higher misspecification rate. The higher accuracy and lower misspecification is preferred, therefore, the model with n=100.
-* The model with n=10 has lower sensitivity than that of n=100. That is, the former model predicts the positive records less than its competitor model, n=100. Hence, the latter is preferred.
-* In terms of specificity, the model with n=10 performs better, however, the margin is very little, i.e., small enough and insignificant to still prefer the model with n=100, since it outcompeted in the rest of the metrics.
+* The model with n=10 has lower sensitivity than that of n=100. That is, the former model predicts the positive records less than its other model, n=100. Hence, the latter is preferred.
+* In terms of specificity, the model with n=10 performs better, however, the margin is only approximately 0.2%. Therefore, the model with n=10 is preferred.
 
 
-In conclusion, the model with n=100 shows a slightly better predictability than the model with n=10. Since the margin is so little, that it may still be preferred to use n=10, so that n=100 would not come at the cost of computational complexity.
+In conclusion, the model with n=100 shows a slightly better prediction metrics than the model with n=10. Since the margin is little to non-significant, if the larger n value comes at the cost of computational complexity, and hence computational time, the model with the smaller n is preferred. However, if the larger n does not cause any computational difficulties, the larger n is more optimal.
 
 </details>
 
@@ -386,7 +388,7 @@ predict_random_forest = predict( random_forest, test_set )
 conf.mat( predict_random_forest, actual_test )
 conf.mat.plot( predict_random_forest, actual_test )
 
-( mse_random_forest = mse( actual_test, predict_random_forest ) )
+( mse_random_forest = mse( predict_random_forest, actual_test ) )
 ```
 
 Here we report the ROC curves as well as AUC for the above classification algorithm as follows:
@@ -421,14 +423,14 @@ In the above plot **black** curve is for CART algorithm, <span style="color:red"
 In order to compare the competing models, we run the following code to report the accuracy, misclassification rate, sensitivity and specificity.
 
 ```{r}
-confusionMatrix(data = predict_random_forest, reference = actual_test)
 confusionMatrix(data = predict_cart, reference = actual_test)
 confusionMatrix(data = predict_C50, reference = actual_test)
+confusionMatrix(data = predict_random_forest, reference = actual_test)
 ```
 
 | | CART | C50 | Random Forest| 
 | :- | :-: | :-: | :-:|
-|MSE | 0.1519 | 0.1391 |0.1390|
+|MSE | 0.1519 | 0.1391 |0.1391|
 |Accuracy |0.8481 | 0.8609 |0.8609 |
 |Misclassification rate | 0.1519 | 0.1391 | 0.1391 |
 |Sensitivity | 0.9428 | 0.9429  |0.9454 | 
@@ -437,14 +439,13 @@ confusionMatrix(data = predict_C50, reference = actual_test)
 
 Based on the above summary we can conclude the following:
 
-* Random forest has the lowest Mean Squared Error, that is, it bears with the lower error on average
-* C50 and the random forest has the same level accuracy, they are preferred over CART. The conclusion is the same for the misspecification rate.
-* The random forest algorithm has the highest rate of sensitivity, it is preferred over others
-* the C50 algorithm has the highest specificity rate, it is preferred over other
+* The Random forest and C50 algorithms have equally low Mean Squared Error, that is, they bears with the lower error on average in prediction than CART
+* The random forest and C50 algorithms have equal accuracy, and they are both higher than that of CART's
+* The random forest algorithm has the highest rate of sensitivity
+* the C50 algorithm has the highest specificity rate
 * C50 has the highest AUC, therefore it is deemed to be a superior model to others.
 
-
-In conclusion, the C50 algorithm is the preferred model.
+In conclusion, Although the C50 and Random forest algorithm produce similar results, because of the higher AUC value, C50 is preferred over the other 2 models.
   
 
 </details>
@@ -475,6 +476,24 @@ Ultimately, **we want to see which of the above classification algorithms are mo
 
 After importing the *churn* dataset in R, partition the *churn* dataset randomly into two groups as a train set (80%) and a test set (20%). Here, for the partition, you could use the `partition()` function from the *liver* package. You should use the `set.seed()` function in R; similar to the data preparation in section 1 for adult dataset.
 
+<details>
+  <summary>Answer</summary>
+  
+```{r}
+data( churn )
+
+set.seed( 5 )
+
+data_sets = partition( data = churn, prob = c( 0.8, 0.2 ) )
+
+train_set = data_sets $ part1
+test_set  = data_sets $ part2
+
+actual_test  = test_set $ churn
+```
+
+</details>
+
 ## Applying Decision Tree algorithms
 
 For the classification task, by using the training dataset, run the following algorithms:
@@ -485,11 +504,47 @@ For the classification task, by using the training dataset, run the following al
 
 * *Random Forest* using the `randomForest()` function from the R package **randomForest**; Similar to part 1.5.
 
+
 Based on the training dataset and the above models predict for the test set. For the prediction, you could use the `predict()` function; Similar to part 1.6.
+
+<details>
+  <summary>Answer</summary>
+
+<h3>Selecting the variables</h3>
+```{r}
+formula = churn ~ account.length +voice.plan + voice.messages + intl.plan + intl.mins + day.mins + eve.mins + night.mins + customer.calls
+```
+
+<h3>CART</h3>
+
+```{r}
+tree_cart = rpart( formula = formula, data = train_set, method = "class" )
+predict_cart = predict( tree_cart, test_set, type = "class" )
+```
+
+<h3>C50</h3>
+
+```{r}
+tree_C50 = C5.0( formula=formula, data = train_set ) 
+predict_C50 = predict( tree_C50, test_set, type = "class" )
+```
+
+<h3>Random forest</h3>
+
+```{r}
+random_forest = randomForest( formula = formula, data = train_set, ntree = 10 )
+predict_random_forest = predict( random_forest, test_set, type = "class" )
+```
+
+</details>
 
 ## Applying kNN algorithm
 
 Find the k-nearest neighbor for the test set, based on the training dataset, for the case k = 13. For the kNN algorithm, use min-max normalization to transfer the predictors, similar to the exercises of week 4.
+
+```{r}
+predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13 )
+```
 
 ## Model Evaluation
 
@@ -499,6 +554,82 @@ Based on your results so far, which of the four classification algorithms is mor
 * MSE,
 * ROC curve,
 * AUC (Area Under the ROC curve).
+
+<details>
+  <summary>Answer</summary>
+
+<h3>Confusion Matrix</h3>
+
+```{r, fig.show="hold", out.width="50%", fig.width=12, fig.align="default"}
+confusionMatrix(data = predict_cart, reference = actual_test)
+conf.mat.plot( predict_cart, actual_test, main = "CART Prediction")
+
+confusionMatrix(data = predict_C50, reference = actual_test)
+conf.mat.plot( predict_C50, actual_test, main = "C5.0 Prediction" )
+
+confusionMatrix(data = predict_random_forest, reference = actual_test)
+conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest Prediction" )
+
+confusionMatrix(data = predict_knn, reference = actual_test)
+conf.mat.plot( predict_knn, actual_test, main = "KNN Prediction" )
+```
+
+<h3>MSE</h3>
+
+```{r}
+( mse_random_forest = mse( predict_cart, actual_test ) )
+( mse_random_forest = mse( predict_C50, actual_test ) )
+( mse_random_forest = mse( predict_random_forest, actual_test ) )
+( mse_random_forest = mse( predict_knn, actual_test ) )
+```
+
+<h3>ROC & AUC</h3>
+
+```{r}
+prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
+prob_C50 = predict( tree_C50, test_set, type = "prob" )[ , 1 ]
+prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
+prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13, type = "prob" )[ , 1 ]
+
+
+roc_cart = roc( actual_test, prob_cart )
+roc_C50 = roc( actual_test, prob_C50 )
+roc_random_forest = roc( actual_test, prob_random_forest )
+roc_knn = roc( actual_test, prob_knn )
+
+ggroc( list( roc_cart, roc_C50, roc_random_forest, roc_knn), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
+  scale_color_manual( values = 1:5, 
+    labels = c( paste( "CART; AUC=", round( auc( roc_cart ), 3 ) ), 
+                paste( "C50; AUC=", round( auc( roc_C50 ), 3 ) ), 
+                paste( "Random Forest; AUC=", round( auc( roc_random_forest ), 3 ) ),
+                paste( "KNN; AUC=", round( auc( roc_knn ), 3 ) )) ) +
+  theme( legend.title = element_blank() ) +
+  theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+<h3>Conclusion</h3>
+
+| | CART | C50 | Random Forest | KNN |
+|:- | :-: | :-: | :-: | :-: |
+| MSE | 0.0566 | 0.0595 | 0.0557 | 0.0898 |
+| Accuracy | 0.9434 | 0.9404 | 0.9443 | 0.9102|
+| Misspecification rate | 0.0566 | 0.0596 | 0.0557| 0.0898|
+| Sensitivity | 0.6815 | 0.6815 | 0.7333 | 0.4222 |
+| Specificity | 0.9831 | 0.9797 | 0.9763 | 0.9843 |
+| AUC | 0.907 | 0.908 | 0.928 | 0.918 |
+
+Based on the above summary, we can conclude the following:
+
+* In terms of MSE, the random forest algorithm produces the least erroneous prediction
+* the most accurate algorithm is the random forest, and hence also the one with the smallest misspecification rate
+* in terms of sensitivity, again the random forest came out as superior to other models
+* in terms of specificity KNN bears with the highest rate, however, the other models are not far behind either
+* in terms of AUC, the random forest algorithm encloses the largest area under the curve
+
+All things above considered, the random forest is deemed the best prediction model out of the 4 competing models.
+
+</details>
 
 # **Bonus**: Applying the Decision Tree and Random Forest for your own dataset (30 points)
 

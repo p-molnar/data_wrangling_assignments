@@ -524,7 +524,7 @@ chisq.test( table( bank $ deposit, bank $ education ) )
 
 **p-value:** $p\textrm{-}value = 0.001625  = 0.1625\%$
 
-**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $0.1625\%$ < $\frac{\alpha}{2} = 2.5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that there is statistical relationship between `education` and `deposit`.
+**Statistical conclusion:** Given significance level of $\alpha = 0.05$ , and p-value = $0.1625\%$ < $\alpha = 5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that there is statistical relationship between `education` and `deposit`.
 
 </details>
 
