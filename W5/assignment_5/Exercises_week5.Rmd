@@ -55,7 +55,7 @@ library( randomForest )  # For the "Random Forest" algorithm
 library( liver )         # For the "adult" dataset & the "partition" function
 library( pROC )          # For ROC plot using "plot.roc" function
 library( ggplot2 )       # For ggroc plot
-library( caret )
+library( caret )         # For confusion matrix metrics
 ```
 
 ## Data Understanding
@@ -149,7 +149,7 @@ b. **Interpret the first leaf on the left (bottom left).**
 <details class="answer_panel">
   <summary>Answer</summary>
 
-The left most leaf consists of a subset of observation that are of unmarried with capital gain less than \$7056 a year, and represents 52% of the whole dataset. The leaf in question classifies as low income (<=\$50K) with 96% accuracy, and 4% error rate. In other words, 96% of the unmarried with capital gain less than \$7056 a year earn <=\$50K a year and the rest 4% earn >\$50K.
+The left most leaf consists of a subset of observation that are of unmarried with capital gain less than \$7056 a year, and represents 52% of the whole dataset. The leaf in question classifies as low income  with 95% accuracy, and 5% error rate. Or in other words, 95% of the unmarried with `capital.gain` < \$7056 a year classifies as low income and the rest 5% as high income household.
   
 </details>
 
@@ -216,9 +216,10 @@ Based on the output, answer the below questions:
 
 * The root node represents 38782 observations (100%). This node is a decision node, and splits on `marital.status` into 2 groups, married and unmarried.
   * Those of unmarried represent 20543 observations, 52.97% of the whole dataset, out of which approximately 95% classify as low income and the rest 5% as high income.
-  * Those of married represent 18239 observations, 47.02% of the whole dataset. This node is a decision node, and splits on `education.num`.
+  * Those of married represent 18239 observations, 47.03% of the whole dataset. This node is a decision node, and splits on `education.num`.
     * Those of married with `education.num` <= 12 represent 12933 observations, 33.35% of the whole dataset, out of which approximately 70% classify as low income and the rest 30% as high income.
     * Those of married with `education.num` > 12 represent 5306 observations, 13.68% of the whole dataset, out of which approximately 70% classify as high income and the rest 30% as low income.
+
 
   
 </details>
@@ -244,7 +245,7 @@ predict_random_forest = predict( random_forest, test_set )
 
 conf.mat( predict_random_forest, actual_test )
 
-conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest n =10" )
+conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest n=10" )
 
 mse( predict_random_forest, actual_test )
 ```
@@ -295,7 +296,7 @@ conf.mat( predict_random_forest_100, actual_test )
 
 conf.mat.plot( predict_random_forest_100, actual_test, main = "Random Forest n=100" )
 
-mse( predict_random_forest_100, actual_test )
+(mse( predict_random_forest_100, actual_test ))
 ```
 
 The classifier
@@ -333,8 +334,13 @@ Based on the above summary we can conclude the following:
 * The model with n=10 has lower sensitivity than that of n=100. That is, the former model predicts the positive records less than its other model, n=100. Hence, the latter is preferred.
 * In terms of specificity, the model with n=10 performs better, however, the margin is only approximately 0.2%. Therefore, the model with n=10 is preferred.
 
+Lastly, we plot the error rate of the random forest as follows:
 
-In conclusion, the model with n=100 shows a slightly better prediction metrics than the model with n=10. Since the margin is little to non-significant, if the larger n value comes at the cost of computational complexity, and hence computational time, the model with the smaller n is preferred. However, if the larger n does not cause any computational difficulties, the larger n is more optimal.
+```{r}
+plot(random_forest_100)
+```
+
+We can conclude from the above plot, that `ntree >= 30` the error rate is approximately constant, meaning that a larger `ntree`, e.g., a 100 predicts about as well as `ntree = 30`. From the metrics comparison, we can conclude that the model with n=100 shows a slightly better prediction metrics than the model with n=10. Since the margin is little to non-significant, if the larger `n` value comes at the cost of computational complexity, and hence computational time, the model with the smaller `n` is preferred. However, if the larger `n` does not cause any computational difficulties, the larger `n` is more optimal. Still, `ntree = 100` does not seem to be reasonable.
 
 </details>
 
@@ -439,14 +445,11 @@ confusionMatrix(data = predict_random_forest, reference = actual_test)
 
 Based on the above summary we can conclude the following:
 
-* The Random forest and C50 algorithms have equally low Mean Squared Error, that is, they bears with the lower error on average in prediction than CART
-* The random forest and C50 algorithms have equal accuracy, and they are both higher than that of CART's
-* The random forest algorithm has the highest rate of sensitivity
-* the C50 algorithm has the highest specificity rate
-* C50 has the highest AUC, therefore it is deemed to be a superior model to others.
-
-In conclusion, Although the C50 and Random forest algorithm produce similar results, because of the higher AUC value, C50 is preferred over the other 2 models.
-  
+* The Random forest and the C50 algorithm have equally low Mean Squared Error, and they are lower than that of CART's. Meaning, that on average the former two algorithms produce a better prediction than the former.
+* The random forest and the C50 algorithms happen to have equal accuracies as well, and they are both higher than CART's. Again, C50 and the random forest outperform CART in terms of prediction accuracy.
+* In terms of sensitivity, the random forest algorithm has the highest rate, so this model is preferred over the others.
+* In terms of specificity, the C50 algorithm has the highest rate, so as a single metrics, this model would be preferred over the others.
+* AUC, which is the area under the ROC curve, is the most accurate measure to evaluate competing models. It is because the ROC curve computes the sensitivity and specificity over different splits. Based on that, C50 comes out as the best predictor compared to the other two algorithms, therefore it is deemed to be a superior model.
 
 </details>
 
@@ -480,15 +483,20 @@ After importing the *churn* dataset in R, partition the *churn* dataset randomly
   <summary>Answer</summary>
   
 ```{r}
+# load `churn` dataset
 data( churn )
 
+# set seed of 5 for reproducibility
 set.seed( 5 )
 
+# partition the dataset into an 80-20% parts
 data_sets = partition( data = churn, prob = c( 0.8, 0.2 ) )
 
+# assign the 80% part to train_set and the 20% to test_set
 train_set = data_sets $ part1
 test_set  = data_sets $ part2
 
+# pick the target variable from the test_set to test against it
 actual_test  = test_set $ churn
 ```
 
@@ -512,12 +520,16 @@ Based on the training dataset and the above models predict for the test set. For
 
 <h3>Selecting the variables</h3>
 ```{r}
-formula = churn ~ account.length +voice.plan + voice.messages + intl.plan + intl.mins + day.mins + eve.mins + night.mins + customer.calls
+
+# formula to be used for the different predictions
+formula = churn ~ account.length + voice.plan + voice.messages + intl.plan +
+  intl.mins + day.mins + eve.mins + night.mins + customer.calls
 ```
 
 <h3>CART</h3>
 
 ```{r}
+# Cart prediction
 tree_cart = rpart( formula = formula, data = train_set, method = "class" )
 predict_cart = predict( tree_cart, test_set, type = "class" )
 ```
@@ -525,6 +537,7 @@ predict_cart = predict( tree_cart, test_set, type = "class" )
 <h3>C50</h3>
 
 ```{r}
+# C50 prediction
 tree_C50 = C5.0( formula=formula, data = train_set ) 
 predict_C50 = predict( tree_C50, test_set, type = "class" )
 ```
@@ -532,6 +545,7 @@ predict_C50 = predict( tree_C50, test_set, type = "class" )
 <h3>Random forest</h3>
 
 ```{r}
+# Random forest prediction
 random_forest = randomForest( formula = formula, data = train_set, ntree = 10 )
 predict_random_forest = predict( random_forest, test_set, type = "class" )
 ```
@@ -542,9 +556,15 @@ predict_random_forest = predict( random_forest, test_set, type = "class" )
 
 Find the k-nearest neighbor for the test set, based on the training dataset, for the case k = 13. For the kNN algorithm, use min-max normalization to transfer the predictors, similar to the exercises of week 4.
 
+<details class="answer_panel">
+  <summary>Answer</summary>
+
 ```{r}
+# KNN prediction
 predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13 )
-```
+```  
+  
+</details>
 
 ## Model Evaluation
 
@@ -561,42 +581,47 @@ Based on your results so far, which of the four classification algorithms is mor
 <h3>Confusion Matrix</h3>
 
 ```{r, fig.show="hold", out.width="50%", fig.width=12, fig.align="default"}
-confusionMatrix(data = predict_cart, reference = actual_test)
+# Confusion matrix plotting for all 4 predictions
 conf.mat.plot( predict_cart, actual_test, main = "CART Prediction")
-
-confusionMatrix(data = predict_C50, reference = actual_test)
 conf.mat.plot( predict_C50, actual_test, main = "C5.0 Prediction" )
-
-confusionMatrix(data = predict_random_forest, reference = actual_test)
 conf.mat.plot( predict_random_forest, actual_test, main = "Random Forest Prediction" )
-
-confusionMatrix(data = predict_knn, reference = actual_test)
 conf.mat.plot( predict_knn, actual_test, main = "KNN Prediction" )
+```
+
+```{r}
+# Confusion matrix metrics reports for all 4 predictions
+confusionMatrix(data = predict_cart, reference = actual_test)
+confusionMatrix(data = predict_C50, reference = actual_test)
+confusionMatrix(data = predict_random_forest, reference = actual_test)
+confusionMatrix(data = predict_knn, reference = actual_test)
 ```
 
 <h3>MSE</h3>
 
 ```{r}
-( mse_random_forest = mse( predict_cart, actual_test ) )
-( mse_random_forest = mse( predict_C50, actual_test ) )
+# MSE reporting for all 4 predictions
+( mse_cart = mse( predict_cart, actual_test ) )
+( mse_C50 = mse( predict_C50, actual_test ) )
 ( mse_random_forest = mse( predict_random_forest, actual_test ) )
-( mse_random_forest = mse( predict_knn, actual_test ) )
+( mse_knn = mse( predict_knn, actual_test ) )
 ```
 
 <h3>ROC & AUC</h3>
 
 ```{r}
+# predict model fitting
 prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
 prob_C50 = predict( tree_C50, test_set, type = "prob" )[ , 1 ]
 prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
 prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13, type = "prob" )[ , 1 ]
 
-
+# build ROC curves
 roc_cart = roc( actual_test, prob_cart )
 roc_C50 = roc( actual_test, prob_C50 )
 roc_random_forest = roc( actual_test, prob_random_forest )
 roc_knn = roc( actual_test, prob_knn )
 
+# plot ROC Curves, and calculate AUCs
 ggroc( list( roc_cart, roc_C50, roc_random_forest, roc_knn), size = 0.8 ) + 
     theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
   scale_color_manual( values = 1:5, 
@@ -621,13 +646,13 @@ ggroc( list( roc_cart, roc_C50, roc_random_forest, roc_knn), size = 0.8 ) +
 
 Based on the above summary, we can conclude the following:
 
-* In terms of MSE, the random forest algorithm produces the least erroneous prediction
-* the most accurate algorithm is the random forest, and hence also the one with the smallest misspecification rate
-* in terms of sensitivity, again the random forest came out as superior to other models
-* in terms of specificity KNN bears with the highest rate, however, the other models are not far behind either
-* in terms of AUC, the random forest algorithm encloses the largest area under the curve
+* In terms of MSE, CART, C50, and the Random Forest algorithm produce similar MSE values. The KNN algorithm is approx 2-2.5% higher in prediciton error. Based on this single metrics, the least erroneous prediction is the optimal, that is the random forest.
+* The most accurate algorithm, in terms of accuracy rate, is the random forest, and hence also the one with the smallest misspecification rate. CART and C50 produce similar accuracy and misspecification rate than the random forest, however, KNN is a bit less accurate, approximately 3% behind the competing models. Based on this single metrics, Random forest is the optimal algorithm to use.
+* In terms of sensitivity, the random forest comes out as superior model by a good 5-6%, compared to the other models, hence this predictive model is the most preferred based on this single metrics.
+* In terms of specificity all 4 models produce similar results, but KNN bears with the highest value. Therefore, by judging this single metrics, we would prefer to use KNN over the other algorithms.
+* In terms of ROC and AUC, the random forest algorithm encloses the largest area under the curve.
 
-All things above considered, the random forest is deemed the best prediction model out of the 4 competing models.
+In most metrics, the random forest came out as the most accurate in terms of predictability, however, we attach the highest weight in our model evaluation to the AUC value. This is because, AUC incorporates the specificity and sensitivity rate across multiple splits, and hence is deemed the best evaluation metrics out of the above. Therefore, the random forest is the most preferred algorithm to use for the churn dataset.
 
 </details>
 
