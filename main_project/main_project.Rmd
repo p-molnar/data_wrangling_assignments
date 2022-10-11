@@ -1,0 +1,584 @@
+---
+title: '<center> How to increase employee retention in the field of Data Science <center>'
+author: '<center> Peter Molnar <center>'
+date: '<center> `r Sys.Date()` <center>'
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 7
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    # code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, error = FALSE, fig.align = 'center'  )
+```
+
+```{r}
+# dependencies
+library( liver )      # For dataset 'churn'
+
+library( ggplot2 )    # For visualization
+library( GGally )     # For correlation plots
+library( psych )      # For correlation plots  
+
+library( rpart )         # For the "CART" algorithm
+library( rpart.plot )    # To plot decision trees
+library( C50 )           # For the "C5.0" algorithm
+library( randomForest )  # For the "Random Forest" algorithm
+
+library( pROC )          # For ROC plot
+
+library(readr)           # For the read_csv function
+
+data(churn)
+```
+
+```{r results = FALSE, echo = FALSE }
+# To ensure consistent formatting of the plots, we are using a colour theme:
+theme_new = theme( panel.background = element_rect( fill = "white", colour = "white", size = 0.5, linetype = "solid" ),
+                   panel.grid.major = element_line( size = 0.2, linetype = 'solid', colour = "gray77" ), 
+                   panel.grid.minor = element_line( size = 0.1, linetype = 'solid', colour = "gray90" ),
+                   axis.text  = element_text( size = 11 ), 
+                   axis.title = element_text( size = 12, face = "bold" ),
+                   title = element_text( size = 14, face = "bold" )
+                  )
+```
+
+# Business Understanding Stage
+
+Employee turnover refers to the phenomenon of replacing current employees to new unit of employees within a specified time horizon, usually a year.
+
+Employee acquisition is costly, and hence turnover as well. It is is one of the most persistent and frustrating problems that organisations face.
+
+Whether it is involuntary, such as termination due to poor performance, or voluntary, such as resignations, turnover is extremely costly.  According to a conservative estimate by the Bureau of Labor Statistics, average employee replacement costs are \$13,996 per employee, but the Information Technology (IT) sector stands out with nearly \$20,000.  As the economy grows, more jobs are created, and voluntary turnover also increases.  Despite these figures, organizations tend to underestimate the true cost of turnover.  This may be because, it is not an accountable line-item in most profit and loss statements, nor is it typically adequately defined in the budget, and no one submits an invoice at the end of the month for turnover. Furthermore, it is rather difficult to measure the cost wise implications of employee turnover. Yet, collectively, employee turnover costs organizations severe amounts no matter the size of it. 
+
+Since there is not much that can be done to dramatically reduce the costs associated with turnover, and thereby acquisition, the most appropriate response is to reduce turnover itself, that is to retain employees.
+
+Therefore this paper aims to identify factors associated with employee turnover
+
+* What talents organisations lose?
+* What are the main reasons of losing them?
+* What to do differently to retain talents?
+
+To answer these questions, I use a human resource [dataset](https://raw.githubusercontent.com/RongSong1110/WDQ7004/main/aug_train.csv) for Data Scientist positions.
+
+# Data Understanding Stage
+
+Below, I import the dataset in the environment by using the `read_csv` function.
+```{r}
+data = read_csv("https://raw.githubusercontent.com/RongSong1110/WDQ7004/main/aug_train.csv")
+``` 
+
+To see a basic overview of the dataset, we query the structure of the dataset by the `str` function.
+```{r}
+str( data )
+```
+The above output shows, shows that data was imported as a data.frame object, and that it consists of `r nrow(data)` observations and `r ncol(data)` variables. The last column, called `target` is the target variable which indicates whether the employee is looking to change job or not.
+
+The `r ncol(data)` variables are:
+
+| feature | feature description |
+| :- | :- |
+| `enrollee_id` |  Unique ID for candidate |
+| `city` |  City code |
+| `city_development_index` |  Developement index of the city (scaled) |
+| `gender` |  Gender of candidate |
+| `relevent_experience` |  Relevant experience of candidate |
+| `enrolled_university` |  Type of University course enrolled if any |
+| `education_level` |  Education level of candidate |
+| `major_discipline` |  Education major discipline of candidate |
+| `experience` |  Candidate total experience in years |
+| `company_size` |  No of employees in current employer's company |
+| `company_type` |  Type of current employer |
+| `lastnewjob` |  Difference in years between previous job and current job |
+| `training_hours` |  training hours completed |
+| `target` |  0 – Not looking for job change, 1 – Looking for a job change |
+
+
+Based on the above reported structure, we read, that by default all variables were imported as characters, except `employee_id`, `training_hours`, and `target`. 
+
+Below we classify each of the variables' statistical datatype, so that in a later sections we could convert them to their corresponding datatype.
+
+| Statistical type of variable | variable |
+| :- | :- | 
+| numerical continuous | `city_development_index` |
+| numerical discrete | `experience`, `lastnewjob`, `training_hours`|
+| ordinal | `education_level`, `company_size`, |
+| binary  | `relevant_experience`, `target`|
+| nominal  | `enrollee_id`, `city_code`, `gender`, `enrolled_university`, `major_discipline`, `company_type` |
+
+As the above table summarises, the statistical types of the variables do not match with their R datatype, therefore we need to convert them first.
+
+## Convert variables
+
+In order to make the type conversion accurate, we first explore each individual variable's unique values, so that we can see what order we can set up for ordinal variables for instance. 
+
+```{r}
+categorical_vars = names(Filter(is.character, data))
+categorical_data = data[,c(categorical_vars)]
+
+lapply(categorical_data, unique)
+```
+
+The relevant take away from the above output is that each of the above variables will be converted to `factor`, however, `education_level`, `experience`, `company_size` and `last_new_job` will be converted to ordered nominal, that is to ordinal variables.
+
+Before doing so, however, we clean up the data and rename two column names as well as values of some categorical variables.
+
+First we start correcting the spelling mistake of the column `relevent_experience` to `relevant_experience`.
+```{r}
+names(data)[names(data) == 'relevent_experience'] = "relevant_experience"
+```
+
+Next, we deal with the target variable, `target`, and change its column name to a more descriptive on, e.g., `is_looking_for_job`, representing binary observations, whether the individual is looking to change job or not.
+
+```{r}
+names(data)[names(data) == 'target'] = "is_looking_for_job"
+```
+
+Now that the columns are more explanatory, we can deal with the individual observations of each column.
+
+The column values of `relevant_experience` is currently either "Has relevent experience" or "No relevent experience". For the sake of convenience and readability, we change replace these values with "Yes" and "No" respectively.
+
+```{r}
+#replace 'has relevant experience' and 'no relevant experience' with TRUE and FALSE
+data$relevant_experience[data$relevant_experience=='Has relevent experience'] = 'yes'
+data$relevant_experience[data$relevant_experience=='No relevent experience'] = 'no'
+```
+
+Next, we deal with inconsistent notations of observations in `company_size`, which should follow the same naming convenience that for instance `experience` does.
+
+Namely, the observations with "10/49" value should represent an interval, therefore it should be delimited with a dash, instead of forward slash, so it would be consistent with the rest of the dataset.
+
+Furthermore, the intervals of `company_size` are not mutually exclusive for "100-500"   and "500-999". Meaning, there is an overlap between the two groups, therefore, we replace the "100-500" observations with "100-499".
+
+Lastly, the "10000+" observation represents a company with headcount more than 10000. however, the '+' notation is not consistent with the `experience` for instance, that uses '>' sign instead. Therefore, we replace "10000+" observations with ">10000".
+
+```{r}
+data$company_size<-replace(data$company_size,data$company_size == '10/49', '10-49')
+data$company_size<-replace(data$company_size,data$company_size == '100-500', '100-499')
+data$company_size<-replace(data$company_size,data$company_size == '10000+', '>9999')
+```
+
+
+
+To check for the missing values (NA's), I report them by the use of `find.na()` function as follows:
+```{r}
+# find.na( data )
+```
+
+It indicate that this dataset does not have missing values (NA's). Also, by checking the summary of the data below, we can see that this dataset does not have missing values (NA's).
+```{r}
+summary( data )
+```
+
+# Exploratory Data Analysis (EDA)
+
+Here we use exploratory methods to delve into the *churn* dataset. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables then numerical variables.
+
+The *churn* dataset has `r ncol( churn ) - 1` predictors and we know, we should use only those predictors that have a relationship with the target variable. In this section by using EDA (and if it's need hypothesis testing) to find out which of the `r ncol( churn ) - 1` predictors in the dataset have a relationship with the target variable *churn*. Then, in the modelling section, we are going to apply classification algorithms by using those predictors that have a relationship with the target variable.
+
+## Investigate the target variable *churn* 
+
+Here we report a bar plot and summary for the target variable `churn` as follows:
+
+```{r fig.height = 5, fig.width = 5}
+ggplot( data = churn, aes( x = churn, label = scales::percent( prop.table( stat( count ) ) ) ) ) +
+    geom_bar( fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+    geom_text( stat = 'count', vjust = 0.2, size = 6 ) + 
+    theme_new
+```
+
+Summary for the target variable `churn`
+```{r}
+summary( churn $ churn )
+```
+
+It shows that `r summary( churn $ churn )[1]` left the company and the proportion of the churner is:
+
+Customer Churn Rate = No. of Customers lost / Total no. of customers = $\frac{707}{5000}$ =`r round( summary( churn $ churn )[1] / nrow( churn ), 3 )`.
+
+## Investigate variable *International Plan*
+
+Here we first report a contingency table of International Plan (`intl.plan`) with `churn`
+```{r}
+table( churn $ churn, churn $ intl.plan, dnn = c( "Churn", "International Plan" ) )
+```
+
+Here is the above contingency table with margins
+```{r}
+addmargins( table( churn $ churn, churn $ intl.plan, dnn = c( "Churn", "International Plan" ) ) )
+```
+
+Bar chart for International Plan
+
+```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+ggplot( data = churn ) + 
+  geom_bar( aes( x = intl.plan, fill = churn ) ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+
+ggplot( data = churn ) + 
+  geom_bar( aes( x = intl.plan, fill = churn ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+The above plots show that International Plan holders (`intl.plan="yes"`) tend to churn more frequently, but they do not *quantify* the relationship. The above contingency table quantify the relationship between International Plan holding and churning, Since both variables are categorical. We should consider using International Plan as one of the predictor variables in whatever machine learning algorithms we use to predict churn.
+
+## Investigate variable "*voice mail plan*"
+
+Make a table for counts of Churn and Voice Mail Plan
+
+```{r}
+table( churn $ churn, churn $ voice.plan, dnn = c( "Churn", "Voice Mail Plan" ) )
+```
+
+Bar chart for Voice Mail Plan
+
+```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+ggplot( data = churn ) + 
+  geom_bar( aes( x = voice.plan, fill = churn ) ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+
+ggplot( data = churn ) + 
+  geom_bar( aes( x = voice.plan, fill = churn ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+The results above indicate that:
+
+* It seems that Voice Mail Plan increases customers' loyalty. Thus, we should consider enhancing our Voice Mail Plan.
+* We should consider using Voice Mail Plan as one of the predictor variables in whatever machine learning algorithms we use to predict churn. Our confidence in this expectation is perhaps not as high as for the International Plan. 
+
+## Detect Correlated Variables 
+
+To visualize the correlation matrix between the numerical variables: `day.mins`, `day.calls`, `day.charge`, `eve.mins`, `eve.calls`, `eve.charge`, `night.mins`, `night.calls`, and `night.charge`, we could use the `ggcorr()` function as follows
+
+```{r}
+variable_list = c( "intl.mins",  "intl.calls",  "intl.charge", 
+                   "day.mins",   "day.calls",   "day.charge",
+                   "eve.mins",   "eve.calls",   "eve.charge",
+                   "night.mins", "night.calls", "night.charge" )
+
+ggcorr( data = churn[ , variable_list ], label = TRUE ) 
+```
+
+The correlation matrix plots indicate that there are strong positive correlation (`r=+1`) between the following variables:
+
+* `day.mins` and `day.charge`;
+* `eve.mins` and `eve.charge`;
+* `night.mins` and `night.charge`.
+
+And the rest of the correlations are zero. It indicates that we should *not* include the variables `day.charge`, `eve.charge`, and `night.charge` in whatever machine learning algorithms we use to predict churn.
+
+## Investigate variable "*Day Minutes*"
+
+To investigate the relationship between variable "*Day Minutes*", since the variable "*Day Minutes*" is numerical, we report the boxplot and density as follows
+
+```{r}
+ggplot( data = churn ) +
+  geom_boxplot( aes( x = churn, y = day.mins ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+```{r}
+ggplot( data = churn ) +
+  geom_density( aes( x = day.mins, fill = churn ), alpha = 0.3 ) + 
+  theme_new
+```
+
+The results above indicate that:
+
+* We should carefully track customer Day Minutes as total exceeds 200. Investigate why those with high usage tend to leave.
+* We should consider using variable "*Day Minutes*" as one of the predictor variables in whatever machine learning algorithms we use to predict churn.  
+
+## Investigate variable "*Evening Minutes*"
+
+To investigate the relationship between variable "*Evening Minutes*", since the variable "*Evening Minutes*" is numerical, we report the boxplot and density as follows
+
+```{r}
+ggplot( data = churn ) +
+  geom_boxplot( aes( x = churn, y = eve.mins ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+```{r}
+ggplot( data = churn ) +
+  geom_density( aes( x = eve.mins, fill = churn ), alpha = 0.3 ) + 
+  theme_new
+```
+
+The above plots do not indicate graphical evidence of the predictive importance of *Evening Minutes*. Thus, we apply the following hypothesis testing for dependency between variables *Evening Minutes* and *churn* 
+
+```{r}
+t.test( eve.mins ~ churn, data = churn )
+```
+
+Since the P-value = ```r t.test( intl.calls ~ churn, data = churn )$p.value``` is less than $\alpha$=0.05, thus we reject the $H_0$. 
+It means the difference in the mean number of evening minutes for churners and non-churners is statistically significant. Thus, variable "*Evening Minutes*" is useful for predicting churn.
+
+We applied the same Hypothesis testing for the variable "*Night Minutes*", to check its dependency with variables *churn*. And the result indicates that the variable "*Night Minutes*" is also useful for predicting churn.
+
+## Investigate variable "*Day Calls*" 
+
+Here, we are interested to investigate the relationship between variable Day Calls and the target variable `churn`. To investigate the relationship between variable "*Day Calls*", since the variable "*Day Calls*" is numerical, we report the boxplot and density as follows
+
+```{r}
+ggplot( data = churn ) +
+  geom_boxplot( aes( x = churn, y = day.calls ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+```{r}
+ggplot( data = churn ) +
+  geom_density( aes( x = day.calls, fill = churn ), alpha = 0.3 ) + 
+  theme_new
+```
+
+The above plots do not indicate graphical evidence of the predictive importance of Day Calls. However, a t-test (see below) for the difference in the mean number of day calls for churners and non-churners. Hypothesis testing for dependency between variables *Day Calls* and *churn* 
+
+```{r}
+t.test( day.calls ~ churn, data = churn )
+```
+
+Since the P-value = ```r t.test( day.calls ~ churn, data = churn )$p.value``` is higher than $\alpha$=0.05, thus we do not reject the $H_0$. 
+It means the difference in the mean number of international calls for churners and non-churners is not statistically significant. Thus, variable "*Day Calls*" is not useful for predicting churn.
+
+We applied the same Hypothesis testing for the variables "*Evening Calls*" and "*Night Calls*", to check their dependencies with variables *churn*. And the result indicates that these two variables also are not useful for predicting churn.
+
+## Investigate variable "*International Calls*" 
+
+Here, we are interested to investigate the relationship between variable International Calls and the target variable `churn`. To see the relationship between variable International Calls and the target variable *churn*, we report the histogram of variable International Calls including Churn overlay as follow
+
+```{r}
+ggplot( data = churn ) +
+  geom_bar( aes( x = intl.calls, fill = churn ), position = "stack" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+We also report the *Normalized* histogram of variable International Calls including Churn overlay as follow
+
+```{r}
+ggplot( data = churn ) +
+  geom_bar( aes( x = intl.calls, fill = churn ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+To see the relationship between variable International Calls and the target variable *churn*, we report the boxplot as follow
+
+```{r}
+ggplot( data = churn ) +
+  geom_boxplot( aes( x = churn, y = intl.calls ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+The above plots do not indicate strong graphical evidence of the predictive importance of International Calls. However, a t-test (see below) for the difference in the mean number of international calls for churners and non-churners is statistically significant (p-value = 0.003; p-values larger than, say, 0.10 are not considered significant), meaning that this variable is indeed useful for predicting churn: Churners tend to place a lower mean number of international calls. Thus, had we omitted International Calls from the analysis based on the seeming lack of graphical evidence, we would have committed a mistake, and our predictive model would not perform as well.
+
+Hypothesis testing for dependency between variables *International Calls* and *churn* 
+
+```{r}
+t.test( intl.calls ~ churn, data = churn )
+```
+
+Since the P-value = ```r t.test( intl.calls ~ churn, data = churn )$p.value``` is less than $\alpha$=0.05, thus we reject the $H_0$. 
+It means the difference in the mean number of international calls for churners and non-churners is statistically significant. Thus, variable "*International Calls*" is useful for predicting churn.
+
+## Investigate variable "*customer service calls*" 
+
+Here, we are interested to investigate the relationship between variable "*customer service calls*" and the target variable "*churn*". To see the relationship between variable "*customer service calls*" and the target variable "*churn*", we report the histogram of the variable "*customer service calls*" including "churn" overlay as follows
+
+```{r}
+ggplot( data = churn ) +
+  geom_bar( aes( x = factor( customer.calls ), fill = churn ), position = "stack" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+We also report the *Normalized* histogram of variable "*customer service calls*" including "churn" overlay as follow
+
+```{r}
+ggplot( data = churn ) +
+  geom_bar( aes( x = factor( customer.calls ), fill = churn ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+The results above indicate that:
+
+* We should carefully track the number of customer service calls made by each customer. By the third call, specialized incentives should be offered to retain customer loyalty, since, by the fourth call, the probability of churn substantially increases. 
+* We should consider using variable "*customer service calls*" as one of the predictor variables in whatever machine learning algorithms we use to predict churn. 
+
+
+# Data Preparation
+
+In this stage we want to prepare the dataset for modeling. Here, we partition the *churn* dataset randomly into two groups: train set (80%) and test set (20%). Here, we use the `partition()` function from the *liver* package:
+
+```{r}
+set.seed( 5 )
+
+data_sets = partition( data = churn, prob = c( 0.8, 0.2 ) )
+
+train_set = data_sets $ part1
+test_set  = data_sets $ part2
+
+actual_test  = test_set $ churn
+```
+Note that here we are using the `set.seed()` function to create reproducible results. 
+
+We validate the partition by testing whether the proportion of the target variable `churn` differs between the two data sets. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, mainly because we want to compare the proportion of the customers who paid for the *churn* between the two groups (“training set” and “test set”). The hypotheses are as follows
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \pi_{churner,\ train}   =  \pi_{churner,\ test} \\
+          H_a:  \pi_{churner,\ train} \neq \pi_{churner,\ test}
+\end{matrix}
+\]
+
+To validate the partitions, we run a hypothesis test to check the proportion of the target variable `churn` in the train and test sets. To run the test, we use the `prop.test` function in **R**:
+```{r}
+x1 = sum( train_set $ churn == "yes" )
+x2 = sum( test_set  $ churn == "yes" )
+
+n1 = nrow( train_set )
+n2 = nrow( test_set  )
+
+prop.test( x = c( x1, x2 ), n = c( n1, n2 ) )
+```
+
+We don't reject the $H_0$, since the *p*-value is higher than $\alpha=0.05$. Thus, the difference in the proportion of the costumers who paid for the *churn*  is not statistically significant between the two groups (“training set” and “test set”). **It indicates that the partition for the target variable `churn` is valid.**
+
+# Modeling - Classification
+
+The results form the "Exploratory Data Analysis (EDA)" section indicate that the following predictors from `r ncol( churn ) - 1` predictors in the *churn* dataset are important to predict churn.
+
+`voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `intl.calls`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`. 
+
+Thus, here, based on the training dataset, we want to apply different type of Machine Learning algorithms, by using above predictors in our model. We use the following formula:
+```{r}
+formula = churn ~ voice.plan + voice.messages + intl.plan + intl.mins + intl.calls +
+                  day.mins + eve.mins + night.mins + customer.calls
+```
+
+## Classificaiton with the k-nearest neighbor algorithm
+
+To find out the optimal value of `k` based on *Error Rate*, for the different values of k from 1 to 20, we run the k-nearest neighbor for the test set and compute the *Error Rate* for these models, by running `kNN.plot()` command 
+
+```{r fig.align = 'center'}
+kNN.plot( formula, train = train_set, test = test_set, transform = "minmax", k.max = 20, set.seed = 3 )
+```
+
+The plot shows that the minimum value of *Error Rate* is for the case that `k = 5`. Since the smaller values of *Error Rate* indicates better predictions, in this case, the optimal value of `k` would be `5`.
+
+Now, to find the k-nearest neighbor for the test data set for the case `k = 5`, we use `kNN()` command: 
+```{r}
+predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 5 )
+```
+Note that the `transform = "minmax"` input specifies that we are using min-max normalization to transfer the predictors.
+
+## Classificaiton with Decision Tree by CART algorithm
+
+We produce a decision tree based on the CART algorithm by using the `rpart` function from the [**rpart**](https://CRAN.R-project.org/package=rpart) package:
+
+```{r}
+tree_cart = rpart( formula, data = train_set, method = "class" )
+```
+
+To plot the decision tree, we use the `rpart.plot` function from the [**rpart.plot**](https://CRAN.R-project.org/package=rpart.plot) package:
+
+```{r, fig.height=6, fig.width=10}
+rpart.plot( tree_cart, type = 4, extra = 104 )
+```
+
+## Classificaiton with Decision Tree by C50 algorithm
+
+We produce a decision tree based on the C5.0 algorithm by using the `C5.0` function from the [**C50**](https://CRAN.R-project.org/package=C50) package:
+
+```{r}
+tree_C50 = C5.0( formula, data = train_set ) 
+```
+
+Since the tree from the **C5.0 algorithm** is relatively large to visualize, we use the function `summary` as follows
+```{r}
+summary( tree_C50 )
+```
+
+## Classificaiton with Random Forest
+
+*CART* and *C5.0* algorithms both produce a single decision tree based on all of the records, and the specified variables, in the training data set. On the other hand, *random forest* algorithm builds a series of decision trees and combine the trees disparate classifications of each record into one final classification. 
+
+We run the *random forest* algorithm, using the `randomForest` function from the [**randomForest**](https://CRAN.R-project.org/package=randomForest) package:
+
+```{r}
+random_forest = randomForest( formula = formula, data = train_set, ntree = 100 )
+```
+
+Now, you may ask what would be a suitable value for the number of trees! In that case, in the following plot, you can see that if the number of trees is higher than around 40, we have a minimum error. 
+
+```{r}
+plot( random_forest )
+```
+
+We can visualize the dot-chart of variable importance as measured by the *random forest* algorithm as follow
+```{r}
+varImpPlot( random_forest )
+```
+
+## Classificaiton with Logistic Regression 
+
+To run the logistic regression model, we will use the `glm()` command:
+```{r}
+logreg = glm( formula, data = churn, family = binomial )
+```
+
+To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
+```{r}
+summary( logreg )
+```
+
+# Model Evaluation
+
+Based on our results so far, which of the above five classification algorithms are more suitable here for the *churn* dataset? To answer this question, here, we report the ROC curves as well as AUC for the above classification algorithms as follows:
+
+```{r fig.align='center'}
+prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
+prob_C50  = predict( tree_C50,  test_set, type = "prob" )[ , 1 ]
+
+prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
+
+prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13, type = "prob" )[ , 1 ]
+
+prob_logreg  = predict( logreg,  test_set, type = "response" )
+
+roc_knn = roc( actual_test, prob_knn )
+roc_cart = roc( actual_test, prob_cart )
+roc_C50 = roc( actual_test, prob_C50 )
+roc_random_forest = roc( actual_test, prob_random_forest )
+roc_logreg = roc( actual_test, prob_logreg )
+
+ggroc( list( roc_knn, roc_cart, roc_C50, roc_random_forest, roc_logreg ), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
+  scale_color_manual( values = 1:5, 
+    labels = c( paste( "KNN; AUC=", round( auc( roc_knn ), 3 ) ),
+                paste( "CART; AUC=", round( auc( roc_cart ), 3 ) ), 
+                paste( "C50; AUC=", round( auc( roc_C50 ), 3 ) ), 
+                paste( "Random Forest; AUC=", round( auc( roc_random_forest ), 3 ) ),
+                paste( "Log Reg; AUC=", round( auc( roc_logreg ), 3 ) )
+                ) ) +
+  theme( legend.title = element_blank() ) +
+  theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+Based on the above ROC curves and the values of AUC, the "*Random Forest*" algorithm has slightly better performance, since it has the highest value of AUC. 
+
+
+
+
