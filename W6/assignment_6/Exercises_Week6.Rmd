@@ -1,0 +1,450 @@
+---
+title: '<center> The Exercises of Week 6 - Regression Analysis <center>'
+author: '<center> Reza Mohammadi <center>'
+date: '<center> `r Sys.Date()` <center>'
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 7
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, 
+                         comment = " ", error = FALSE, fig.align = 'center'  )
+```
+
+**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+  
+**Online Assignment**: There is a new online-assignment at the [DataCamp](https://www.datacamp.com) with the name “*Supervised Learning in R: Regression*”. *The online-assignments at the DataCamp are not mandatory*.
+
+**Your task** is to answer the following questions in this R-markdown file. Please upload both your R-markdown (.Rmd file) and the HTML files separately on Canvas. 
+
+We want to apply regression models to analyze three different data sets. For this task, we are going to using the following **R** packages:
+
+* **liver**: the *marketing*, *churn*, and *house* data sets are available in this package. 
+* **ggplot2**: for plotting. 
+* **psych**: for histograms and correlations for a data matrix.
+
+If it’s needed, install these packages on your computer. Here we load them:
+
+```{r}
+library( liver )     
+
+library( ggplot2 )     
+
+library( psych )          
+```
+
+# Linear Regression Analysis (30 points)
+
+We want to apply linear regression models to analyze a dataset which is called *marketing* and it is available in the [**liver**](https://CRAN.R-project.org/package=liver) package. Basically, we want to apply a simple linear regression to look at *what happens to our revenue when we spend more on Pay-per-click (PPC)*. 
+
+## *Marketing* dataset
+
+The *marketing* dataset contains 8 features and 40 records as 40 days that report how much we spent, how many clicks, impressions and transactions we got, whether or not a display campaign was running, as well as our revenue, click-through-rate and conversion rate. The target feature is revenue and the remaining 7 variables are predictors.
+
+The *marketing* dataset, as a data frame, contains 40 records (rows) with 8 variables/features (columns). The variables are:
+
+* `spend`: daily send of money on PPC (apy-per-click).
+* `clicks`: number of clicks on for that ad.
+* `impressions`: amount of impressions per day.
+* `display`: whether or not a display campaign was running.
+* `transactions`: number of transactions per day.
+* `click.rate`:  click-through-rate.
+* `conversion.rate`: conversion rate.
+* `revenue`: daily revenue.
+
+We import the *marketing* dataset and report the structure of the dataset:
+
+```{r}
+data( marketing, package = "liver" )
+
+str( marketing )
+```
+
+It shows the dataset contains `r nrow( marketing )` records and `r ncol( marketing )` variables/features. The dataset has `r ncol( marketing ) - 1` predictors along with a target variable `revenue` as a numerical-continuous variable.
+
+Below is a simple visualization of all the variables:
+```{r, fig.height = 11, fig.width = 12}
+pairs.panels( marketing )
+```
+
+The above plot presents bi-variate scatter plots (bottom-left), histograms (diagonals), and correlations (upper-right). 
+
+a. **For each variable in the marketing dataset, specify its type.**
+
+b. **What is your interpretation of the above plot? Provide your reasons.**
+
+c. **What is your interpretation of the relationship between variables `spend` and `clicks`? Provide your reasons.**
+
+## Simple Linear Regression
+
+By using simple linear regression, we want to estimate the *daily revenue* of the company given *daily send* of money on pay-per-click. Thus, we use a simple linear regression model to regress the variable `spend` (daily send of money on pay-per-click) on the target variable `revenue` (daily revenue). First, we report a scatter plot of the `spend` vs `revenue`, along with the least-squares regression line as follows
+
+```{r}
+ggplot( marketing, aes( x = spend, y = revenue ) ) +
+    geom_point() +
+    geom_smooth( method = "lm", se = FALSE ) +
+    labs( title = "Daily Revenue Against Campaign Spend",
+          x = "Daily spend (£)",
+          y = "Daily revenue (£)" ) +
+    theme_minimal() + ggtitle( "Scotor plot with Linear Regression line" )
+```
+
+To create the regression line, we used function `lm` which is for fitting linear models:
+
+```{r}
+reg_1 = lm( revenue ~ spend, data = marketing )
+```
+
+To know more about this function, type `?lm` in your Console. To see the summary of the regression results, we have
+```{r}
+summary( reg_1 )
+```
+
+a. **Give the estimated regression equation?**
+
+b. **What is the estimated value of the slope $\beta_1$? Explain clearly and interpret its value?**
+
+c. **What would you conclude from the estimated *Residual standard error*?**
+
+d. **What would you conclude from the estimated *R-square*?**
+
+e. **Estimate the regression equation when `spend` is 25?**
+
+f. **Estimate the regression equation when `spend` is 200?**
+
+g. **Verify whether it is reasonable to trust the estimated value in the previous part? Why? Explain your answer.**
+  
+## Multiple Linear Regression
+
+The illustrate the multiple regression modeling using the *marketing* dataset, we shall add the predictor `display` to the model, and observe whether the quality of the model has improved or not. In this case, the equation for the multiple regression with the predictors is:
+
+$$ \hat{y} = b_0 + b_1 x_1 + b_2 x_2 $$
+Therefore, by using function `lm` we have:
+```{r}
+multi_reg = lm( revenue ~ spend + display, data = marketing )
+
+summary( multi_reg )
+```
+
+a. **Give the estimated regression equation?**
+
+b. **What would you conclude from the estimated *Residual standard error*?**
+
+c. **What would you conclude from the estimated *R-square*?**
+
+d. **Compare the estimated regression model from this question with the estimated regression model from the previous part. Which one do you recommend for this dataset? Support your claim.** 
+  
+## Model Specification: Choosing the Correct Regression Model
+
+In the *marketing* dataset, we have only 7 predictors. But, most of business projects use dozens if not hundreds of predictors. We therefore need a method to ease the selection of the best regression model. This method is called *stepwise regression*. In stepwise regression, helpful predictors are entered into the model one at a time, starting with the most helpful predictors. Because of multicollinearity or other effects, when several helpful variables are entered, one of them may no longer be considered helpful any more, and should be dropped. For this reason, stepwise regression adds the most helpful predictors into the model and at a time and then checks to see if they all still belong. Finally, the stepwise algorithm can find no further helpful predictors and converges to a final model. 
+
+To apply *stepwise regression* to the *marketing* dataset, first and foremost, we should build a linear model with all the available predictors included, so that we can have an understanding of the model, as well as to use the result of this model in the upcoming model selections. `revenue ~ .` inside the `lm()` function means the linear model includes all the columns in the data as predictors other than price.
+
+```{r}
+ml_all = lm( revenue ~ ., data = marketing )
+
+summary( ml_all )
+```
+
+**What is your interpretation of this model? Should we keep all the predictors in our model? Support your claim.**
+   
+### Stepwise Regression
+
+For *stepwise regression*, the function `step()` should be called and the direction is set to `both` so that the algorithm can add and drop predictors in every iteration. Once it is called, the iterating process will proceed by itself.
+
+From the summary of the first iteration where we include all possible predictors, we can see that the model dropped `spend`, which is the predictor with the highest P-value in this model. As a result, in the second iteration when we analyze the impact of each predictor, the variable `spend` has a plus sign instead of a minus sign in front of it, meaning the impact is measured when the variable `spend` is added to our model.
+
+Finally, when dropping/adding any variable will not give a positive impact to our model in terms of performance, the stepwise process is done.
+
+
+```{r}
+ml_step = step( ml_all, direction = "both" )
+```
+
+The see the selected regression model based on the *stepwise regression*, we can use function `summary()` as follows
+```{r}
+summary( ml_step )
+```
+
+**Compare the estimated regression model from this section with the estimated regression models from the previous parts (part 1.2 and part 1.3). Which one do you recommend for this dataset? Support your claim.**
+   
+## Verifying Model Assumptions
+
+Before a model can be implemented, the requisite model assumptions must be verified. Using a model whose assumptions are not verified is like building a house whose foundation may be cracked. Making predictions using a model where the assumptions are violated may lead to erroneous and overoptimistic results, with costly consequences when deployed.
+
+These assumptions are:
+
+* *linearity*, 
+* *independence*, 
+* *normality*,  
+* *constant variance*. 
+
+We may be checked using the above assumptions by the follow plots
+
+```{r, fig.show = "hold", fig.align = 'default', out.width = "50%"}
+lm_select = lm( revenue ~ display + clicks, data = marketing )
+
+plot( lm_select )  
+```
+
+As you can see in the Normal Q-Q plot (upper-right), the bulk of the points in the normal probability plot do line up on a straight line, so our *normality assumption* is essentially.
+
+The plot of the residuals versus the fits (upper-left) is examined for discernible patterns. If obvious curvature exists in the scatter plot, the linearity assumption is violated. If the vertical spread of the points in the plot is systematically nonuniform, the constant variance assumption is violated. We detect no such patterns in the plot of the residuals versus fits and therefore conclude that the *linearity* and *constant variance* assumptions are intact for this example.
+
+The *independence* assumption makes sense for this data set, since we would not expect that the revenue for one particular day would depend on the revenue for another day.
+
+# Generalized Regression Analysis (20 points)
+
+We want to apply generalized regression models to analyze the [*churn*](https://rdrr.io/cran/liver/man/churn.html) dataset that is available in the **R** package [**liver**](https://CRAN.R-project.org/package=liver). We import the *churn* dataset and report the structure of the dataset:
+
+```{r}
+data( churn )
+
+str( churn )
+```
+
+It shows the dataset contains `r nrow( churn )` records and `r ncol( churn )` variables/features. The dataset has `r ncol( churn ) - 1` predictors along with a target variable `churn` as a binary variable.
+
+## Logistic Regression 
+
+By using *logistic regression* we want to classify whether or not a customer leaving the service of one company in favor of another company. 
+
+The *churn* dataset has `r ncol( churn ) - 1` predictors but we are not going to use all of the predictors. We know based on the lecture of week 2, we should use only the predictors that have a relationship with the target variable. So, here we use the following predictors:
+
+`account.length`, `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`.
+
+We use the following *formula* to list response (`churn`) the above predictors:
+```{r}
+formula = churn ~ account.length + voice.messages + day.mins + eve.mins + 
+                  night.mins + intl.mins + customer.calls + intl.plan + voice.plan
+```
+
+To run the logistic regression model, we will use the `glm()` command:
+```{r}
+logreg_1 = glm( formula, data = churn, family = binomial )
+```
+
+The `formula` input response (`churn`) the above predictors, and the `data = churn` input specifiies the dataset, and `family = binomial` specifies a logistic regression model. Save the model output as `logreg_1`.
+
+To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
+```{r}
+summary( logreg_1 )
+```
+
+**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.** 
+
+## Poisson Regression 
+
+Poisson regression is used when we want to predict a count of events, such as how many times a customer will contact customer service. The distribution of the response variable will be a count of occurrences, with a minimum value of zero.
+
+Here we want to use the *churn* dataset to build that estimate the number of customer service calls based on the following predictors:
+
+`churn`, `account.length`, `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `day.mins`, `eve.mins`, and `night.mins`.
+
+We use the following *formula* to list response (`customer.calls`) the above predictors:
+```{r}
+formula = customer.calls ~ churn + voice.messages + day.mins + eve.mins + 
+                           night.mins + intl.mins + intl.plan + voice.plan
+```
+Not that the above `formula` specifies `customer.calls` as the response variable and the above variables as the predictor variables.
+
+Our variable is an integer-valued variable, which is why we use *Poisson regression* instead of linear regression for this estimation. We use the `glm()` command, which we used in the previous section to build a logistic regression model, to now build a *Poisson regression* model:
+```{r}
+reg_pois = glm( formula, data = churn, family = poisson )
+```
+
+The `formula` input response (`customer.calls`) the above predictors, and the `data = churn` input specifies the dataset, and `family = poisson` specifies a *Poisson regression* model. Save the model output as `reg_pois`.
+
+To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
+```{r}
+summary( reg_pois )
+```
+
+**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.** 
+
+# Nonlinear Regression Analysis (30 points)
+
+We want to apply *nonlinear* regression models to analyze a dataset which is called *house* and it is available in the [**liver**](https://CRAN.R-project.org/package=liver) package. Basically, we want to apply a *nonlinear regression* to estimate price of houses. 
+
+## *house* dataset
+
+The *house* dataset contains 6 features and 414 records. The target feature is `unit.price` and the remaining 5 variables are predictors. The variables are:
+
+* `house.age`: house age (numeric, in year).
+* `distance.to.MRT`: distance to the nearest MRT station (numeric).
+* `stores.number`: number of convenience stores (numeric).
+* `latitude`: latitude (numeric).
+* `longitude`: longitude (numeric).
+* `unit.price`: house price of unit area (numeric).
+
+We import the *house* dataset and report the structure of the dataset:
+
+```{r}
+data( house )
+
+str( house )
+```
+
+It shows the dataset contains `r nrow( house )` records and `r ncol( house )` variables/features. The dataset has `r ncol( house ) - 1` predictors along with a target variable `unit.price` as a numerical-continuous variable.
+
+Below is a simple visualization of all the variables:
+```{r, fig.height = 10, fig.width = 10}
+pairs.panels( house )
+```
+
+The above plot presents bivariate scatter plots (bottom-left), hisgograms (diagonals), and correlations (upper-right). 
+
+## Simple Linear Regression
+
+Here we first apply *simple linear regression* then in the next section we will appy nonlinear regression.
+By using simple linear regression, we want to estimate the *unit price* of the houses given *age* of the houses. Thus, we use a simple linear regression model to regress the variable `house.age`  on the target variable `unit.price`. First, we report a scatter plot of the `house.age` vs `unit.price`, along with the least-squares regression line as follows
+
+```{r}
+ggplot( data = house, aes( x = house.age, y = unit.price ) ) +
+    geom_point() +
+    geom_smooth( method = "lm", se = FALSE ) +
+    labs( title = "Age of the houses against unit price of the houses",
+          x = "House age (year)",
+          y = "Unit Price ($)" ) +
+    theme_minimal() + ggtitle( "Scotor plot with Linear Regression line" )
+```
+
+To create the regression line, we used function `lm()` which is for fitting linear models:
+
+```{r}
+reg_1 = lm( unit.price ~ house.age, data = house )
+```
+
+To see the summary of the regression results, we have
+```{r}
+summary( reg_1 )
+```
+
+a. **What would you conclude from the estimated *Residual standard error*?**
+
+b. **What would you conclude from the estimated *R-square*?**
+
+## Noninear Regression
+
+By using nonlinear regression, we want to estimate the *unit price* of the houses given *age* of the houses. Thus, we use a simple linear regression model to regress the variable `house.age`  on the target variable `unit.price`. First, we report a scatter plot of the `house.age` vs `unit.price`, along with the least-squares regression line as follows
+
+```{r}
+ggplot( data = house, aes( x = house.age, y = unit.price ) ) +
+    geom_point() + 
+    stat_smooth( method = "lm", formula = y ~ x + I( x ^ 2 ), se = FALSE ) +
+    theme_minimal() + ggtitle( "Scotor plot with Nonlinear Regression line" )
+```
+
+To create the *nonlinear regression*, we used function `lm()` which is for fitting linear models:
+```{r}
+reg_nonlinear = lm( unit.price ~ poly( house.age, 2 ), data = house[ -271, ] )
+```
+
+To see the summary of the regression results, we have
+```{r}
+summary( reg_nonlinear )
+```
+
+a. **What would you conclude from the estimated *Residual standard error*?**
+
+b. **What would you conclude from the estimated *R-square*?**
+
+c. **Compare the estimated regression model from this question with the estimated regression model from the previous part. Which one do you recommend for this dataset? Support your claim.** 
+
+## Model Specification: Choosing the Correct Regression Model
+
+We want here to choose the best regression model, by applying *stepwise regression* to the *house* dataset. First, we should build a regression model with all predictors included, so that we can have an understanding of the model, as well as to use the result of this model in the upcoming model selections:
+
+```{r}
+reg_all = lm( unit.price ~ poly( house.age, 2 ) + distance.to.MRT + stores.number + 
+                           latitude + longitude, data = house )
+
+summary( reg_all )
+```
+
+### Stepwise Regression
+
+For *stepwise regression*, the function `step()` should be called and the direction is set to `both` so that the algorithm can add and drop predictors in every iteration. Once it is called, the iterating process will proceed by itself.
+
+```{r}
+reg_step = step( reg_all, direction = "both" )
+```
+
+The see the selected regression model based on the *stepwise regression*, we can use function `summary()` as follows
+```{r}
+summary( reg_step )
+```
+
+**Compare the estimated regression model from this section with the estimated regression model from the previous parts. Which one do you recommend for this dataset? Support your claim.** 
+
+# Classification for churn dataset (20 points)
+
+We want to apply the decision tree analysis to the [*churn*](https://rdrr.io/cran/liver/man/churn.html) dataset that is available in the **R** package [**liver**](https://CRAN.R-project.org/package=liver). We want to classify whether or not a customer leaving the service of one company in favor of another company. 
+
+The *churn* dataset has 19 predictors but we are not going to use all of the predictors. We know based on the lecture of week 2, we should use only the predictors that have a relationship with the target variable. So, here we use the following predictors:
+
+`account.length`, `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`.
+
+For this classification task, we want to apply the following algorithms:
+
+* *Logistic Regression* algorithm (similar to part 2.1),
+* *CART* algorithm (the same as weekly exercises of week 5),
+* *C5.0* algorithm (the same as weekly exercises of week 5),
+* *Random Forest* algorithm (the same as weekly exercises of week 5),
+* *kNN* algorithm (the same as weekly exercises of week 5).
+
+Ultimately, **we want to see which of the above classification algorithms are more suitable here**, by evaluating the accuracy of the predictions with:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+
+## Data Preparation
+
+After importing the *churn* dataset in R, partition the *churn* dataset randomly into two groups as a train set (80%) and a test set (20%). Here, for the partition, you could use the `partition()` function from the *liver* package. You should use the `set.seed()` function in R; similar to the data preparation in section 1 for adult dataset.
+
+## Applying Logistic Regression algorithm
+
+By using logistic regression we want to classify whether or not a customer leaving the service of one company in favor of another company. You the code from part 2.1.
+
+## Applying Decision Tree algorithms
+
+For the classification task, by using the training dataset, run the following algorithms:
+
+* *CART algorithm* using the `rpart()` function in the **rpart** R package and plot the decision tree using the `rpart.plot()` function in the **rpart.plot** R package; Similar to the weekly exercises of week 5.
+
+* *C5.0 algorithm* using the `C5.0()` function in the R package **C50**; Similar to the weekly exercises of week 5.
+
+* *Random Forest* using the `randomForest()` function from the R package **randomForest**; Similar to the weekly exercises of week 5.
+
+Based on the training dataset and the above models predict for the test set. For the prediction, you could use the `predict()` function; Similar to the weekly exercises of week 5.
+
+## Applying kNN algorithm
+
+Find the k-nearest neighbor for the test set, based on the training dataset, for the case k = 13. For the kNN algorithm, use min-max normalization to transfer the predictors, similar to the exercises of week 4.
+
+## Model Evaluation
+
+Based on your results so far, which of the four classification algorithms is more suitable here for the *churn* dataset based on:
+
+* Confusion Matrix,
+* MSE,
+* ROC curve,
+* AUC (Area Under the ROC curve).
+  
+# **Bonus**: Applying Regression Analysis for your own dataset (30 points)
+
+In this part, similar to the above parts, apply the Regression Analysis approach for your own dataset. 
+
+
+
+
