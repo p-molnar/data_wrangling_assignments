@@ -19,7 +19,15 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE,
                          comment = " ", error = FALSE, fig.align = 'center'  )
 ```
 
-**Full Name:** Please write here you full name. In the case of working in a team, write the full name of all the team members. 
+```{css, echo=FALSE}
+.answer_panel { margin-left: 40px; }
+
+.sub_details { margin-left: 60px; }
+```
+
+**Full Name:**
+
+* Peter Molnar (11759216)
   
 **Online Assignment**: There is a new online-assignment at the [DataCamp](https://www.datacamp.com) with the name “*Supervised Learning in R: Regression*”. *The online-assignments at the DataCamp are not mandatory*.
 
@@ -79,9 +87,47 @@ The above plot presents bi-variate scatter plots (bottom-left), histograms (diag
 
 a. **For each variable in the marketing dataset, specify its type.**
 
+<details class="answer_panel">
+  <summary>Answer a</summary>
+  
+| Variable| Statistical type | R object type | 
+| :- | :-  | :- | 
+| `spend` | numerical, continuous | num |   
+| `clicks` | numerical, discrete | int |    
+| `impressions` | numerical, discrete | int |   
+| `display` | categorical, binary | int |   
+| `transactions` | numerical, discrete | int |    
+| `click.rate` | numerical, discrete$^*$  | num |    
+| `conversion.rate` | numerical, discrete$^*$ | num |   
+| `revenue` | numerical, discrete | num |   
+
+
+
+$^*$ Because the underlying data that the percentages are calculated from is discrete
+
+</details>
+
 b. **What is your interpretation of the above plot? Provide your reasons.**
 
+<details class="answer_panel">
+  <summary>Answer b</summary>
+
+The way the above plot is read is the following:
+
+* the bottom diagonal half shows scatter plots the two variables where the plot intersects. For instance, the first scatter plot on the top left, plots observations of `spend` on the x-axis, and `clicks` on the y-axis. More specifically, the diagonal variable is always plotted as the independent variable (x-axis) and the vertical variable as dependent variable (y-axis).
+* Along the diagonal line of the plot, we see histograms of the given variable, and it shows the distribution of it.
+* on the upper diagonal half of the plot, we see a correlation matrix between the vertical and horizontal variables. For instance, the right most value, 0.79, stands for the linear correlation between `spend` and `revenue`.
+
+</details>
+
 c. **What is your interpretation of the relationship between variables `spend` and `clicks`? Provide your reasons.**
+
+<details class="answer_panel">
+  <summary>Answer c</summary>
+
+The above plot shows strong positive correlation, $r_{spend, clicks} = 0.97$, between `spend` and `clicks`. This can be interpreted as, the more one spends on a campaign, the more clicks it is going to generate.
+
+</details>
 
 ## Simple Linear Regression
 
@@ -110,18 +156,74 @@ summary( reg_1 )
 
 a. **Give the estimated regression equation?**
 
+<details class="answer_panel">
+  <summary>Answer a</summary>
+
+$\widehat{revenue}(spend) = 15.7058 + 5.2517*spend$
+
+</details>
+
 b. **What is the estimated value of the slope $\beta_1$? Explain clearly and interpret its value?**
+
+<details class="answer_panel">
+  <summary>Answer b</summary>
+
+The estimated slope of $\beta_1$, which in this case stands paramatrically stands for `spend`, is 5.2517. It can be interpreted as if we spend an additional pound on the daily pay-per-click, then we expect revenue to increase on average by £5.2517.
+
+</details>
 
 c. **What would you conclude from the estimated *Residual standard error*?**
 
+<details class="answer_panel">
+  <summary>Answer c</summary>
+
+The residual standard error measures the standard deviation of the residuals. In the current case, it is 93.82. Since it is a unitless and unstandardised measure of deviation, as a single metrics we cannot conlcude anything from it. If there were multiple competing models, then we could compare them based on their RSE values, and the most preferred would be the one with the lowest value.
+
+</details>
+
 d. **What would you conclude from the estimated *R-square*?**
+
+<details class="answer_panel">
+  <summary>Answer d</summary>
+
+The $R^2$ measures the goodness of fit, and is interpreted as the the percentage of the variance in the dependent variable that the independent variables explains.
+In this case $R^2 = 0.6232$ means, that $62.32\%$ of the variation in the `revenue` is explained by `spend`.
+
+</details>
 
 e. **Estimate the regression equation when `spend` is 25?**
 
+<details class="answer_panel">
+  <summary>Answer e</summary>
+
+$\widehat{revenue}(25) = 15.7058 + 5.2517*25 = £146.9983$
+
+</details>
+
 f. **Estimate the regression equation when `spend` is 200?**
+
+<details class="answer_panel">
+  <summary>Answer f</summary>
+
+$\widehat{revenue}(200) = 15.7058 + 5.2517*200 = £1066.0458$
+
+</details>
 
 g. **Verify whether it is reasonable to trust the estimated value in the previous part? Why? Explain your answer.**
   
+<details class="answer_panel">
+  <summary>Answer g</summary>
+
+To varify the validaty of the estimates in e) and f), we report summary statistics of `spend`.
+
+```{r}
+summary(marketing $ spend)
+```
+
+Above we see that, `spend` ranges between £1.12 and £91.51.  Analysts should restrict estimates and predictions to the values within the range of the values of the independent variable in dataset. £25 is within the range, therefore, the prediction it gives is valid. However, £200 lies outside of the range, therefore the prediction may be overly erroneous.
+
+</details>
+
 ## Multiple Linear Regression
 
 The illustrate the multiple regression modeling using the *marketing* dataset, we shall add the predictor `display` to the model, and observe whether the quality of the model has improved or not. In this case, the equation for the multiple regression with the predictors is:
@@ -136,11 +238,51 @@ summary( multi_reg )
 
 a. **Give the estimated regression equation?**
 
+<details class="answer_panel">
+  <summary>Answer a</summary>
+
+$\widehat{revenue}(spend, display) = -41.4377 + 5.3556*spend + 104.2878*display $
+
+</details>
+
 b. **What would you conclude from the estimated *Residual standard error*?**
+
+<details class="answer_panel">
+  <summary>Answer b</summary>
+  
+The residual standard error measures the standard deviation of the residuals. In the current case, it is 78.14. Since it is a unitless and unstandardised measure of deviation, as a single metrics we cannot conclude anything from it. However, in this case we can compare it with the simple linear regression. When comparing $RSE_{multi} = 78.14$ with $RSE_{simple} = 93.82$, we conclude that the multivariate linear regression's RSE value is smaller than that of simple linear regression's. That is, the additional variable, `display`, bears with relevant explanatory power of revenue.
+
+</details>
 
 c. **What would you conclude from the estimated *R-square*?**
 
+<details class="answer_panel">
+  <summary>Answer c</summary>
+
+Given that the above output is for a multivariate linear regression, we need to take into account that any additional variable will incrase the regular $R^2$ value. Therefore, we need to look at the adjusted r-squared value that is a corrected for the number of independent variable in the model.
+
+$R^2_{adjusted} = 0.7317$, is interpreted as follows; 73.17% of the variation in revenue is explained by the model.
+
+</details>
+
 d. **Compare the estimated regression model from this question with the estimated regression model from the previous part. Which one do you recommend for this dataset? Support your claim.** 
+
+<details class="answer_panel">
+  <summary>Answer d</summary>
+
+Below we compare the estimates for $spend = 25$, since this value is within the range of `spend` and hence does not run the risk of extrapolation.
+
+Regression equation from the previous part:
+$\widehat{revenue}(25) = 15.7058 + 5.2517*25 = £146.9983$
+
+Regression equation from this part:
+$\widehat{revenue}(spend = 25, display=0) = -41.4377 + 5.3556*25 + 104.2878*0 = £92.4523$
+
+We see, that the second regression provides a more modest revenue estimation than that of simple linear regression.
+
+Since the adjusted r-squared value is larger and the RSE value is smaller for the multivariate model than for the simple linear model, we prefer the multivariate model.
+
+</details>
   
 ## Model Specification: Choosing the Correct Regression Model
 
@@ -155,6 +297,14 @@ summary( ml_all )
 ```
 
 **What is your interpretation of this model? Should we keep all the predictors in our model? Support your claim.**
+
+<details>
+  <summary>Answer</summary>
+
+The RSE and the r-squared values are similar to the model in 1.3. However, the difference is that, in the current model none of the independent variables are significant. Meaning, that none of the predictors differ significantly from 0, and therefore, does not significantly add to the model.
+
+One remedy is to eliminate some independent variables and see how it changes the regression output. 
+</details>
    
 ### Stepwise Regression
 
@@ -175,6 +325,25 @@ summary( ml_step )
 ```
 
 **Compare the estimated regression model from this section with the estimated regression models from the previous parts (part 1.2 and part 1.3). Which one do you recommend for this dataset? Support your claim.**
+
+<details>
+  <summary>Answer</summary>
+
+| formula | revenue ~ spend + display *(model 1)* | revenue ~ clicks + display *(model 2)*|
+| :- | :-: | :-: |
+| RSE | 78.142 | 72.29 |
+| $R^2_{adjusted}$ | 0.7317  |  0.7704 |
+| Model p-value | 1.012e-11 | 5.682e-13 |
+
+Based on the above metrics, we can conclude the following:
+
+* In terms of RSE, the model 2 produces less residuals than model 1. Between competing models, the one with the smaller RSE is preferred, therefore, model 2 is deemed a more accurate model.
+* With regards to $R^2_{adjusted}$, model explains a larger percentage of the variation in `revenue`, and hence has higher explanatory power, therefore, again model 2 is preferred to model 1
+* lastly, the model p-value is both highly significant for the 2 models, however, for model 2 it is more significant than for model 1.
+
+We can concludes that the the differences are small between the competing models; it is because the correlation between `spend` and `clicks` is 0.97. Therefore, it was expected that the two models would produce similar results, but since model 2 outperforms in all metrics model 1, we deem model 2 a superior model.
+
+</details>
    
 ## Verifying Model Assumptions
 
@@ -239,7 +408,17 @@ To view the summary of the model, run the `summary()` command with the name of t
 summary( logreg_1 )
 ```
 
-**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.** 
+**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.**
+
+<details>
+  <summary>Answer</summary>
+
+From the above output we see that `account.length` is not significantly different from 0, therefore its contribution to explain the target variable is questionable. Also, the variable `voice.messages`, is only significant at $\alpha > 5\%$, therefore, we might also deem this variable as not explanatory enough.
+
+It is advised to eliminate `account.length` first and see how it impacts the rest of the variables. It might be the case that it improves the significance of `voice.messages`, and then it needs not to be eliminated. However, if this is not the case, `voice.messages` may be eliminated as well just to see if it improved the overall model's predictive power.
+
+
+</details>
 
 ## Poisson Regression 
 
@@ -268,7 +447,17 @@ To view the summary of the model, run the `summary()` command with the name of t
 summary( reg_pois )
 ```
 
-**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.** 
+**Based on the above output, which of the predictors should we remove from our model? Support you claim. Support your claim.**
+
+<details>
+  <summary>Answer</summary>
+
+From the above output we see that the contribution of `voice.messages`, `night.mins`, `voice.planno` are not significant. Furthermore, we see that the `intl.mins`, is only significant at $\alpha > 10\%$ and `eve.mins` at $\alpha > 5\%$.
+
+It is advised to eliminate all non-significant variables first and see how it impacts the rest of the variables. If it does not change the latter two variables significance, then they may as well be eliminated if it improves the model's accuracy.
+
+</details>
+
 
 # Nonlinear Regression Analysis (30 points)
 
