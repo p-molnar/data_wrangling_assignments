@@ -11,7 +11,7 @@ output:
     fig_height: 5
     theme: cosmo
     highlight: tango
-    # code_folding: hide
+    code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -20,21 +20,24 @@ knitr::opts_chunk $ set( echo = TRUE, message = FALSE, warning = FALSE, error = 
 
 ```{r}
 # dependencies
-library( liver )      # For dataset 'churn'
+library( liver )          # For dataset 'churn'
 
-library( ggplot2 )    # For visualization
-library( GGally )     # For correlation plots
-library( psych )      # For correlation plots  
+library( ggplot2 )        # For visualization
+library( GGally )         # For correlation plots
+library( psych )          # For correlation plots  
 
-library( rpart )         # For the "CART" algorithm
-library( rpart.plot )    # To plot decision trees
-library( C50 )           # For the "C5.0" algorithm
-library( randomForest )  # For the "Random Forest" algorithm
+library( rpart )          # For the "CART" algorithm
+library( rpart.plot )     # To plot decision trees
+library( C50 )            # For the "C5.0" algorithm
+library( randomForest )   # For the "Random Forest" algorithm
 
-library( pROC )          # For ROC plot
+library( pROC )           # For ROC plot
 
-library(readr)           # For the read_csv function
+library(readr)            # For the read_csv function
 
+library( naniar  )        # for missing value plotting
+library( Hmisc  )         # for imputation
+library( dplyr  )         # for select function
 data(churn)
 ```
 
@@ -51,15 +54,21 @@ theme_new = theme( panel.background = element_rect( fill = "white", colour = "wh
 
 # Business Understanding Stage
 
-Employee turnover refers to the phenomenon of replacing current employees to new unit of employees within a specified time horizon, usually a year.
+## General understanding of the problem
 
-Employee acquisition is costly, and hence turnover as well. It is is one of the most persistent and frustrating problems that organisations face.
+Employee turnover refers to the event of replacing current employees with new ones. Employee acquisition is a long and costly procedure, and hence unwanted turnover is one of the most persistent and frustrating problems that organisations have long been facing.
 
-Whether it is involuntary, such as termination due to poor performance, or voluntary, such as resignations, turnover is extremely costly.  According to a conservative estimate by the Bureau of Labor Statistics, average employee replacement costs are \$13,996 per employee, but the Information Technology (IT) sector stands out with nearly \$20,000.  As the economy grows, more jobs are created, and voluntary turnover also increases.  Despite these figures, organizations tend to underestimate the true cost of turnover.  This may be because, it is not an accountable line-item in most profit and loss statements, nor is it typically adequately defined in the budget, and no one submits an invoice at the end of the month for turnover. Furthermore, it is rather difficult to measure the cost wise implications of employee turnover. Yet, collectively, employee turnover costs organizations severe amounts no matter the size of it. 
+Whether it is involuntary, such as termination due to poor performance, or voluntary, such as resignations, turnover is extremely costly. According to a conservative estimates by the Bureau of Labor Statistics, on average an employee replacement costs approximately \$13,996 per employee. However, this amount for the Information Technology (IT) sector on average may reach the \$20,000 per employee.  As the economy grows, more jobs, and therefore opportunities are created, and thereby voluntary turnover also increases. Despite these figures, organisations tend to underestimate the true cost of turnover. This may be because, it is not an accountable line-item in most profit and loss statements, nor is it typically adequately defined in the budget, and no one submits an invoice at the end of the month for turnover. 
 
-Since there is not much that can be done to dramatically reduce the costs associated with turnover, and thereby acquisition, the most appropriate response is to reduce turnover itself, that is to retain employees.
+In addition to the explicit replacement fees, there are implicit costs as well, such as productivity loss, workplace safety issues, and morale damage to the company.
 
-Therefore this paper aims to identify factors associated with employee turnover
+Since there is not much organisations can do to dramatically reduce the costs associated with turnover, the best measure is to reduce turnover directly by an improved selection process that assesses candidates' turnover risk, motivational fit early in the hiring process. Such hiring process helps to reduce turnover, and can lead to a safer, more productive and profitable work place.
+
+## Dataset objective
+
+A Big Data and Data Science specialised company wants to hire data scientists among people who successfully pass training courses which is conducted by the company. Given the vast amount of sign-ups for the training, the company wants to know which of the candidates want to work for the company after training, and which one is looking for a new employment.
+
+This paper aims to identify factors associated with employee turnover and addresses the following questions:
 
 * What talents organisations lose?
 * What are the main reasons of losing them?
@@ -69,24 +78,27 @@ To answer these questions, I use a human resource [dataset](https://raw.githubus
 
 # Data Understanding Stage
 
-Below, I import the dataset in the environment by using the `read_csv` function.
+Below, we import the dataset into the environment by using the `read_csv` function.
 ```{r}
-data = read_csv("https://raw.githubusercontent.com/RongSong1110/WDQ7004/main/aug_train.csv")
+data = read_csv("hr_dataset.csv")
 ``` 
 
-To see a basic overview of the dataset, we query the structure of the dataset by the `str` function.
+Next we report some descriptive statistics and the structure of the dataset.
 ```{r}
-str( data )
+summary(data)
+str(data)
 ```
-The above output shows, shows that data was imported as a data.frame object, and that it consists of `r nrow(data)` observations and `r ncol(data)` variables. The last column, called `target` is the target variable which indicates whether the employee is looking to change job or not.
 
-The `r ncol(data)` variables are:
+
+The above output shows, that data is imported as a data.frame object, and that it consists of `r nrow(data)` observations and `r ncol(data)` variables, which includes the target variable, called `target`.
+
+The dataset comes with some explanation on the `r ncol(data)` and are as follows:
 
 | feature | feature description |
 | :- | :- |
 | `enrollee_id` |  Unique ID for candidate |
 | `city` |  City code |
-| `city_development_index` |  Developement index of the city (scaled) |
+| `city_development_index` |  Development index of the city (scaled) |
 | `gender` |  Gender of candidate |
 | `relevent_experience` |  Relevant experience of candidate |
 | `enrolled_university` |  Type of University course enrolled if any |
@@ -99,24 +111,11 @@ The `r ncol(data)` variables are:
 | `training_hours` |  training hours completed |
 | `target` |  0 – Not looking for job change, 1 – Looking for a job change |
 
+Although the above summary on the variables gives some understanding about what variables stand for, we further want to explore them.
 
-Based on the above reported structure, we read, that by default all variables were imported as characters, except `employee_id`, `training_hours`, and `target`. 
+Per the above structure output we see that the variables were imported as either character or numerical variables. First we want to gain understanding on the potential unique values each of the character variables may take on, so that in a later section we can convert them their appropriate and corresponding data type.
 
-Below we classify each of the variables' statistical datatype, so that in a later sections we could convert them to their corresponding datatype.
-
-| Statistical type of variable | variable |
-| :- | :- | 
-| numerical continuous | `city_development_index` |
-| numerical discrete | `experience`, `lastnewjob`, `training_hours`|
-| ordinal | `education_level`, `company_size`, |
-| binary  | `relevant_experience`, `target`|
-| nominal  | `enrollee_id`, `city_code`, `gender`, `enrolled_university`, `major_discipline`, `company_type` |
-
-As the above table summarises, the statistical types of the variables do not match with their R datatype, therefore we need to convert them first.
-
-## Convert variables
-
-In order to make the type conversion accurate, we first explore each individual variable's unique values, so that we can see what order we can set up for ordinal variables for instance. 
+## Exploring the character variables
 
 ```{r}
 categorical_vars = names(Filter(is.character, data))
@@ -125,56 +124,217 @@ categorical_data = data[,c(categorical_vars)]
 lapply(categorical_data, unique)
 ```
 
-The relevant take away from the above output is that each of the above variables will be converted to `factor`, however, `education_level`, `experience`, `company_size` and `last_new_job` will be converted to ordered nominal, that is to ordinal variables.
+### `city` {.unlisted .unnumbered}
 
-Before doing so, however, we clean up the data and rename two column names as well as values of some categorical variables.
+The `city` variable holds `r length(unique(categorical_data $ city))` unique values, which are identifiers of cities of the current employer. Each value follows the same convention; "city_\<id\>", whereby id stands a unique identifier of the city. In such format, the `city` variable is anonymised, and since the dataset does not provide any information on the geographical location of the city, we cannot attach existing geographical knowledge to it.
+
+### `gender` {.unlisted .unnumbered}
+
+The `gender` variable holds `r length(unique(categorical_data $ gender))` unique values, and stand for the gender of the candidate. The variable takes on the following unique values: `r unique(categorical_data $ gender)`.
+
+### `relevent_experience` {.unlisted .unnumbered}
+
+The `relevent_experience` variable holds `r length(unique(categorical_data $ relevent_experience))` unique values, and stand for whether the candidate has any relevant experience for the job or not. The variable takes on the following unique values: `r unique(categorical_data $ relevent_experience)`. As we can see, the variable in question is binary, a candidate can either have relevant experience or not.
+
+Furthermore, it is worth to remark that both the variable name and the values contain a spelling mistake - this will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+
+### `enrolled_university` {.unlisted .unnumbered}
+
+The `enrolled_university` variable holds `r length(unique(categorical_data $ enrolled_university))` unique values, and stand for type the candidate is or has been enrolled at a university, if any.
+
+The variable can take on the following unique values: `r unique(categorical_data $ enrolled_university)`.
+
+It is also worth to note that the value "no_enrollment" is not consistent with the other 2 type for this variable, namely, it is delimited with underscore and non-capitalised. This inconsistency will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+
+### `major_discipline` {.unlisted .unnumbered}
+
+The `major_discipline` variable holds `r length(unique(categorical_data $ major_discipline))` unique values, and stand for the candidate's major subject, if there is any.
+
+The variable can take on the following unique values: `r unique(categorical_data $ major_discipline)`.
+
+### `experience` {.unlisted .unnumbered}
+
+The `experience` variable holds `r length(unique(categorical_data $ experience))` unique values, and stand for the number of years of experience the candidate has, if any.
+
+The variable can take on the following unique values: `r unique(categorical_data $ experience)`. Whereby, the observation "<1" means a experience less than a year, and ">20", more than 20 years.
+
+### `company_size` {.unlisted .unnumbered}
+
+The `company_size` variable holds `r length(unique(categorical_data $ company_size))` unique values, and stand for the headcount of the company the candidate currently is working for, if any.
+
+The variable can take on the following unique values: `r unique(categorical_data $ company_size)`. Whereby, values such as "<10", stands for a company with less than 10 employees, and "100-500" for a company with headcount between 100 and 500 employees.
+
+It is worth to note, that the values of this variable is inconsistent and deviates from the standard convention of the rest of the variables. This problem will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+
+### `company_type` {.unlisted .unnumbered}
+
+The `company_type` variable holds `r length(unique(categorical_data $ company_type))` unique values, and stand for the type of the company the candidate currently is working for, if any.
+
+The variable can take on the following unique values: `r unique(categorical_data $ company_type)`.
+
+### `last_new_job` {.unlisted .unnumbered}
+
+The `last_new_job` variable holds `r length(unique(categorical_data $ last_new_job))` unique values, and stands for the difference in years between the previous job and current job.
+
+The variable can take on the following unique values: `r unique(categorical_data $ last_new_job)`. Whereby "never" refers to no previous job, and ">4" to the last job being later than 4 years.
+
+It is worth to note, that the value "never" does not necessarily make sense, in case of this variable, and therefore, this will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+
+# Data cleaning and preprocessing {#section_cleaning_preprocessing}
+
+In the previous section, for a few variables a remark was made that it needs to be handled in the current section.
+
+## `relevent_experience` {.unlisted .unnumbered}
 
 First we start correcting the spelling mistake of the column `relevent_experience` to `relevant_experience`.
 ```{r}
 names(data)[names(data) == 'relevent_experience'] = "relevant_experience"
 ```
 
-Next, we deal with the target variable, `target`, and change its column name to a more descriptive on, e.g., `is_looking_for_job`, representing binary observations, whether the individual is looking to change job or not.
+Furthermore, for such a binary variable we aim to use a clear notation, to indicate whether the candidate has relevant experience or not. We achieve this by replacing "Has relevent experience" with "yes" and "No relevent experience" with "no" values, so to make later interpretations easier.
+
+```{r}
+data $ relevant_experience[data $ relevant_experience == "Has relevent experience"] = "yes"
+data $ relevant_experience[data $ relevant_experience == "No relevent experience"] = "no"
+```
+
+## `enrolled_university` {.unlisted .unnumbered}
+
+In case of `enrolled_university`, the column values “no_enrollment” contains a mispelling and not consistent with the other 2 values for this variable, namely, it is delimited with underscore and non-capitalised. The below code replaces “no_enrollment” observations with “No enrolment” 
+
+```{r}
+data $ enrolled_university[data $ enrolled_university == "no_enrollment"] = "No enrolment"
+```
+
+## `company_size` {.unlisted .unnumbered}
+
+The `company_size` variable contains inconsistent and overlapping observations., 
+
+The column value "10/49", should represent an interval, instead of a quotient, and therefore it should be delimited with a dash, instead of forward slash.
+
+Below we replace each "10/49" values with "10-49".
+```{r}
+data $ company_size[data $ company_size == "10/49"] = "10-49"
+```
+
+Furthermore, the intervals of `company_size` should be mutually exclusive values. However, in the case of the following 2 values, "100-500" and "500-999", the "500" is an overlap between the two categories. So, next we replace the "100-500" observations with "100-499". Additionally, the value "10000+" does not follow the convention too, therefore it is replaced with ">9999".
+
+```{r}
+data $ company_size[data $ company_size == "100-500"] = "100-499"
+data $ company_size[data $ company_size == "10000+"] = ">9999"
+```
+
+
+## `last_new_job` {.unlisted .unnumbered}
+
+The `last_new_job` column contains "never" observations, that expresses that the candidate does not have a previous job. For the sake of later interpretation this value is replaced with "0".
+
+```{r}
+data $ last_new_job[data $ last_new_job == "never"] = "0"
+```
+
+## `target` {.unlisted .unnumbered}
+
+Lastly, we deal with the target variable, `target`, and change the column name to something more descriptive, e.g., `is_looking_for_job`, representing binary observations, whether the individual is looking to change job or not.
 
 ```{r}
 names(data)[names(data) == 'target'] = "is_looking_for_job"
 ```
 
-Now that the columns are more explanatory, we can deal with the individual observations of each column.
-
-The column values of `relevant_experience` is currently either "Has relevent experience" or "No relevent experience". For the sake of convenience and readability, we change replace these values with "Yes" and "No" respectively.
+Furthermore, we replace the current numerical observations with character ones. More specifically, the current '1' values is replaced with "yes" and the '0' with "no".
 
 ```{r}
-#replace 'has relevant experience' and 'no relevant experience' with TRUE and FALSE
-data$relevant_experience[data$relevant_experience=='Has relevent experience'] = 'yes'
-data$relevant_experience[data$relevant_experience=='No relevent experience'] = 'no'
-```
-
-Next, we deal with inconsistent notations of observations in `company_size`, which should follow the same naming convenience that for instance `experience` does.
-
-Namely, the observations with "10/49" value should represent an interval, therefore it should be delimited with a dash, instead of forward slash, so it would be consistent with the rest of the dataset.
-
-Furthermore, the intervals of `company_size` are not mutually exclusive for "100-500"   and "500-999". Meaning, there is an overlap between the two groups, therefore, we replace the "100-500" observations with "100-499".
-
-Lastly, the "10000+" observation represents a company with headcount more than 10000. however, the '+' notation is not consistent with the `experience` for instance, that uses '>' sign instead. Therefore, we replace "10000+" observations with ">10000".
-
-```{r}
-data$company_size<-replace(data$company_size,data$company_size == '10/49', '10-49')
-data$company_size<-replace(data$company_size,data$company_size == '100-500', '100-499')
-data$company_size<-replace(data$company_size,data$company_size == '10000+', '>9999')
+data $ is_looking_for_job[data $ is_looking_for_job == 1] = "yes"
+data $ is_looking_for_job[data $ is_looking_for_job == 0] = "no"
 ```
 
 
+## Dealing with missing values
 
-To check for the missing values (NA's), I report them by the use of `find.na()` function as follows:
+The below code reports the percentage of missing values for each feature.
+
 ```{r}
-# find.na( data )
+(miss_var_summary( data ))
 ```
 
-It indicate that this dataset does not have missing values (NA's). Also, by checking the summary of the data below, we can see that this dataset does not have missing values (NA's).
+We see from the above output, that `company_type`, `company_size`, `gender`, `major_discipline` suffer from a large quantity of missing values. Given the vast amount of missing values, we cannot perform any reliable imputation methods, becuase it would lead to the distortion of data. Instead, we perform a more conservative approach, and that is replace the missing values for these 4 variables by a new value, "unknown".
+
+For the rest of variables that also suffer from missing values, namely `education_level`, `last_new_job`, `enrolled_univeristy`, `experience` we impute them with values drawn randomly from the given variable's underlying distribution.
+
 ```{r}
-summary( data )
+severe_missing_val_cols = c("company_size", "company_type", "gender", "major_discipline")
+# non_severe_missing_val_cols = c("education_level", "last_new_job", "enrolled_university", "experience")
+
+for (col_name in severe_missing_val_cols)
+{
+  data[is.na(data[col_name]), col_name] = "Unknown"
+}
+
+# for (col_name in non_severe_missing_val_cols)
+# {
+#   data[col_name] = impute(select(data, col_name), "random")
+# }
+
+data $ education_level = impute(data $ education_level, "random")
+data $ last_new_job = impute(data $ last_new_job, "random")
+data $ enrolled_university = impute(data $ enrolled_university, "random")
+data $ experience = impute(data $ experience, "random")
 ```
+Finally, we report a summary on the imputed values.
+
+Next we double-check if there is still any missing values left in the dataset.
+```{r}
+any( is.na(data) )
+```
+
+The above output shows, that there is no missing value in the dataset, so next we move on with converting the variables to an appropriate data type that suits the vairable best.
+
+## Converting the variables
+
+In this section, we convert the variables to their appropriate data types. The below table summarises the data types of the variables.
+
+| Statistical type of variable | variable |
+| :- | :- | 
+| numerical continuous | `city_development_index` |
+| numerical discrete | `experience`, `training_hours` |
+| ordinal | `education_level`, `experience`,  `company_size`, `last_new_job`|
+| binary  | `relevant_experience`, `is_looking_for_job` |
+| nominal  | `enrollee_id`, `city`, `gender`, `enrolled_university`, `major_discipline`, `company_type` |
+
+```{r}
+# convert ordinal variables to ordered factor
+educ_ordered_levels = c("Primary School", "High School", "Graduate", "Masters", "Phd")
+data $ education_level = factor(data $ education_level, ordered = TRUE, levels = educ_ordered_levels)
+
+experience_ordered_levels = c("<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", ">20")
+data $ experience = factor(data $ experience, ordered = TRUE, levels = experience_ordered_levels)
+
+comp_size_ordered_levels = c("Unknown", "<10", "10-49", "50-99", "100-499", "500-999", "1000-4999", "5000-9999", ">9999")
+data $ company_size = factor(data $ company_size, ordered = TRUE, levels = comp_size_ordered_levels)
+
+last_job_ordered_levels = c("0", "1", "2", "3", "4", ">4")
+data $ last_new_job = factor(data $ last_new_job, ordered = TRUE, levels = last_job_ordered_levels)
+
+# convert variables to factor
+data $ relevant_experience = as.factor(data $ relevant_experience)
+data $ is_looking_for_job = as.factor(data $ is_looking_for_job)
+
+# convert nominal variables to factor
+data $ enrollee_id = as.factor(data $ enrollee_id)
+data $ city = as.factor(data $ city)
+data $ gender = as.factor(data $ gender)
+data $ enrolled_university = as.factor(data $ enrolled_university)
+data $ major_discipline = as.factor(data $ major_discipline)
+data $ company_type = as.factor(data $ company_type)
+```
+
+Now that the variables are cleaned up and in the right data type, we report a structure and summary again.
+
+```{r}
+summary(data)
+str(data)
+```
+
 
 # Exploratory Data Analysis (EDA)
 
