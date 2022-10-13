@@ -338,55 +338,300 @@ str(data)
 
 # Exploratory Data Analysis (EDA)
 
-Here we use exploratory methods to delve into the *churn* dataset. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables then numerical variables.
+Here we use exploratory methods to delve into the HR dataset for Data Science candidates. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables then numerical variables.
 
-The *churn* dataset has `r ncol( churn ) - 1` predictors and we know, we should use only those predictors that have a relationship with the target variable. In this section by using EDA (and if it's need hypothesis testing) to find out which of the `r ncol( churn ) - 1` predictors in the dataset have a relationship with the target variable *churn*. Then, in the modelling section, we are going to apply classification algorithms by using those predictors that have a relationship with the target variable.
+In this section by using EDA (and if it's need hypothesis testing) we aim to find out which of the `r ncol( churn ) - 1` predictors in the dataset has a relationship with the target variable `is_looking_for_job`. 
 
-## Investigate the target variable *churn* 
+## Investigate the target variable `is_looking_for_job`
 
 Here we report a bar plot and summary for the target variable `churn` as follows:
 
 ```{r fig.height = 5, fig.width = 5}
-ggplot( data = churn, aes( x = churn, label = scales::percent( prop.table( stat( count ) ) ) ) ) +
-    geom_bar( fill = c( "palevioletred1", "darkseagreen1" ) ) + 
-    geom_text( stat = 'count', vjust = 0.2, size = 6 ) + 
-    theme_new
+ggplot( data = data, aes( x = is_looking_for_job, label = scales::percent( prop.table( stat( count ) ) ) ) ) +
+  labs( title = "Bar plot for the target variable 'is_looking_for_job'" ) +
+  geom_bar( fill = c( "palevioletred1", "darkseagreen1" ) ) + 
+  geom_text( stat = 'count', vjust = 0.2, size = 6 ) + 
+  theme_new
 ```
 
-Summary for the target variable `churn`
+Summary for the target variable `is_looking_for_job`
 ```{r}
-summary( churn $ churn )
+summary( data $ is_looking_for_job )
 ```
 
-It shows that `r summary( churn $ churn )[1]` left the company and the proportion of the churner is:
+$P(is\_looking\_for\_job = no) = 14381$
 
-Customer Churn Rate = No. of Customers lost / Total no. of customers = $\frac{707}{5000}$ =`r round( summary( churn $ churn )[1] / nrow( churn ), 3 )`.
+$P(is\_looking\_for\_job = yes) = 4777$
 
-## Investigate variable *International Plan*
+$n = P(is\_looking\_for\_job = no) + P(is\_looking\_for\_job = yes) = 14381 + 4777 = 19158$
 
-Here we first report a contingency table of International Plan (`intl.plan`) with `churn`
+$P(is\_looking\_for\_job = yes) = \frac{P(is\_looking\_for\_job = yes)}{n} = \frac{4777}{19158} = 0.1414 = 24.93\%$
+
+Based on the above plot, and calculation, we can conclude that employee turnover after the training was given `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`%. Meaning, that the company is unable to withhold talents `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`% of the cases, and made the investment into the given candidate unnecessarily. 
+
+We can also look the side of the coin, and compute the retention rate, which is the complement of the turnover rate. That is, number of candidates that wants to stay at the company after the training / Total number of candidates = `r round( summary( data $ is_looking_for_job )[1] / nrow( data ), 4 ) * 100`%.
+
+Throught the analysis of below predictors we will try to understand the root causes of the 25% turnover by means of EDA.
+
+## `city`
+
+First we would like to understand which cities are the ones where candidates tend to sign-up for the training the most.
+
 ```{r}
-table( churn $ churn, churn $ intl.plan, dnn = c( "Churn", "International Plan" ) )
+summary(data $ city)
 ```
 
-Here is the above contingency table with margins
-```{r}
-addmargins( table( churn $ churn, churn $ intl.plan, dnn = c( "Churn", "International Plan" ) ) )
-```
-
-Bar chart for International Plan
+The above output reports that the dataset contains 123 different city identifiers, out of which the highest number of candidates came from city_103  city_21  city_16 city_114 city_160.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
-ggplot( data = churn ) + 
-  geom_bar( aes( x = intl.plan, fill = churn ) ) +
+ggplot( data = data ) + 
+  geom_bar( aes( x = city, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for the target variable 'is_looking_for_job'" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = city, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+We do not see any clear sign that city clear predictor whether the candidate is going to stay after the training or not.
+
+## `gender`
+
+To understand whether gender is a predictor of whether the candidate is going to stay or not, we first plot it as a regular histogram, with `is_looking_for_job` overlay, and then standardise it, so that we can read the percentages.
+
+```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+addmargins( table( data $ is_looking_for_job, data $ gender, dnn = c( "is_looking_for_job", "gender" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = gender, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'gender', with 'is_looking_for_job' overlay" )  +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 
-ggplot( data = churn ) + 
-  geom_bar( aes( x = intl.plan, fill = churn ), position = "fill" ) +
+ggplot( data = data ) + 
+  geom_bar( aes( x = gender, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 ```
+
+From the above output and plots we read that the gender ratio is mainly dominated by males. Given that the dataset is on Data Science, which technically is an engineering field, it comes as no surprise that it is male dominated, since STEM fields are usually male dominated.
+
+The next group that leads gender is unknown, these are candidates of which gender we do not know, and lastly female and others come in place.
+
+In order to see the turnover rate, we take a look at the standardise the plot from which we read that across the different genders the turn over rate does not deviate from one another. Conclusively, `gender` does not significantly explain the turnover rate, therefore, we do not expect the data mining algorithm to incorporate this into the prediction model.
+
+Next we move on to `relevant_experience`
+
+## `relevant_experience`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ relevant_experience, dnn = c( "is_looking_for_job", "relevant_experience" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'relevant_experience', with 'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+From the above contingency table we read, that 5366 candidates doesn't have any relevant experience on the field of data science, while the rest of the candidates (13792) do. This means, that there are approximately 2.5 more candidates signing up for the training with relevant experience than those without. This take away, is clear form the first bar plot as well, where those with relevant experience are 2.5 more than those without.
+
+In order to see the tendency of a candidate to look for new opportunity, we read the standardised plot and conclude the tendency among those without experience to leave the job after the training is higher than for those with experience. More precisely, those without experience tend to leave the company approximately 35% of the times, while those with experience it is much smaller, approximately 20%.
+
+Given that the 15% difference in the tendency is significant, we can expect the data mining algorithm to incorporate this variable into the prediction model.
+
+Next we move on with the `enrolled_university` variable.
+
+## `enrolled_univeristy`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ enrolled_university, dnn = c( "is_looking_for_job", "enrolled_university" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'enrolled_university', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme_new
+```
+
+From the above contingency table we read, that those without any university qualification rule the dataset. Next, it is those with a full-time degree and lastly those who followed a part time course at university.
+
+To see the difference in turnover rate between the different groups, we read the standardised bar plot, and report that those with a full time degree tend to leave the company the most with approximately 37.5% of the times. This result may be understandable, since employers still appreciate candidates with proper former education, and hence those with a full time degree has more opportunities than those without, or with part time degree.
+
+The turnover rate is approximately the same for those without a degree and those with a part time one; that is, approximately 22-25%. Given the large deviation in turnover rate between those with full time degree and the rest of the dataset, we can expect the data mining algorithm to incorporate `enrolled_university` to the prediction model.
+
+Next we move on with `education_level`.
+
+## `education_level`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ education_level, dnn = c( "is_looking_for_job", "education_level" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = education_level, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'education_level', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = education_level, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+From the above plots we read, that those with graduate degree (bachelor) has the highest weight in the dataset. Meaning, they have the highest frequency in the dataset. Next, those with Masters degree, and after it those with high school degree, and the rest are primary schoolers and Phds.
+
+Given that `education_level` is an ordinal variable, it is peculiar to see the rough normality, and symmetry in the data. That is, most of the candidates in the dataset hold a graduate degree, while towards the tails of the distribution is of those with significantly lower and higher qualifications.
+
+To see the proportion of turnover for each of the education levels, we read the standardised plot kept its approximate symmetric shape and see that those with graduate degree tend to change job most likely, by more than 25%, while the rest of them change with a likeliness of less than 25%. Those with High school degrees change jobs approximately with the same frequency as that of with Masters degree, that is approximately 20%. Similarly, those with primary school degree change jobs approximately as frequently as Phd degree holders, that is 13%.
+
+We may argue why the standardised plot kept its symmetric shape in a way that those with a standard bachelor degree is fairly flexible to still specialise to a certain part of Data Science and hence has more opportunities to change job. Those with higher or lower qualifications, are fairly restricted/specialised to a certain field of Data Science, and hence has less opportunities, or higher remuneration and hence it is not worth to look for new opportunities.
+
+Since, the above plots indicate strong graphical evidence of education level may be important for prediction, we can expect the data mining algorithm to incorporate it into the prediction model.
+
+Next, we move on with the variable `major_discipline`.
+
+## `major_discipline`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ major_discipline, dnn = c( "is_looking_for_job", "major_discipline" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = major_discipline, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'major_discipline', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = major_discipline, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+From the above outputs we read, that those with STEM (Science, technology, engineering, and mathematics) qualification rules the dataset. This is expected, since Data Science is typically a STEM related field. The second largest group of candidates in terms of major discipline is those with unknown major discipline.
+
+To see the turnover rate between different major disciplines, we read the standardised plot and find that there is hardly any difference between the turnover rate. Since there is no strong graphical evidence of the predictive importance of `major_discipline`, we do not expect this variable to be incorporated in the prediction model.
+
+Next we move on with `experience`.
+
+## `experience`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ experience, dnn = c( "is_looking_for_job", "experience" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = experience, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'experience', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = experience, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+The above plots show, that those with experience between 2 to 7 years and those with more than 20 years of experience are in majority. To see the turnover rate between the difference experience level, we read the standardised plot. The standardised plot shows that the higher more experience the candidate has the less likely he/she will look for a new job. There is a strong graphical indication of `experience` being an important predictor of the turnover rate, therefore we can expect this variable to be included in the prediction model by the data mining algorithm.
+
+Next we move on with `company_size`.
+
+## `company_size`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ company_size, dnn = c( "is_looking_for_job", "company_size" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = company_size, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'company_size', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = company_size, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+The above plots show that those with unknown current employer's size rule the data, alongside with companies of size 50-99, 100-499 and those of massive companies with headcount more than 9999.
+
+To observe the turnover rate between the different categories, we read the standardised plot, and see that those with unknown company size tend to look for a job the most. Between the known headcount, those with 10-49 stand out from the rest, by tending to look for a job approximately 20% of the times.
+
+We see no strong graphical indication of `company_size` would be an important predictor therefore, we do not expect it to be incorporated in the prediction model.
+
+Next we move on with `company_type`.
+
+## `company_type`
+
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ company_type, dnn = c( "is_looking_for_job", "company_type" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = company_type, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'company_type', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = company_type, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+The above plots shows that the majority of the candidate's currently employer are either unknown or of private limited company. To see the turnover rate per company type, we observe the standardised plot, and see that those with unkonwn company type tend to look for job. The rest of the company types are all below the whole dataset's turnover rate, therefore, we do not see strong indication of `company_type` being a predictor of turnover rate.
+
+Next we move on with `last_new_job`.
+
+## `last_new_job`
+```{r}
+addmargins( table( data $ is_looking_for_job, data $ last_new_job, dnn = c( "is_looking_for_job", "last_new_job" ) ) )
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = last_new_job, fill = is_looking_for_job ) ) +
+  labs( title = "Bar plot for 'last_new_job', with 
+        'is_looking_for_job' overlay" )  +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+
+ggplot( data = data ) + 
+  geom_bar( aes( x = last_new_job, fill = is_looking_for_job ), position = "fill" ) +
+  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme_new
+```
+
+The above plots show that those who never had a job before, and those who changed there job 1, 2 and more than years ago are in majority. The standardised graph shows, that the more one stays at a specific work place the less likely will change job. That is, there is a declining tendency of turnover rate as the last job is farther apart.
+
 
 The above plots show that International Plan holders (`intl.plan="yes"`) tend to churn more frequently, but they do not *quantify* the relationship. The above contingency table quantify the relationship between International Plan holding and churning, Since both variables are categorical. We should consider using International Plan as one of the predictor variables in whatever machine learning algorithms we use to predict churn.
 
