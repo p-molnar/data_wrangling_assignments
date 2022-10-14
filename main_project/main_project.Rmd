@@ -265,7 +265,7 @@ Furthermore, we replace the current numerical observations with character ones. 
 
 ```{r}
 data $ is_looking_for_job[data $ is_looking_for_job == 1] = "yes"
-data $ is_looking_for_job[data $ is_looking_for_job == 0] = "no"
+data $ is_looking_for_job[data $ is_looking_for_job == 0] = "No"
 ```
 
 
@@ -688,10 +688,28 @@ ggplot( data = data ) +
   theme_new
 ```
 
-The above plots show that those who never had a job before, and those who changed job 1, 2 and more than 4 years ago are in majority. Those candidates who are their current job for 3 or 4 years are in minority in this dataset. The standardised graph clearly shows, that the more a candidate stays at a specific work place the less likely he/she will change job. That is, there is a declining tendency in the turnover rate as the last job is farther apart.
+The above plots show that those who never had a job before, or changed job 1, 2 or more than 4 years ago are in majority. Those candidates who changed their job 3 or 4 years ago are in minority. The standardised graph clearly shows, that the longer a candidate stays at a specific workplace the less likely he/she will have the tendency to change. That is, the relationship between `last_new_job` and turnover rate is negative.
+
+Given the strong graphical evidence of a relationship between `last_new_job` and the target variable, we expect the data mining algorithm to include the variable in question into the prediction model.
+
+
+## Detect Correlated Variables
+
+From the EDA only the numerical variables left unexplored, `training_hours` and `city_development_index`.
+
+First, we visualize the correlation matrix between: `training_hours` and `city_development_index` by using the `ggcorr()` function as follows:
+
+
+```{r}
+variable_list = c( "city_development_index", "training_hours" )
+ggcorr( data = data[ , variable_list ], label = TRUE ) 
+```
+
+The correlation matrix shows no correlation between the two variables, therefore we can keep both variables in the analysis.
 
 
 ## Investigate the `training_hours` variable {.unlisted .unnumbered}
+
 ```{r}
 ggplot( data ) +
      geom_histogram( aes( x = training_hours ), bins = 30, color = "blue", fill = "lightblue" )
@@ -699,226 +717,66 @@ ggplot( data ) +
 ggplot( data ) +
      geom_histogram( aes( x = training_hours, fill=is_looking_for_job ), position="fill")
 
+ggplot( data = data ) +
+  geom_boxplot( aes( x = is_looking_for_job, y = training_hours ), fill = c( "palevioletred1", "darkseagreen1" ) )
 ```
 
 From the above plot we read that the training hours given to the candidates are positively skewed, with mean training hours of `r round(mean(data $ training_hours), 2)` hours.
 
-When `training_hours` is plotted as a standardised graph with the target variable overlay, we see that those who spend more than 200 hours with the training tend to look for a job less likely than those who completes the training under 200 hours. Based on this, we see strong enough indication of the graphical importance of `training_hours`, and hence we would expect the data mining algorithm to incorporate that into the model.
+When `training_hours` is plotted as a standardised graph with the target variable overlay, we see that those who spend more than 200 hours with the training tend to look for a job less likely than those who completes the training under 200 hours. Based on this, we see strong enough graphical indication of the predictive importance of `training_hours`, and hence we would expect the data mining algorithm to incorporate that into the model.
+
+Next, we plot the `training_hours` against `is_looking_for_job` on a boxplot. We report that the boxplot identifies a large quantity of outliers for both `is_looking_for_job` groups beyond 175 hours. Calculating with 8 hours of training a day, we find that 175 hours comes down to 21 days, which is a month. Since a month of training, or even more than that is normal, we will not treat the above identified outliers as invalid, therefore we leave them intact.
+
 
 ## Investigate the `city_development_index` variable {.unlisted .unnumbered}
 
-## Detect Correlated Variables 
-
-To visualize the correlation matrix between the numerical variables: `training_hours` and `city_development_index` we use the `ggcorr()` function as follows:
-
 ```{r}
-variable_list = c( "city_development_index", "training_hours" )
+ggplot( data ) +
+     geom_histogram( aes( x = city_development_index ), bins = 30, color = "blue", fill = "lightblue" )
 
-ggcorr( data = data[ , variable_list ], label = TRUE ) 
+ggplot( data ) +
+     geom_histogram( aes( x = city_development_index, fill=is_looking_for_job ), position="fill")
+
+ggplot( data = data ) +
+  geom_boxplot( aes( x = is_looking_for_job, y = city_development_index ), fill = c( "palevioletred1", "darkseagreen1" ) )
 ```
 
-The above correlation matrix plot indicates that there is no relationship (`r=0`) between `training_hours` and `city_development_index`, therefore we do not need to eliminate either of them.
+The above histogram shows that `city_development_index` is negatively skewed. Meaning, that the majority of the candidates come from cities with higher city development index. When we standardise the plot, we see a negative relationship between `city_development_index` and the target variable. That is, the higher the city development of the city the candidate comes from, the lower the likeliness he/she will be open to new opportunities after the training.
+
+Meaning, there is a clear graphical evidence of the predictive importance of `city_development_index` of the target variable, therefore, we expect the data mining algorithm to incorporate into the prediction model.
 
 
-The above plots show that International Plan holders (`intl.plan="yes"`) tend to churn more frequently, but they do not *quantify* the relationship. The above contingency table quantify the relationship between International Plan holding and churning, Since both variables are categorical. We should consider using International Plan as one of the predictor variables in whatever machine learning algorithms we use to predict churn.
-
-## Investigate variable "*voice mail plan*"
-
-Make a table for counts of Churn and Voice Mail Plan
-
-```{r}
-table( churn $ churn, churn $ voice.plan, dnn = c( "Churn", "Voice Mail Plan" ) )
-```
-
-Bar chart for Voice Mail Plan
-
-```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
-ggplot( data = churn ) + 
-  geom_bar( aes( x = voice.plan, fill = churn ) ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-
-ggplot( data = churn ) + 
-  geom_bar( aes( x = voice.plan, fill = churn ), position = "fill" ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-The results above indicate that:
-
-* It seems that Voice Mail Plan increases customers' loyalty. Thus, we should consider enhancing our Voice Mail Plan.
-* We should consider using Voice Mail Plan as one of the predictor variables in whatever machine learning algorithms we use to predict churn. Our confidence in this expectation is perhaps not as high as for the International Plan. 
-
-
-## Investigate variable "*Day Minutes*"
-
-To investigate the relationship between variable "*Day Minutes*", since the variable "*Day Minutes*" is numerical, we report the boxplot and density as follows
-
-```{r}
-ggplot( data = churn ) +
-  geom_boxplot( aes( x = churn, y = day.mins ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-```{r}
-ggplot( data = churn ) +
-  geom_density( aes( x = day.mins, fill = churn ), alpha = 0.3 ) + 
-  theme_new
-```
-
-The results above indicate that:
-
-* We should carefully track customer Day Minutes as total exceeds 200. Investigate why those with high usage tend to leave.
-* We should consider using variable "*Day Minutes*" as one of the predictor variables in whatever machine learning algorithms we use to predict churn.  
-
-## Investigate variable "*Evening Minutes*"
-
-To investigate the relationship between variable "*Evening Minutes*", since the variable "*Evening Minutes*" is numerical, we report the boxplot and density as follows
-
-```{r}
-ggplot( data = churn ) +
-  geom_boxplot( aes( x = churn, y = eve.mins ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-```{r}
-ggplot( data = churn ) +
-  geom_density( aes( x = eve.mins, fill = churn ), alpha = 0.3 ) + 
-  theme_new
-```
-
-The above plots do not indicate graphical evidence of the predictive importance of *Evening Minutes*. Thus, we apply the following hypothesis testing for dependency between variables *Evening Minutes* and *churn* 
-
-```{r}
-t.test( eve.mins ~ churn, data = churn )
-```
-
-Since the P-value = ```r t.test( intl.calls ~ churn, data = churn )$p.value``` is less than $\alpha$=0.05, thus we reject the $H_0$. 
-It means the difference in the mean number of evening minutes for churners and non-churners is statistically significant. Thus, variable "*Evening Minutes*" is useful for predicting churn.
-
-We applied the same Hypothesis testing for the variable "*Night Minutes*", to check its dependency with variables *churn*. And the result indicates that the variable "*Night Minutes*" is also useful for predicting churn.
-
-## Investigate variable "*Day Calls*" 
-
-Here, we are interested to investigate the relationship between variable Day Calls and the target variable `churn`. To investigate the relationship between variable "*Day Calls*", since the variable "*Day Calls*" is numerical, we report the boxplot and density as follows
-
-```{r}
-ggplot( data = churn ) +
-  geom_boxplot( aes( x = churn, y = day.calls ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-```{r}
-ggplot( data = churn ) +
-  geom_density( aes( x = day.calls, fill = churn ), alpha = 0.3 ) + 
-  theme_new
-```
-
-The above plots do not indicate graphical evidence of the predictive importance of Day Calls. However, a t-test (see below) for the difference in the mean number of day calls for churners and non-churners. Hypothesis testing for dependency between variables *Day Calls* and *churn* 
-
-```{r}
-t.test( day.calls ~ churn, data = churn )
-```
-
-Since the P-value = ```r t.test( day.calls ~ churn, data = churn )$p.value``` is higher than $\alpha$=0.05, thus we do not reject the $H_0$. 
-It means the difference in the mean number of international calls for churners and non-churners is not statistically significant. Thus, variable "*Day Calls*" is not useful for predicting churn.
-
-We applied the same Hypothesis testing for the variables "*Evening Calls*" and "*Night Calls*", to check their dependencies with variables *churn*. And the result indicates that these two variables also are not useful for predicting churn.
-
-## Investigate variable "*International Calls*" 
-
-Here, we are interested to investigate the relationship between variable International Calls and the target variable `churn`. To see the relationship between variable International Calls and the target variable *churn*, we report the histogram of variable International Calls including Churn overlay as follow
-
-```{r}
-ggplot( data = churn ) +
-  geom_bar( aes( x = intl.calls, fill = churn ), position = "stack" ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-We also report the *Normalized* histogram of variable International Calls including Churn overlay as follow
-
-```{r}
-ggplot( data = churn ) +
-  geom_bar( aes( x = intl.calls, fill = churn ), position = "fill" ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-To see the relationship between variable International Calls and the target variable *churn*, we report the boxplot as follow
-
-```{r}
-ggplot( data = churn ) +
-  geom_boxplot( aes( x = churn, y = intl.calls ), fill = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-The above plots do not indicate strong graphical evidence of the predictive importance of International Calls. However, a t-test (see below) for the difference in the mean number of international calls for churners and non-churners is statistically significant (p-value = 0.003; p-values larger than, say, 0.10 are not considered significant), meaning that this variable is indeed useful for predicting churn: Churners tend to place a lower mean number of international calls. Thus, had we omitted International Calls from the analysis based on the seeming lack of graphical evidence, we would have committed a mistake, and our predictive model would not perform as well.
-
-Hypothesis testing for dependency between variables *International Calls* and *churn* 
-
-```{r}
-t.test( intl.calls ~ churn, data = churn )
-```
-
-Since the P-value = ```r t.test( intl.calls ~ churn, data = churn )$p.value``` is less than $\alpha$=0.05, thus we reject the $H_0$. 
-It means the difference in the mean number of international calls for churners and non-churners is statistically significant. Thus, variable "*International Calls*" is useful for predicting churn.
-
-## Investigate variable "*customer service calls*" 
-
-Here, we are interested to investigate the relationship between variable "*customer service calls*" and the target variable "*churn*". To see the relationship between variable "*customer service calls*" and the target variable "*churn*", we report the histogram of the variable "*customer service calls*" including "churn" overlay as follows
-
-```{r}
-ggplot( data = churn ) +
-  geom_bar( aes( x = factor( customer.calls ), fill = churn ), position = "stack" ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-We also report the *Normalized* histogram of variable "*customer service calls*" including "churn" overlay as follow
-
-```{r}
-ggplot( data = churn ) +
-  geom_bar( aes( x = factor( customer.calls ), fill = churn ), position = "fill" ) +
-  scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
-  theme_new
-```
-
-The results above indicate that:
-
-* We should carefully track the number of customer service calls made by each customer. By the third call, specialized incentives should be offered to retain customer loyalty, since, by the fourth call, the probability of churn substantially increases. 
-* We should consider using variable "*customer service calls*" as one of the predictor variables in whatever machine learning algorithms we use to predict churn. 
+## Conclusion of EDA
 
 
 # Data Preparation
 
-In this stage we want to prepare the dataset for modeling. Here, we partition the *churn* dataset randomly into two groups: train set (80%) and test set (20%). Here, we use the `partition()` function from the *liver* package:
+In this section we prepare the dataset for modelling. Here, we partition the dataset at hand randomly into two groups: train set (80%) and test set (20%).
 
 ```{r}
-set.seed( 5 )
+set.seed( 5 ) # set seed for reproducibility
 
-data_sets = partition( data = churn, prob = c( 0.8, 0.2 ) )
+data_sets = partition( data = data, prob = c( 0.8, 0.2 ) )
 
 train_set = data_sets $ part1
 test_set  = data_sets $ part2
 
-actual_test  = test_set $ churn
+actual_test  = test_set $ is_looking_for_job
 ```
-Note that here we are using the `set.seed()` function to create reproducible results. 
 
-We validate the partition by testing whether the proportion of the target variable `churn` differs between the two data sets. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, mainly because we want to compare the proportion of the customers who paid for the *churn* between the two groups (“training set” and “test set”). The hypotheses are as follows
+Next, we validate the partition by testing whether the proportion of the target variable `is_looking_for_job` differs between the partitions. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, because we want to compare the proportion of candidates who passed the trainig and want to leave the compayn between the two groups (“training set” and “test set”). The hypotheses are as follows
 \[
 \bigg\{
 \begin{matrix}
-          H_0:  \pi_{churner,\ train}   =  \pi_{churner,\ test} \\
-          H_a:  \pi_{churner,\ train} \neq \pi_{churner,\ test}
+          H_0:  \pi_{looking\_for\_job,\ train}   =  \pi_{looking\_for\_job,\ test} \\
+          H_a:  \pi_{looking\_for\_job,\ train} \neq \pi_{looking\_for\_job,\ test}
 \end{matrix}
 \]
 
 To validate the partitions, we run a hypothesis test to check the proportion of the target variable `churn` in the train and test sets. To run the test, we use the `prop.test` function in **R**:
 ```{r}
-x1 = sum( train_set $ churn == "yes" )
-x2 = sum( test_set  $ churn == "yes" )
+x1 = sum( train_set $ is_looking_for_job == "Yes" )
+x2 = sum( test_set  $ is_looking_for_job == "Yes" )
 
 n1 = nrow( train_set )
 n2 = nrow( test_set  )
