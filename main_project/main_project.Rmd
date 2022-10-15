@@ -409,23 +409,23 @@ ggplot( data = data ) +
 Because the x-axis does not allow for clear identification of the cities, we make a new data frame the `city` data and the target variable. Below we add a few new columns to the data frame. These are, candidate count, which is the sum of the candidates from a given city. We also add application rate, which is rate of application per city compared to the overall dataset. Finally, we add a turnover rate column, that shows the percentage of candidates that wants to change job in the given city.
 
 ```{r}
-(tbl = as.data.frame.matrix((table(data $ city, data $ is_looking_for_job))))
+city_df = as.data.frame.matrix((table(data $ city, data $ is_looking_for_job)))
 
-names(tbl) = c("looking for job", "not looking for job")
-tbl["candidate count"] = tbl $`looking for job` + tbl $`not looking for job`
-tbl["application rate"] = round(tbl $`candidate count` / length(data $city), 4)
-tbl["turnover rate"] = round(tbl $`looking for job` / tbl $`candidate count`, 4)
+names(city_df) = c("looking for job", "not looking for job")
+city_df["candidate count"] = city_df $`looking for job` + city_df $`not looking for job`
+city_df["application rate"] = round(city_df $`candidate count` / length(data $city), 4)
+city_df["turnover rate"] = round(city_df $`looking for job` / city_df $`candidate count`, 4)
 ```
 
 First we order the data in a decreasing order based on application rate, so that we see from which city the company gets the most applicants from. Below we report the top 5 cities based on application rate. We see that from the below 5 cities, more than 55% of the applications came.
 
 ```{r}
-head(tbl[ order(tbl $`application rate`, decreasing = TRUE), ])
+head(city_df[ order(city_df $`application rate`, decreasing = TRUE), ])
 ```
 Next, we want to filter for the turnover rate, and order it increasing order, so that we retrieve cities with the lowest turnover rate first. However, first we filter for those cities where the candidate count were more than 30, so that we can eliminate those cities that were lacking any applications and would distort the interpretation.
 
 ```{r}
-cand_count_more_30 = tbl[tbl $`candidate count` > 20, ]
+cand_count_more_30 = city_df[city_df $`candidate count` > 20, ]
 head(cand_count_more_30[ order(cand_count_more_30 $ `turnover rate`, decreasing = FALSE), ])
 ```
 We see that in the above cities, turnover rate is significantly higher than for the dataset as a whole.
@@ -444,7 +444,7 @@ Next we test whether there is significant correlation between the application ra
 
 **Test results:**
 ```{r}
-cor.test( x = tbl $`application rate`, y = tbl $`turnover rate`, 
+cor.test( x = city_df $`application rate`, y = city_df $`turnover rate`, 
           alternative = "two.sided")
 ```
 
@@ -752,27 +752,74 @@ The correlation matrix shows no correlation between the two variables, therefore
 
 ## Investigate the `training_hours` variable {.unlisted .unnumbered}
 
+Given that the `training_hours` variable is discrete numeric, we first plot the distribution, and then as a box plot so that we can see if the dataset contains any outliers.
+
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
 ggplot( data ) +
      geom_histogram( aes( x = training_hours ), bins = 30, color = "blue", fill = "lightblue" )
 
-ggplot( data ) +
-     geom_histogram( aes( x = training_hours, fill=is_looking_for_job ), position="fill")
-
 ggplot( data = data ) +
   geom_boxplot( aes( x = is_looking_for_job, y = training_hours ), fill = c( "palevioletred1", "darkseagreen1" ) )
 ```
+From the above plot we read that the training hours given to the candidates are positively skewed, with mean training hours of `r round(mean(data $ training_hours), 2)` hours. The distribution for both those candidates who want to stay with the company and those who do not show almost identical distribution. The box plot reports an approximate 50 hours of training time for both target variable groups, meaning that half of the candidates finished under 50 hours, while the rest needed more time to complete the course. 
 
-From the above plot we read that the training hours given to the candidates are positively skewed, with mean training hours of `r round(mean(data $ training_hours), 2)` hours.
+The box plot also identifies outliers beyond `r boxplot.stats(data $ training_hours) $ stats[5]` hours, which regards `r count(data, training_hours > boxplot.stats(data $ training_hours) $ stats[5])[2, 2]` values. Since it is `r round(count(data, training_hours > boxplot.stats(data $ training_hours) $ stats[5])[2, 2] / nrow(data), 3) * 100`% of the the total dataset, we need to delve into the outliers a bit better.
 
-When `training_hours` is plotted as a standardised graph with the target variable overlay, we see that those who spend more than 200 hours with the training tend to look for a job less likely than those who completes the training under 200 hours. Based on this, we see strong enough graphical indication of the predictive importance of `training_hours`, and hence we would expect the data mining algorithm to incorporate that into the model.
+In the case of employee training, it usually takes anywhere between 3 months to 6 month. Given that the company did not specifically target any candidate group with specific prerequisits, candidates applied with diverse background from all walks of life. Therefore it should not be surprising that for a few candidates with no former experience in the field might take more time for the training to complete. Assuming that the candidate will spend 4 hours a day on the training, we see that the outliers spent at least `r boxplot.stats(data $ training_hours) $ stats[5] / 4` days (`r boxplot.stats(data $ training_hours) $ stats[5] / 80` month) with the training. Which in this context seems absolutely normal. Therefore we will not deem any values outliers identified by the boxplot as outliers.
 
-Next, we plot the `training_hours` against `is_looking_for_job` on a boxplot. We report that the boxplot identifies a large quantity of outliers for both `is_looking_for_job` groups beyond 175 hours. Calculating with 8 hours of training a day, we find that 175 hours comes down to 21 days, which is a month. Since a month of training, or even more than that is normal, we will not treat the above identified outliers as invalid, therefore we leave them intact.
+```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+ggplot( data ) +
+     geom_histogram( aes( x = training_hours, fill=is_looking_for_job ), position="fill")
 
-the above result suggest the company to extend the training course beyond 200 hours, since that decreases turnover rate.
+ggplot( data ) +
+  geom_density( aes( x = training_hours, fill = is_looking_for_job ), alpha = 0.3 ) + 
+  theme_new
+```
+
+When `training_hours` is plotted as a standardised graph with the target variable overlay, we roughly see that those who spend more than 200 hours with the training tend to look for a job less likely than those who completed the training under 200 hours. Since the graphical indication is not strong enough, we will test whether the turnover rate is lower among those who spend more than 200 hours on the training versus those who spent less 200 hours.
+
+**Hypotheses:** 
+
+\[
+\bigg\{
+\begin{matrix}
+          H_0:  \pi_{training\_hours<200, yes}   \leq  \pi_{training\_hours>=200, yes} \\
+          H_a:  \pi_{training\_hours<200, yes}   >  \pi_{training\_hours>=200, yes} \\
+\end{matrix}
+\]
+
+**Test results:**
+```{r}
+# subset data to 2 groups, those who complete the training under 200 hours and beyond
+training_less_200 = data[data $ training_hours < 200, ]
+training_more_200 = data[data $ training_hours >= 200, ]
+
+# get the turnover rate for the 2 subset
+training_less_200_looking = sum( training_less_200 $ is_looking_for_job == "yes")
+training_more_200_looking = sum( training_more_200 $ is_looking_for_job == "yes")
+
+# get subset size
+n_training_less_200 = nrow( training_less_200 )
+n_training_more_200 = nrow( training_more_200 )
+
+# carry out 2-sample test for equality of proportions with continuity correction
+prop.test( x = c( training_less_200_looking, training_more_200_looking ), 
+           n = c( n_training_less_200, n_training_more_200 ),
+           alternative = "greater")
+```
+
+**Test conclusion:**
+
+Given significance level of $\alpha = 0.05$ , and p-value = $0.0628\%$ < $\alpha = 5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the turnover rate among those who spent less than 200 hours on the training is significantly greater than those who completed the training beyond 200 hours.
+
+Given the above hypothesis testing we confirm the predictive importance of `training_hours`, and hence we would expect the data mining algorithm to incorporate that into the model.
+
+Furthermore, the graphical and numerical evidence shall suggest the company to extend the training course beyond 200 hours, so that itdecrease the turnover rate among new candidates.
 
 
 ## Investigate the `city_development_index` variable {.unlisted .unnumbered}
+
+The [City Development Index](https://www.cdindex.net/en/methodology) (CDI) aims to compare cities objectively from a holistic perspective both at the international and national levels.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
 ggplot( data = data ) +
@@ -780,41 +827,52 @@ ggplot( data = data ) +
 
 ggplot( data ) +
      geom_histogram( aes( x = city_development_index ), bins = 30, color = "blue", fill = "lightblue" )
+```
 
+The above box plots indicate that for the 2 target variable groups the distribution is significantly different. For both groups the data is skewed negatively, meaning, that the data overrepresents those who come from a higher socioeconomic city. The box plot identifies a few outliers for those not looking for a job. These observations are towards the lower end of CDI, and are classified as such if they are below `r boxplot.stats(data $ city_development_index) $ stats[1]`. This regards in total, `r count(data, city_development_index < boxplot.stats(data $ city_development_index) $ stats[1])[2, 2]` observations. 
+
+Given that in less developed cities (according to the methodology of CDI), the opportunity to access proper social, economic, educational and cultural facilities are limited. Poor CDI, does not necessarily allow for a candidate to develop an affinity towards Data Science and hence, it is rare to get applications from these cities. Therefore, if a candidate comes from such a city with such low CDI, and passes the training course, it is indeed an outlier. Therefore, we will treat these observations as outliers and impute them by values drawn randomly from an underlying distribution.
+
+```{r}
+whisker_lower = boxplot.stats(data $ city_development_index) $ stats[1]
+
+data = mutate( data, city_development_index = ifelse( city_development_index < whisker_lower, NA, city_development_index ) ) 
+
+data $ city_development_index = impute( data $ city_development_index, 'random' )
+
+summary(data $ city_development_index)
+```
+Next, we look at the standardised plots 
+```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
 ggplot( data ) +
      geom_histogram( aes( x = city_development_index, fill=is_looking_for_job ), position="fill")
 
 ggplot( data = data ) + 
   geom_density( aes( x = city_development_index, fill = is_looking_for_job ), alpha = 0.3)
-
 ```
 
-The above box plots indicate that for the 2 subgroups, the distribution is significantly different. In the case of those who are not looking for a job after the training, we see a few outliers towards the lower end of the [city development index](https://en.wikipedia.org/wiki/City_development_index). In less developed cities, the opportunity to study Data Science, or even develop an affinity towards it is rare. Mainly because of the poorer condition does not allow to specialise towards this field. Therefore if a candidate comes from so undeveloped cities, and passes the training course, is indeed an outlier. Therefore the data first needs to be imputed, by values drawn randomly from an underlying distribution.
+The above histogram and density plot clearly show a negative relationship between turnover rate and CDI. Meaning, that the higher the CDI of the city the candidate comes from, the lower the likeliness that the candidate will look for another job after the training, implying a decrease in turnover rate.
 
-```{r}
-q1 = boxplot(data $ city_development_index) $ stats[2, ]
-q3 = boxplot(data $ city_development_index) $ stats[4, ]
-iqr = q3 - q1
-whisker_lower = q1 - 1.5 * iqr
-
-data = mutate( data, city_development_index = ifelse( city_development_index <= whisker_lower, NA, city_development_index ) ) 
-
-data $ city_development_index = impute( data $ city_development_index, 'random' )
-
-ggplot( data = data ) +
-  geom_boxplot( aes( x = is_looking_for_job, y = city_development_index ), fill = c( "palevioletred1", "darkseagreen1" ) )
-```
-
-The above histogram shows that `city_development_index` is negatively skewed. Meaning, that the majority of the candidates come from cities with higher city development index. When we standardise the plot, we see a negative relationship between `city_development_index` and the target variable. That is, the higher the city development of the city the candidate comes from, the lower the likeliness he/she will be open to new opportunities after the training.
-
-Meaning, there is a clear graphical evidence of the predictive importance of `city_development_index` of the target variable, therefore, we expect the data mining algorithm to incorporate into the prediction model.
+Given the clear graphical evidence of the predictive importance of `city_development_index`, we expect the data mining algorithm to incorporate into the prediction model.
 
 
 ## Conclusion of EDA {.unlisted .unnumbered}
 
-Based on the above analysis, we can conclude the followings:
-* 
+In EDA, we explored the following variables; `r names(data)`.
 
+Based on the above analysis, our conclusion is the following:
+* `city`: The variable does not bear with any predictive importance, nor does it provide with valuable information for the company
+* `city_development_index`: The variable has a strong predictive capability. The higher CDI a candidate comes from, the lower the chance the candidate will look for a new job -  company needs to focus on candidates who come from high CDI cities.
+* `gender`: The variable bears with predictive importance, and the company needs to focus on the male gender more, as they tend to retain their position in the largest fraction compared to the other genders.
+* `relevant_experience`: The predictive importance of this variable is strong. The company needs to focus on candidates with relevant former experience as they stay in a larger percent of the cases than those without.
+* `enrolled_university`: The variable has predictive capabilities. The company should look out for those with full time degree, as this group tend to change job about 37.5% of the cases.
+* `education_level`: The variable has strong predictive importance. The company should specifically focus on candidates with at least a masters level degree.
+* `major_discipline`: The variable has predictive capabilities. The company need to focus on groups with major discipline of Art, Humanities and those of unknown discipline, as they are the most loyal to the company after hiring.
+* `experience`: The variable shows strong predictive importance. The relationship is clear, the more experience a candidate has, the less likely to leave the job. The company needs to focus on at least medior  but more of the senior candidates.
+* `company_size`: The variable shows predictive capabilities, and the company needs to avoid candidates with unknown company size, as they tend to leave the job approximately 37.5% of the cases.
+* `company_type`: The variable shows strong enough graphical indication of predictive importance. The company needs to look out for with unknown company type, as these candidates leave approximately 37.5% of the cases.
+* `last_new_job`: The variable shows strong indication of predictive capabilities. The more a candidate stays at his/her current position, the less likely he/she will leave the job offered by the hiring company. Therefore, the company needs to focus on those, who are in their current position for longer than 4 years.
+* `training_hours`: The variable has strong predictive importance. The company needs to focus on candidates with at least 200 hours spent on training hours.
 
 # Data Preparation
 
@@ -832,6 +890,7 @@ actual_test  = test_set $ is_looking_for_job
 ```
 
 Next, we validate the partition by testing whether the proportion of the target variable `is_looking_for_job` differs between the partitions. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, because we want to compare the proportion of candidates who passed the trainig and want to leave the compayn between the two groups (“training set” and “test set”). The hypotheses are as follows
+
 \[
 \bigg\{
 \begin{matrix}
