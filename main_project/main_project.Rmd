@@ -113,7 +113,7 @@ Although, the official summary on the variables gives some understanding about w
 The above structure output reports that the following variables are imported as character variables:
 `city`, `gender`, `relevent_experience`, `enrolled_university`, `education_level`, `major_discipline`, `experience`, `company_size`, `company_type`, `last_new_job`, and the followings as numerical variables: `city_development_index`, `enrollee_id`, `target`, `training_hours`.
 
-In this section, first we aim to gain understanding on the potential unique values each of the character variables may take on. By knowing this, in a later section ([data cleaning and preprocessing](#section_cleaning_preprocessing)) can better clean up and convert the data to the corresponding data type.
+In this section, first we aim to gain understanding on the potential unique values each of the character variables may take on. By knowing this, in a later section ([data cleaning and preprocessing](#data-cleaning-and-preprocessing)) can better clean up and convert the data to the corresponding data type.
 
 ```{r}
 categorical_vars = names(Filter(is.character, data)) # filter out column names with type character
@@ -137,7 +137,7 @@ The `relevent_experience` variable holds `r length(unique(categorical_data $ rel
 
 Based on the above unique values, we classify `relevent_experience` as a binary variable; that is, a candidate can either have relevant experience or not. Therefore, in a later section, this variable will be converted into a factor of 2 levels.
 
-Furthermore, it is worth to remark that both the variable name and the values contain a spelling mistake - this will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+Furthermore, it is worth to remark that both the variable name and the values contain a spelling mistake - this will be taken care of in the [data cleaning and preprocessing](#data-cleaning-and-preprocessing) section.
 
 
 ### `enrolled_university` {.unlisted .unnumbered}
@@ -146,7 +146,7 @@ The `enrolled_university` variable holds `r length(unique(categorical_data $ enr
 
 The variable can take on the following unique values: `r unique(categorical_data $ enrolled_university)`.
 
-As a remark, the observations "no_enrollment" is not consistent with the rest of the values' naming convention. It is delimited with underscore and non-capitalised. Therefore, this inconsistency will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+As a remark, the observations "no_enrollment" is not consistent with the rest of the values' naming convention. It is delimited with underscore and non-capitalised. Therefore, this inconsistency will be taken care of in the [data cleaning and preprocessing](#data-cleaning-and-preprocessing) section.
 
 
 ### `major_discipline` {.unlisted .unnumbered}
@@ -169,7 +169,7 @@ The `company_size` variable holds `r length(unique(categorical_data $ company_si
 
 The variable can take on the following unique values: `r unique(categorical_data $ company_size)`. The values such as "<10", stands for a company with less than 10 employees, and "100-500" for an organisation with headcount between 100 and 500 employees.
 
-It is worth to note, that the values of this variable is inconsistent and deviates from the standard convention of the rest of the variables. This problem will be addressed in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+It is worth to note, that the values of this variable is inconsistent and deviates from the standard convention of the rest of the variables. This problem will be addressed in the [data cleaning and preprocessing](#data-cleaning-and-preprocessing) section.
 
 ### `company_type` {.unlisted .unnumbered}
 
@@ -184,11 +184,11 @@ The `last_new_job` variable holds `r length(unique(categorical_data $ last_new_j
 
 The variable can take on the following unique values: `r unique(categorical_data $ last_new_job)`. Whereby "never" refers to no previous job, and ">4" to the last job being later than 4 years.
 
-Here as well a remark to be made, that the value "never" does not necessarily align with the other numerical values, and therefore, this will be taken care of in the [data cleaning and preprocessing](#section_cleaning_preprocessing) section.
+Here as well a remark to be made, that the value "never" does not necessarily align with the other numerical values, and therefore, this will be taken care of in the [data cleaning and preprocessing](#data-cleaning-and-preprocessing) section.
 
 
 
-# Data cleaning and preprocessing {#section_cleaning_preprocessing}
+# Data cleaning and preprocessing
 
 ## `enrollee_id` {.unlisted .unnumbered}
 Since `enrollee_id` is a unique identifier of each of the candidates that signed-up for the training, it carries no valuable information on the candidate, and therefore it is redundant in the dataset, hence it is removed.
@@ -355,7 +355,7 @@ str(data)
 ```
 Next, we move on with exploring the data by means of Exploratory Data Analysis.
 
-# Exploratory Data Analysis {#eda}
+# Exploratory Data Analysis
 
 This section aims to identify useful predictors of `is_looking_for_job` target variable. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables then numerical variables.
 
@@ -841,6 +841,8 @@ data = mutate( data, city_development_index = ifelse( city_development_index < w
 data $ city_development_index = impute( data $ city_development_index, 'random' )
 
 summary(data $ city_development_index)
+
+data $ city_development_index = as.numeric(data $ city_development_index)
 ```
 Next, we look at the standardised plots 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
@@ -861,6 +863,7 @@ Given the clear graphical evidence of the predictive importance of `city_develop
 In EDA, we explored the following variables; `r names(data)`.
 
 Based on the above analysis, our conclusion is the following:
+
 * `city`: The variable does not bear with any predictive importance, nor does it provide with valuable information for the company
 * `city_development_index`: The variable has a strong predictive capability. The higher CDI a candidate comes from, the lower the chance the candidate will look for a new job -  company needs to focus on candidates who come from high CDI cities.
 * `gender`: The variable bears with predictive importance, and the company needs to focus on the male gender more, as they tend to retain their position in the largest fraction compared to the other genders.
@@ -889,7 +892,9 @@ test_set  = data_sets $ part2
 actual_test  = test_set $ is_looking_for_job
 ```
 
-Next, we validate the partition by testing whether the proportion of the target variable `is_looking_for_job` differs between the partitions. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, because we want to compare the proportion of candidates who passed the trainig and want to leave the compayn between the two groups (“training set” and “test set”). The hypotheses are as follows
+Next, we validate the partition by testing whether the proportion of the target variable `is_looking_for_job` differs between the partitions. We use a Two-Sample Z-Test for the difference in proportions. A Two-sample z-test is suitable here, because we want to compare the proportion of candidates who want to leave the company between the two groups (“training set” and “test set”).
+
+**Hypotheses:** 
 
 \[
 \bigg\{
@@ -899,10 +904,10 @@ Next, we validate the partition by testing whether the proportion of the target 
 \end{matrix}
 \]
 
-To validate the partitions, we run a hypothesis test to check the proportion of the target variable `churn` in the train and test sets. To run the test, we use the `prop.test` function in **R**:
+**Test results:**
 ```{r}
-x1 = sum( train_set $ is_looking_for_job == "Yes" )
-x2 = sum( test_set  $ is_looking_for_job == "Yes" )
+x1 = sum( train_set $ is_looking_for_job == "yes" )
+x2 = sum( test_set  $ is_looking_for_job == "yes" )
 
 n1 = nrow( train_set )
 n2 = nrow( test_set  )
@@ -910,9 +915,158 @@ n2 = nrow( test_set  )
 prop.test( x = c( x1, x2 ), n = c( n1, n2 ) )
 ```
 
-Given significance level of $\alpha = 5%$ , and $p-value = 73.03%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$, and hence we infer that the two groups, training set and test set, are not different statistically. This indicates that the partition for the target variable is valid.
+**Test conclusion:**
+
+Given significance level of $\alpha = 0.05$ , and p-value = $52.54\%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the proprtion of those who want to leave the company are not different between the training set and the test set.
 
 
 # Modeling - Classification
 
-Per concluded above in the [Exploratory Data Analysis](#eda) section, the following predictors are relevant for the current dataset: `voice.plan`, `voice.messages`, `intl.plan`, `intl.mins`, `intl.calls`, `day.mins`, `eve.mins`, `night.mins`, and `customer.calls`. 
+Per concluded above in the [Exploratory Data Analysis](#exploratory-data-analysis) section, the following predictors are relevant for prediction: `city_development_index`, `gender`, `relevant_experience`, `enrolled_university`, `education_level`, `major_discipline`, `experience`, `company_size`, `company_type`, `last_new_job`, `training_hours`.
+
+Thus, here, based on the training dataset, we want to apply different type of Machine Learning algorithms, by using above predictors in our model. We use the following formula:
+
+```{r}
+formula = is_looking_for_job ~ city_development_index + gender + relevant_experience + enrolled_university + education_level + major_discipline + experience + company_size + company_type + last_new_job + training_hours
+```
+
+
+## Classificaiton with the k-nearest neighbor algorithm
+
+To find out the optimal value of `k` for the k-nearest neighbour algorithm we plot the error rate each `k` value produces, from 1 to 20.
+
+We achieve this by using this `kNN.plot()` function, and set a seed of for the sake of reproducibility.
+
+```{r fig.align = 'center'}
+kNN.plot( formula, train = train_set, test = test_set, transform = "minmax", k.max = 20, set.seed = 5 )
+```
+
+The plot shows that the minimum value of error rate is for the case that `k = 17`. Since the smaller values of error rate indicates better predictions, the optimal value of `k` would be 17.
+
+Now, to find the k-nearest neighbour for the test data set for the case `k = 17`, we use `kNN()` command: 
+```{r}
+predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 17 )
+```
+
+Given that our target variable is binary, we use a min-max normalisation, so that neither of the variables over overwhelm the others.
+
+## Classificaiton with Decision Tree by CART algorithm
+
+Next we use the CART algorithm to create a binary decision tree by using `rpart()` function.
+```{r}
+tree_cart = rpart( formula, data = train_set, method = "class" )
+```
+
+Below we plot the decision tree.
+```{r, fig.height=6, fig.width=10}
+rpart.plot( tree_cart, type = 4, extra = 104 )
+```
+
+In general a CART decision tree is interpreted as follows:
+* we start with the top decision node (root node), and follow along an edge, whereby the next nodes and the edges tell which subsets we are looking at
+* once a leaf node is reached, it tells the predicted outcome
+* all the edges are connected by ‘AND’.
+
+The above plot shows a single decision node, which is the root node. The root node represents 100% of the observations, out of which 75% classify as not looking for a job, and the rest 25% as a candidate who looks for a job. The root node splits at `city_development_index`.
+
+Additionally we see that, 82% of the candidates are from cities with City Development Index >= 0.62, while the rest 18% are from lower CDI classified cities.
+
+82% of those are from the higher CDI cities classify as not wanting to change job, while the rest 18% does want to change job after the training.
+
+59% of those candidates who are from the lower CDI cities classify as wanting to change job after the training, while the rest 41% report that they do not look for a job.
+
+## Classificaiton with Decision Tree by C50 algorithm
+
+```{r}
+tree_C50 = C5.0( formula, data = train_set ) 
+```
+
+Since the tree from the **C5.0 algorithm** is relatively large to visualize, we use the function `summary` as follows
+```{r}
+summary( tree_C50 )
+```
+
+## Classificaiton with Random Forest
+
+The CART and C5.0 algorithms both produce a single decision tree based on all of the records, and the specified variables, in the training data set. On the other hand, the random forest algorithm builds a series of decision trees and combine the trees disparate classifications of each record into one final classification.
+
+Below we run the `randomForest()` function to generate the classification.
+```{r}
+random_forest = randomForest( formula = formula, data = train_set, ntree = 100 )
+```
+
+To decide the suitable value the number of trees in the random forest algorithm, we plot the error rate against `ntree` and look for the loacl minimum of the function.
+
+```{r}
+plot( random_forest )
+```
+
+We see that `n` obtains its minimum approximately around `ntree=25`. After this value we see a fairly constant error rate.
+
+Below we plot a dot-chart for each variable of how each variable contributes to the homogeneity of the nodes and leaves in the the above reported random forest.  The higher the value of mean decrease Gini score, the higher the importance of the variable in the model.
+```{r}
+varImpPlot( random_forest )
+```
+We can report that the top 5 contributor to the model is `city_development_index`, `training_hours`, `experience`, `company_size`, `last_new_job`. There are the specific features the company needs to dedicate attention for when hiring candidates based on the random forest algorithm.
+
+## Classificaiton with Logistic Regression 
+
+Since we are dealing with a binary target variable, we will use logistics regression modeling.
+```{r}
+logreg = glm( formula, data = data, family = binomial )
+```
+
+To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
+```{r}
+summary( logreg )
+```
+# Model Evaluation
+
+Above we dealt with 4 different classification methods: k-neareset Neighbour Alrogithm, CART, C5.0, Random Forest and Logistic Regression. To decide which of the algorithms are more suitable the dataset at hand, we evaluate them by the ROC, and AUC.
+
+```{r fig.align='center'}
+prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
+prob_C50  = predict( tree_C50,  test_set, type = "prob" )[ , 1 ]
+
+prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
+
+prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13, type = "prob" )[ , 1 ]
+
+prob_logreg  = predict( logreg,  test_set, type = "response" )
+
+roc_knn = roc( actual_test, prob_knn )
+roc_cart = roc( actual_test, prob_cart )
+roc_C50 = roc( actual_test, prob_C50 )
+roc_random_forest = roc( actual_test, prob_random_forest )
+roc_logreg = roc( actual_test, prob_logreg )
+
+ggroc( list( roc_knn, roc_cart, roc_C50, roc_random_forest, roc_logreg ), size = 0.8 ) + 
+    theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
+  scale_color_manual( values = 1:5, 
+    labels = c( paste( "KNN; AUC=", round( auc( roc_knn ), 3 ) ),
+                paste( "CART; AUC=", round( auc( roc_cart ), 3 ) ), 
+                paste( "C50; AUC=", round( auc( roc_C50 ), 3 ) ), 
+                paste( "Random Forest; AUC=", round( auc( roc_random_forest ), 3 ) ),
+                paste( "Log Reg; AUC=", round( auc( roc_logreg ), 3 ) )
+                ) ) +
+  theme( legend.title = element_blank() ) +
+  theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
+```
+
+Based on the above output we can say, that the CART algorithm performs the worst of all 5, and the Random Forest the best because it has the largest enclosed area under the ROC curve of 0.803. Therefore, to gain the most accurate classification and prediction of which candidate want to stay for the company we need to use the Random Forest algorithm.
+
+# Conclusion
+
+In the first section, [Business Understanding Stage](#business-understanding-stage), we explored the general problem with the phenomenon of employee turnover, and introduced the objectives of the dataset at hand.
+
+In the second section, [Data Understanding Stage](#data-understanding-stage), we gained more insight into the data, by exploring the unique values that the categorical variables took on, and made remarks about the porblematic parts of the data.
+
+The thrid section, [Data cleaning and preprocessing](#data-cleaning-and-preprocessing), we solved the issues about the dataset, e.g., resolved inconsistencies, fixed up overlapping data, and converted character variables into the variables' statistically corresponding data type.
+
+Next, in the forth section, [Exploratory Data Analysis](#exploratory-data-analysis) we analysed each variables by means of Exploratory Data Analysis and sorted the variables into 2 bins; either useful for predictions or not. Furthermore, we unveiled important relationships between the particular variable and the target variable. Finally we made relevant remakrs of what the company needs to pay attention for or address in their hiring system.
+
+We continued with the fifth part, [Data Preparation](#data-preparation), and partitioned the data into training and test set. Also, the partitions were validated whether they represent the dataset as a whole, and passed this test.
+
+The [Modeling section](#modeling---classification) used five different models to classify variables.
+
+Finally, we evaluated the competing classification models based on their accuracy and found that the Random Forest is the best out of all 5 models.
