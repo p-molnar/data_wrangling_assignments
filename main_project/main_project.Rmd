@@ -1,5 +1,6 @@
 ---
-title: '<center> How to increase employee retention in the field of Data Science <center>'
+title: '<center>Predicting employee turnover rate in the field of Data Science<center>'
+subtitle: '<center>Data Wrangling Main Project<center>'
 author: '<center> Peter Molnar <center>'
 date: '<center> `r Sys.Date()` <center>'
 output:
@@ -37,6 +38,7 @@ library( pROC         )   # For ROC plot
 
 To guarantee consistent formatting of the plots, and code outputs, across the document we use the following colour theme.
 ```{r results = FALSE, echo = FALSE }
+# set a consistent theme for plots
 theme_new = theme( panel.background = element_rect( fill = "white", colour = "white", size = 0.5, linetype = "solid" ),
                    panel.grid.major = element_line( size = 0.2, linetype = 'solid', colour = "gray77" ), 
                    panel.grid.minor = element_line( size = 0.1, linetype = 'solid', colour = "gray90" ),
@@ -84,7 +86,10 @@ data = read_csv("hr_dataset.csv")
 
 Next we report some descriptive statistics and the structure of the dataset to have basic understanding on the data we are dealing with.
 ```{r}
+# get summary of data
 summary( data )
+
+# get structure of data
 str( data )
 ```
 
@@ -118,10 +123,14 @@ The structure above reports that `r names(Filter(is.character, data))` are impor
 First we need to see the potential unique values each of the character variables may take on, so that we understand how to treat them in a later analysis.
 
 ```{r}
-categorical_vars = names(Filter(is.character, data))  # get names of character variables
-categorical_data = data[,c(categorical_vars)]         # select character type columns
+# get names of character variables
+categorical_vars = names( Filter(is.character, data) )
 
-lapply(categorical_data, unique)                      # report the unique values of each feature
+# select character type columns
+categorical_data = data[ , c(categorical_vars) ]         
+
+# report the unique values of each feature
+lapply(categorical_data, unique)
 ```
 
 ### `city` {.unlisted .unnumbered}
@@ -198,8 +207,11 @@ In this section we aim to clean up the data based on the remarks made above, and
 `enrollee_id` is a unique identifier of each of the candidates that signed-up for the training. This feature carries no valuable information, hence it is redundant for our later analysis, and therefore is removed.
 
 ```{r}
-col_idx = match( "enrollee_id", names(data) )   # get column index position of 'enrollee_id'
-data = data[, -col_idx]                         # remove enrollee_id column from dataset
+# get column index position of 'enrollee_id'
+col_idx = match( "enrollee_id", names(data) )
+
+# remove enrollee_id column from dataset
+data = data[ , -col_idx]
 ```
 
 
@@ -208,12 +220,14 @@ data = data[, -col_idx]                         # remove enrollee_id column from
 Per mentioned above, `relevent_experience` contains a spelling mistake and hence is replaced with "relevant_experience".
 
 ```{r}
+# replace observations
 names(data)[names(data) == 'relevent_experience'] = "relevant_experience"
 ```
 
 Not only the variable name is misspelled but also the observations. However, since the variable is of binary type, we aim to use a clear notation, to indicate whether the candidate has relevant experience or not. We achieve this by replacing "Has relevent experience" with "yes" and "No relevent experience" with "no" values, so to make later interpretations easier.
 
 ```{r}
+# replace observations
 data $ relevant_experience[data $ relevant_experience == "Has relevent experience"] = "Yes"
 data $ relevant_experience[data $ relevant_experience == "No relevent experience"] = "No"
 ```
@@ -224,6 +238,7 @@ data $ relevant_experience[data $ relevant_experience == "No relevent experience
 In case of `enrolled_university`, the “no_enrollment” observations does not only contain a spelling mistake, but is also inconsistent with the other 2 values for this variable. I.e., it is delimited with underscore and non-capitalised. The below code replaces “no_enrollment” observations with “No enrolment” 
 
 ```{r}
+# replace observations
 data $ enrolled_university[data $ enrolled_university == "no_enrollment"] = "No enrolment"
 ```
 
@@ -235,14 +250,16 @@ The `company_size` variable contains inconsistent and overlapping observations. 
 Below we replace each "10/49" values with "10-49".
 
 ```{r}
+# replace observations
 data $ company_size[data $ company_size == "10/49"] = "10-49"
 ```
 
 Furthermore, the intervals of `company_size` should be mutually exclusive values. However, in the case of the following 2 values, "100-500" and "500-999", the "500" overlaps between the two categories. As remedy, we replace the "100-500" observations with "100-499". Additionally, the value "10000+" does not follow the convention of this variable either, so it is replaced with ">9999".
 
 ```{r}
+# replace observations
 data $ company_size[data $ company_size == "100-500"] = "100-499"
-data $ company_size[data $ company_size == "10000+"] = ">9999"
+data $ company_size[data $ company_size == "10000+"]  = ">9999"
 ```
 
 
@@ -251,6 +268,7 @@ data $ company_size[data $ company_size == "10000+"] = ">9999"
 The `last_new_job` variable contains the observation "never", that expresses that the candidate never had a job. For the sake of following the convention of the variable, and keeping the data as numeric as possible, this value is replaced with "0".
 
 ```{r}
+# replace observations
 data $ last_new_job[data $ last_new_job == "never"] = "0"
 ```
 
@@ -259,7 +277,10 @@ data $ last_new_job[data $ last_new_job == "never"] = "0"
 Lastly, the target variable, `target`, is not explanatory for the dataset. Therefore, we change the column name to something more descriptive, e.g., `is_looking_for_job`. The variable represents binary observations, whether the individual is looking to change job or not, for which the two possible value are "yes" or "no"
 
 ```{r}
+# replace column name
 names(data)[names(data) == 'target'] = "is_looking_for_job"
+
+# replace observations
 data $ is_looking_for_job[data $ is_looking_for_job == 1] = "Yes"
 data $ is_looking_for_job[data $ is_looking_for_job == 0] = "No"
 ```
@@ -272,6 +293,7 @@ This section explores the number and proportion of missing values per variable. 
 
 The below code reports a table on the missing values in a descending order.
 ```{r}
+# report missing value summary
 (missing_values = miss_var_summary( data ))
 ```
 
@@ -279,12 +301,17 @@ From the above output we see that dataset contains `sum(is.na(data))` missing ob
 
 To find out whether the missing values are systematically related to other missing observations, we plot a correlation matrix between variables that contains missing observations. 
 ```{r}
+# create temporary data frame
 df_tmp = is.na(data)
+
+# get column names with missing values
 var_list = names( which( colSums( is.na(data) ) > 0) )
 
+# replace observations to numeric, to be able to interpret correlation matrix
 df_tmp[df_tmp == "TRUE"]  = 1
 df_tmp[df_tmp == "FALSE"] = 0
 
+# plot correlation matrix
 ggcorr( data = df_tmp[ , var_list ], size = 3, hjust = 0.75, label = TRUE ) 
 ```
 The matrix reports a problematic pair of variable, `company_size` and `company_type`. We see that there is a high positive correlation ($\rho_{copmany\_size, company\_type} = 0.8$) between the missing values of  `company_size` and `company_type`. Meaning, that if `company_size` is missing, then there is a 80% probability that `company_type` will be missing as well, and this holds true vice versa. This may be the case, because `company_type` is usually a function of `company_size`. For example, if we know that a company has only a few employees, then there is a high chance that the form of the company is Early stage start-up. Furthermore, if we do not know the size of the company, we cannot classify it as any type, and this hold vice versa, hence the high correlation. In this case, the high correlation is justified, therefore we do not mark it as any problematic.
@@ -304,8 +331,10 @@ When data is burdened to such large extent by missing values, we cannot use impu
 Therefore, we proceed with the former approach, and replace missing observations with "Unknown" value.
 
 ```{r}
+# select variables with more than 5% missing values
 severe_missing_val_cols = missing_values[missing_values["pct_miss"] > 5 , ] $ variable
 
+# replace observations
 for (col_name in severe_missing_val_cols)
 {
   data[is.na(data[col_name]), col_name] = "Unknown"
@@ -316,6 +345,7 @@ for (col_name in severe_missing_val_cols)
 When contains only a small fraction of missing values, we can utilise different imputation methods. In this case, we will perform an imputation, which replaces the missing values with random ones, proportional to the categories' records.
 
 ```{r}
+# impute data
 data["education_level"] = impute(data $ education_level, "random")
 data["last_new_job"] = impute(data $ last_new_job, "random")
 data["enrolled_university"] = impute(data $ enrolled_university, "random")
@@ -324,8 +354,10 @@ data["experience"] = impute(data $ experience, "random")
 
 Once the imputation is completed, we report a summary on them.
 ```{r}
+# create imputed variable collection
 imputed_vars = c("education_level", "last_new_job", "enrolled_university", "experience")
 
+# get summary on imputed variables
 for (var in imputed_vars)
 {
   print(var)
@@ -335,6 +367,7 @@ for (var in imputed_vars)
 
 Finally, we confirm if there is still any missing values left in the dataset.
 ```{r}
+# check for missing values in the dataset
 any( is.na(data) )
 ```
 
@@ -355,17 +388,24 @@ Below the table summarises the data types of the variables.
 ### Ordinal variables
 
 ```{r}
-# convert ordinal variables to ordered factor
+# create an ordered collection
 educ_ordered_levels = c("Primary School", "High School", "Graduate", "Masters", "Phd")
+# convert ordinal variables to ordered factor
 data $ education_level = factor(data $ education_level, ordered = TRUE, levels = educ_ordered_levels)
 
+# create an ordered collection
 experience_ordered_levels = c("<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", ">20")
+# convert ordinal variables to ordered factor
 data $ experience = factor(data $ experience, ordered = TRUE, levels = experience_ordered_levels)
 
+# create an ordered collection
 comp_size_ordered_levels = c("Unknown", "<10", "10-49", "50-99", "100-499", "500-999", "1000-4999", "5000-9999", ">9999")
+# convert ordinal variables to ordered factor
 data $ company_size = factor(data $ company_size, ordered = TRUE, levels = comp_size_ordered_levels)
 
+# create an ordered collection
 last_job_ordered_levels = c("0", "1", "2", "3", "4", ">4")
+# convert ordinal variables to ordered factor
 data $ last_new_job = factor(data $ last_new_job, ordered = TRUE, levels = last_job_ordered_levels)
 ```
 
@@ -391,7 +431,10 @@ data $ company_type = as.factor(data $ company_type)
 Now that the variables are in the right data type, we report the structure and summary again.
 
 ```{r}
+# get summary on modified data
 summary(data)
+
+# get structure of modified data
 str(data)
 ```
 
@@ -404,13 +447,18 @@ This section aims to identify useful predictors of `is_looking_for_job` target v
 First we investigate the target variable, and report a bar plot and summary.
 
 ```{r fig.height = 5, fig.width = 5}
+# plot a bar chart with percentages drawn on the graph
 ggplot( data = data, aes( x = is_looking_for_job, label = scales::percent( prop.table( stat( count ) ) ) ) ) +
   labs( title = "Bar plot for the target variable" ) +
   geom_bar( fill = c( "palevioletred1", "darkseagreen1" ) ) + 
   geom_text( stat = 'count', vjust = 0.2, size = 6 ) + 
   theme_new
 
-summary( data $ is_looking_for_job )
+# get contingency table
+addmargins( table (data $ is_looking_for_job) )
+
+# get proportion table
+prop.table( table(data $ is_looking_for_job) )
 ```
 
 We see above, that the majority of the candidates (`r round( 1 - summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`%) after successful completion of the training want to stay with the company. Still, `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`% of the candidates look for new opportunities.
@@ -425,6 +473,7 @@ Throughout the analysis below, we attempt unveil important relationships between
 With the `city` variable, we attempt to understand which cities are where the most candidates came from and the ones that were the most successful in terms employment. First, we plot the `city` as a normal and then as a standardised bar plot.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get barchart
 ggplot( data = data ) + 
   geom_bar( aes( x = city, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for the target variable 'is_looking_for_job'" )  +
@@ -432,6 +481,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# get barchart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = city, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -445,8 +495,13 @@ Therefore, we create a new data frame the `city` variable and the target variabl
 Below we add a few new columns to the data frame; `candidate_count`, which is the sum of the candidates from a given city, `application_rate`, which is rate of application per city compared to the overall dataset, and finally, `turnover_rate`, that shows the percentage of candidates that wants to change job in the given city.
 
 ```{r}
+# create temporary data frame
 city_df = as.data.frame.matrix((table(data $ city, data $ is_looking_for_job)))
+
+# change column names of data frame
 names(city_df) = c("not looking for job", "looking for job")
+
+# add new columns to data frame
 city_df["candidate_count"] = city_df $`looking for job` + city_df $`not looking for job`
 city_df["application_rate"] = round(city_df $`candidate_count` / length(data $city), 4)
 city_df["turnover_rate"] = round(city_df $`looking for job` / city_df $`candidate_count`, 4)
@@ -464,7 +519,10 @@ We see that approximately `sum(head(city_df[ order(city_df $ application_rate, d
 Next, we filter for the turnover rate, and order it an decreasing order, so that we retrieve cities with the highest turnover rate first. However, prior to that, we filter for those cities where the candidate count were more than 30, so that we can eliminate cities that were lacking significant number of applications.
 
 ```{r}
+# select specific rows of data frame
 cand_count_more_30 = city_df[city_df $ candidate_count > 30, ]
+
+# get top 5 results in decreasing order of data frame where there are more than 30 candidates
 head(cand_count_more_30[ order(cand_count_more_30 $ turnover_rate, decreasing = TRUE), ])
 ```
 The above output shows, that turnover rate again does not follow any pattern, therefore it is advised to test whether there is significant correlation between the application rate, and the turnover rate of the given city.
@@ -481,6 +539,7 @@ The above output shows, that turnover rate again does not follow any pattern, th
 
 **Test results:**
 ```{r}
+# carry out two-sided correlation hypothesis test
 cor.test( x = city_df $ application_rate, y = city_df $ turnover_rate, 
           alternative = "two.sided")
 ```
@@ -496,14 +555,16 @@ Therefore we can say, that just because there are a few cities that bears with a
 To understand whether gender is a predictor of whether a candidate is going to stay to work for the company or not, we need to plot it as a bar plot,  with `is_looking_for_job` overlay. Then, standardise it so that we can read the the percentage rates of turnover.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ gender, dnn = c( "is_looking_for_job", "gender" ) ) )
 
+# plot data as barchart 
 ggplot( data = data ) + 
   geom_bar( aes( x = gender, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'gender', with 'is_looking_for_job' overlay" )  +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
-
+# plot data as barchart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = gender, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -526,6 +587,7 @@ Since the above plot does not indicate strong graphical evidence of `gender` bei
 
 **Test results:**
 ```{r}
+# carry out chi-squared hypothesis test 
 chisq.test( table( data $ is_looking_for_job, data $ gender ) )
 ```
 
@@ -539,8 +601,10 @@ Now that the relationship is confirmed, the company is advised to pay special at
 ## Investigate the `relevant_experience` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table 
 addmargins( table( data $ is_looking_for_job, data $ relevant_experience, dnn = c( "is_looking_for_job", "relevant_experience" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'relevant_experience' 
@@ -548,6 +612,7 @@ ggplot( data = data ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -564,8 +629,10 @@ This result may be explained by the fact that those without relevant former expe
 ## Investigate the `enrolled_univeristy` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ enrolled_university, dnn = c( "is_looking_for_job", "enrolled_university" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'enrolled_university', with 
@@ -573,6 +640,7 @@ ggplot( data = data ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -591,8 +659,10 @@ The above plots also suggest the company to pay attention to those candidates wh
 ## Investigate the `education_level` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ education_level, dnn = c( "is_looking_for_job", "education_level" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = education_level, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'education_level', with 
@@ -601,6 +671,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = education_level, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -621,8 +692,10 @@ The above plots also highlight that the company needs to target those with Prima
 ## Investigate the `major_discipline` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ major_discipline, dnn = c( "is_looking_for_job", "major_discipline" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = major_discipline, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'major_discipline', with 
@@ -631,6 +704,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = major_discipline, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -654,6 +728,7 @@ What we are also interested in is the turnover rate between different major disc
 
 **Test results:**
 ```{r}
+# carry out Chi-squared hypothesis test
 chisq.test( table( data $ is_looking_for_job, data $ major_discipline ) )
 ```
 
@@ -669,8 +744,10 @@ Furthermore, the company should focus on candidates with Business, STEM, and Oth
 ## Investigate the `experience` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ experience, dnn = c( "is_looking_for_job", "experience" ) ) )
 
+# plot data as bar chart
 ggplot( data = data ) + 
   geom_bar( aes( x = experience, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'experience', with 
@@ -679,6 +756,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = experience, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -696,8 +774,10 @@ Furthermore, the above identified relationship suggests the company to target th
 
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default'}
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ company_size, dnn = c( "is_looking_for_job", "company_size" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = company_size, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'company_size', with 
@@ -706,6 +786,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = company_size, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -724,8 +805,10 @@ Both the data, and conclusion above suggests the company not to take candidates 
 ## Investigate the `company_type` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default'}
+# get contingency table
 addmargins( table( data $ is_looking_for_job, data $ company_type, dnn = c( "is_looking_for_job", "company_type" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = company_type, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'company_type', with 
@@ -734,6 +817,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = company_type, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -751,8 +835,10 @@ Similarly to the previous variable, `company_size`, here the plots suggest the c
 ## Investigate the `last_new_job` variable
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# add contingency table
 addmargins( table( data $ is_looking_for_job, data $ last_new_job, dnn = c( "is_looking_for_job", "last_new_job" ) ) )
 
+# plot data as bar chart 
 ggplot( data = data ) + 
   geom_bar( aes( x = last_new_job, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'last_new_job', with 
@@ -761,6 +847,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = last_new_job, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -782,7 +869,10 @@ First, we visualize the correlation matrix between: `training_hours` and `city_d
 
 
 ```{r}
+# create a collection of variable names 
 variable_list = c( "city_development_index", "training_hours" )
+
+# plot a correlation matrix 
 ggcorr( data = data[ , variable_list ], label = TRUE ) 
 ```
 
@@ -794,9 +884,11 @@ The correlation matrix shows no correlation between the two variables, therefore
 Given that the `training_hours` variable is discrete numeric, we first investigate the distributions and the outliers by a box plot.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# plot a box plot categories by the target variable
 ggplot( data = data ) +
   geom_boxplot( aes( x = is_looking_for_job, y = training_hours ), fill = c( "palevioletred1", "darkseagreen1" ) )
 
+# plot a histogram on the data
 ggplot( data ) +
      geom_histogram( aes( x = training_hours ), bins = 30, color = "blue", fill = "lightblue" )
 ```
@@ -807,9 +899,11 @@ The box plot also identifies outliers beyond `r boxplot.stats(data $ training_ho
 In the case of employee training, it usually takes anywhere between 3 months to 6 month. Given that the company did not specifically target any groups with specific prerequisites, many applied with diverse background from all walks of life. Therefore it should not be surprising that for a few candidates with no former experience in the field might take more time for the training to complete. Assuming that the candidate will spend 4 hours a day on the training, we see that the outliers spent at least `r boxplot.stats(data $ training_hours) $ stats[5] / 4` days (`r boxplot.stats(data $ training_hours) $ stats[5] / 80` month) with the training. Which in this context seems absolutely normal. Therefore, we will not deem any values an outlier in `training_hours`.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# plot standardised histogram with overlay
 ggplot( data ) +
      geom_histogram( aes( x = training_hours, fill=is_looking_for_job ), position="fill")
 
+# plot density plot categorised by the target variable
 ggplot( data ) +
   geom_density( aes( x = training_hours, fill = is_looking_for_job ), alpha = 0.3 ) + 
   theme_new
@@ -861,9 +955,11 @@ Furthermore, the graphical and numerical evidence shall suggest the company to e
 The [City Development Index](https://www.cdindex.net/en/methodology) (CDI) aims to compare cities objectively from a holistic perspective both at the international and national levels.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# plot a box plot on the data
 ggplot( data = data ) +
   geom_boxplot( aes( x = is_looking_for_job, y = city_development_index ), fill = c( "palevioletred1", "darkseagreen1" ) )
 
+# plot data as a histogram
 ggplot( data ) +
      geom_histogram( aes( x = city_development_index ), bins = 30, color = "blue", fill = "lightblue" )
 ```
@@ -873,24 +969,30 @@ The above box plots indicate that for the 2 target variable groups the distribut
 Given that in less developed cities (according to the methodology of CDI), the opportunity to access proper social, economic, educational and cultural facilities are limited. Poor CDI, does not allow for candidates to develop an affinity towards Data Science and hence, it is rare to get applications from these cities. Therefore, if a candidate comes from a city with such low CDI, and passes the training course, it is indeed an exceptional case, and hence can be deemed as an outlier. Therefore, we will treat these observations as outliers and impute them by values drawn randomly from an underlying distribution of `city_development_index`.
 
 ```{r}
+# get lower whisker of box plot
 whisker_lower = boxplot.stats(data $ city_development_index) $ stats[1]
 
+# mutate data
 data = mutate( data, city_development_index = ifelse( city_development_index < whisker_lower, NA, city_development_index ) ) 
 
+# impute data
 data $ city_development_index = impute( data $ city_development_index, 'random' )
 
+# get summary on `city_development_index`
 summary(data $ city_development_index)
 
-# convert data from impute back to numeric
+# convert data from impute to numeric
 data $ city_development_index = as.numeric(data $ city_development_index)
 ```
 
 Next, we look at the standardised plots.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
+# plot standardised histogram
 ggplot( data ) +
      geom_histogram( aes( x = city_development_index, fill=is_looking_for_job ), position="fill")
 
+# plot density plot categorised by the target variable
 ggplot( data = data ) + 
   geom_density( aes( x = city_development_index, fill = is_looking_for_job ), alpha = 0.3)
 ```
@@ -925,13 +1027,17 @@ Based on the above analysis, our conclusion is the following:
 In this section we prepare the dataset for modelling. Here, we partition the dataset at hand randomly into two groups: train set (80%) and test set (20%).
 
 ```{r}
-set.seed( 5 ) # set seed for reproducibility
+# set seed for reproducibility
+set.seed( 5 ) 
 
+# partition data
 data_sets = partition( data = data, prob = c( 0.8, 0.2 ) )
 
+# create train set and test set out of data_sets
 train_set = data_sets $ part1
 test_set  = data_sets $ part2
 
+# get target variable of test set
 actual_test  = test_set $ is_looking_for_job
 ```
 
@@ -949,12 +1055,15 @@ Next, we validate the partition by testing whether the proportion of the target 
 
 **Test results:**
 ```{r}
+# get counts of observations
 x1 = sum( train_set $ is_looking_for_job == "Yes" )
 x2 = sum( test_set  $ is_looking_for_job == "Yes" )
 
+# get total observation count
 n1 = nrow( train_set )
 n2 = nrow( test_set  )
 
+# carry out proportion test
 prop.test( x = c( x1, x2 ), n = c( n1, n2 ) )
 ```
 
@@ -970,6 +1079,7 @@ Per concluded above in the [Exploratory Data Analysis](#exploratory-data-analysi
 Thus, here, based on the training dataset, we want to apply different type of Machine Learning algorithms, by using above predictors in our model. We use the following formula:
 
 ```{r}
+# declare formula for modelling 
 formula = is_looking_for_job ~ city_development_index + gender + relevant_experience + enrolled_university + education_level + major_discipline + experience + company_size + company_type + last_new_job + training_hours
 ```
 
@@ -981,6 +1091,7 @@ To find out the optimal value of `k` for the k-nearest neighbour algorithm we pl
 We achieve this by using this `kNN.plot()` function, and set a seed of for the sake of reproducibility.
 
 ```{r fig.align = 'center'}
+# get kNN error rate plot 
 kNN.plot( formula, train = train_set, test = test_set, transform = "minmax", k.max = 20, set.seed = 5 )
 ```
 
@@ -988,6 +1099,7 @@ The plot shows that the minimum value of error rate is for the case that `k = 19
 
 Now, to find the k-nearest neighbour for the test data set for the case `k = 19`, we use `kNN()` command: 
 ```{r}
+# get kNN prediction
 predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 19 )
 ```
 
@@ -997,12 +1109,13 @@ Given that our target variable is binary, we use a min-max normalisation, so tha
 
 Next we use the CART algorithm to create a binary decision tree by using `rpart()` function.
 ```{r}
+# get CART prediction
 tree_cart = rpart( formula, data = train_set, method = "class" )
-predict_cart = predict( tree_cart, test_set, type = "class" )
 ```
 
 Below we plot the decision tree.
 ```{r, fig.height=6, fig.width=10}
+# plot tree created by CART
 rpart.plot( tree_cart, type = 4, extra = 104 )
 ```
 
@@ -1025,12 +1138,13 @@ Based on this classification algorithm, the company only needs to pay attention 
 
 In this section, we use a different classification method, called C5.0, that creates a decision tree as well.
 ```{r}
+# get C5.0 prediction
 tree_C50 = C5.0( formula, data = train_set ) 
-predict_C50 = predict( tree_C50, test_set, type = "class" )
 ```
 
 Since the tree from the **C5.0 algorithm** is relatively large to visualize, we use the function `summary` as follows
 ```{r}
+# get summary on C5.0 prediction
 summary( tree_C50 )
 ```
 
@@ -1049,13 +1163,14 @@ The CART and C5.0 algorithms both produce a single decision tree based on all of
 
 Below we run the `randomForest()` function to generate the classification.
 ```{r}
+# get random forest prediction
 random_forest = randomForest( formula = formula, data = train_set, ntree = 100 )
-predict_random_forest = predict( random_forest, test_set, type = "class" )
 ```
 
 To decide the suitable value the number of trees in the random forest algorithm, we plot the error rate against `ntree` and look for the local minimum of the function.
 
 ```{r}
+# plot Random Forest error rates
 plot( random_forest )
 ```
 
@@ -1064,6 +1179,7 @@ We see that `n` obtains its minimum approximately around `ntree=25`. After this 
 Below we plot a dot-chart for each variable of how each variable contributes to the homogeneity of the nodes and leaves in the the above reported random forest.  The higher the value of mean decrease Gini score, the higher the importance of the variable in the model.
 
 ```{r}
+# get Random Forest mean decrease Gini score plot
 varImpPlot( random_forest )
 ```
 
@@ -1073,11 +1189,13 @@ We can report that the top 5 contributor to the model is `city_development_index
 
 Since we are dealing with a binary target variable, we will use logistics regression modelling.
 ```{r}
+# get logistic regression prediction
 logreg = glm( formula, data = data, family = binomial )
 ```
 
 To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
 ```{r}
+# get summary on logistic regression
 summary( logreg )
 ```
 # Model Evaluation
@@ -1085,21 +1203,21 @@ summary( logreg )
 Above we dealt with 5 different classification methods: k-nearest Neighbour Algorithm, CART, C5.0, Random Forest and Logistic Regression. To decide which of the algorithms are more suitable the dataset at hand, we evaluate them by the ROC and AUC.
 
 ```{r fig.align='center'}
+# get prediction for variables
 prob_cart = predict( tree_cart, test_set, type = "prob" )[ , 1 ]
 prob_C50  = predict( tree_C50,  test_set, type = "prob" )[ , 1 ]
-
 prob_random_forest = predict( random_forest, test_set, type = "prob" )[ , 1 ]
-
-prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 13, type = "prob" )[ , 1 ]
-
+prob_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 19, type = "prob" )[ , 1 ]
 prob_logreg  = predict( logreg,  test_set, type = "response" )
 
+# get ROC curve for variables
 roc_knn = roc( actual_test, prob_knn )
 roc_cart = roc( actual_test, prob_cart )
 roc_C50 = roc( actual_test, prob_C50 )
 roc_random_forest = roc( actual_test, prob_random_forest )
 roc_logreg = roc( actual_test, prob_logreg )
 
+# plot ROC curves, and get AUC vaules for variables
 ggroc( list( roc_knn, roc_cart, roc_C50, roc_random_forest, roc_logreg ), size = 0.8 ) + 
     theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
   scale_color_manual( values = 1:5, 
