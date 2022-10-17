@@ -1,6 +1,6 @@
 ---
-title: '<center>Predicting employee turnover rate in the field of Data Science<center>'
-subtitle: '<center>Data Wrangling Main Project<center>'
+title: '<center>Data Wrangling Main Project<center>'
+subtitle: '<center>Predicting employee turnover rate in the field of Data Science<center>'
 author: '<center> Peter Molnar <center>'
 date: '<center> `r Sys.Date()` <center>'
 output:
@@ -52,29 +52,29 @@ theme_new = theme( panel.background = element_rect( fill = "white", colour = "wh
 
 ## General understanding of the problem
 
-Employee turnover refers to the event of replacing an employee leaving the company with a new one. In general, hiring is long and a costly procedure; the given position needs to be drafted, advertised, a series of promising candidates be invited and through a series of interviews, be selected. Hence employee turnover is one of the most persistent and frustrating problems that organisations have long been facing.
+Employee turnover is a general labour market phenomenon whereby employees rotate between organisations, roles, and occupations, and fluctuating between the states of employment and unemployment ([Abassi et al., 2000](#ref_1)).
 
-Regardless of whether turnover is involuntary, such as termination due to poor performance, or voluntary, such as resignations, it is both money wise and productivity wise a costly factor. 
+Turnover may be involuntary, in the case of of poor employee performance, or voluntary, where the employee chooses to part ways. Regardless of the reason and the type of turnover, it is extremely costly for organisations.
 
-According to a conservative estimates by the Bureau of Labor Statistics, on average an employee replacement costs approximately \$13,996 per employee. However, this amount for the Information Technology (IT) sector on average reaches \$20,000 per employee. As the economy grows, more jobs, and therefore opportunities are created, and therefore voluntary turnover also increases. 
+The replacement of an employee is a time-consuming and costly procedure that involves writing out the new position, advertising, pre-selecting promising candidates, carrying out a series of interviews, and eventually making the hiring decision. Hence employee turnover is usually considered the most general and frustrating problems that organisations have long been facing.
 
-Organisations tend to underestimate the true cost of turnover, and hence does not focus on candidate selection, and employee retention properly. This may be because, turnover is not an accountable line-item in most profit and loss statements, nor is it typically defined in the budget, therefore the real loss companies suffer is still vague.
+According to the estimates of the Bureau of Labour Statistics, on average an employee replacement costs approximately \$13,996 per employee. This amount, is estimated to be 42% higher for the Information Technology (IT) sector, and on average reaches \$20,000 per employee. As the economy expands, more organisations opens their doors for new candidates, and the larger supply of workplaces induces an increase in voluntary employee rotation.
 
-In addition to the explicit replacement fees, there are implicit costs as well, such as productivity loss, workplace safety issues, and morale damage to the company, that further deepens the severity of employee turnover.
+Since, turnover is not an accountable cost, nor is it typically defined in the budget, organisations tend to underestimate the real cost associated with losing even a single employee. No only the explicit replacement fees can set back companies by tens of thousands of dollars, but the implicit costs, such loss in productivity, workplace safety issues, and morale damage add to the bill as well.
 
-Since there is not much organisations can do to dramatically reduce the costs associated with turnover, the best measure is to reduce turnover directly by an improved selection process that assesses candidates' turnover risk, motivational fit early in the hiring process. Such hiring process helps to reduce turnover, and can lead to a safer, more productive and profitable work place.
+The best measure to reduce employee turnover is an improved selection process that assesses applicants' turnover risk, and engagement early in the hiring process. As such, it can lead to the reduction of turnover, and by that to a safer, more productive and profitable work place. ([O'Connell & Kung, 2007](#ref_2))
 
 ## Dataset description
 
-The selected dataset, ["HR Analytics: Job Change of Data Scientists"](https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists), is on a Big Data and Data Science specialised company, that seeks to extend their team with new and promising candidates. The company offers a series of training courses, that anyone could sign-up for, and upon the completion of it the candidate can decide whether to stay at the company or not.
+The selected dataset, ["HR Analytics: Job Change of Data Scientists"](https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists), is on a Big Data and Data Science specialised company, that seeks to extend their team with promising candidates.  The company offers a series of training courses, that anyone can sign-up for, and upon the completion, the candidate can decide whether to stay at the company or not.
 
-The dataset contains information about the candidates’ demographics, education, experience that are collected during the sign-up procedure. By that, the company aims to gather information on the candidates and identify which ones are truly enthusiastic towards working for the company, and those who are likely to opt-out.
+The dataset contains information about the candidates’ demographics, education, experience that are collected during the sign-up procedure.
 
 This paper aims to identify factors associated with employee turnover, and seeks explanation for the following questions:
 
-* What are the main characteristics of candidates that the company loses
-* What are the key predictors of employee turnover
-* What type of candidates should the company target to minimise turnover
+* What type of candidates should the company consider hiring to minimise the risk of turnover?
+* What are the main characteristics of candidates that the company loses?
+* What are the key predictors of employee turnover?
 
 
 # Data Understanding Stage
@@ -93,9 +93,9 @@ summary( data )
 str( data )
 ```
 
-The above outputs shows, that data is imported as a data.frame object, and that it consists of `r nrow(data)` rows and `r ncol(data)` columns/variables. The `r ncol(data)` variables includes the target variable, identified by the variable called `target`.
+The above outputs shows, that data is imported as a data.frame object, and that it consists of `r nrow(data)` rows and `r ncol(data)` variables. The `r ncol(data)` variables includes the target variable, called `target`.
 
-The [dataset](https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists) provider delivers the following explanation to the features:
+The [dataset](https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists) provider delivers the following description to the features:
 
 | Feature | Feature description |
 | :- | :- |
@@ -114,11 +114,11 @@ The [dataset](https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-o
 | `training_hours` |  training hours completed |
 | `target` |  0 – Not looking for job change, 1 – Looking for a job change |
 
-Since the above summary does not allow to gain the most in-depth understanding on the features, in the following section we further delve into them.
+Since the above summary does not allow to gain the most in-depth understanding on the features, in the coming sections we further explore them.
 
 ## Understanding the variables
 
-The structure above reports that `r names(Filter(is.character, data))` are imported as character variables, and `r names(Filter(is.character, data))` as numeric ones.
+The structure above reports that `r names(Filter(is.character, data))` are imported as character variables, and `r names(Filter(is.numeric, data))` as numeric ones.
 
 First we need to see the potential unique values each of the character variables may take on, so that we understand how to treat them in a later analysis.
 
@@ -185,14 +185,14 @@ It is worth to note, that some observations are inconsistent and deviate from th
 
 ### `company_type` {.unlisted .unnumbered}
 
-The `company_type` variable holds `r length(unique(categorical_data $ company_type))` unique values, and stand for the type of the company the candidate currently is working for, if any.
+The `company_type` variable holds `r length(unique(categorical_data $ company_type))` unique values, and stands for the type of the company the candidate currently is working for, if any.
 
 The variable can take on the following unique values: `r unique(categorical_data $ company_type)`.
 
 
 ### `last_new_job` {.unlisted .unnumbered}
 
-The `last_new_job` variable holds `r length(unique(categorical_data $ last_new_job))` unique values, and stands for the difference in years between the previous job and current job.
+The `last_new_job` variable holds `r length(unique(categorical_data $ last_new_job))` unique values, and stands for the difference in years between the previous job and current job. The variable can also be interpreted as the number of years the candidate is at his/her current workplace.
 
 The variable can take on the following unique values: `r unique(categorical_data $ last_new_job)`. Whereby "never" refers to no previous job, and ">4" to the last job being later than 4 years.
 
@@ -224,7 +224,7 @@ Per mentioned above, `relevent_experience` contains a spelling mistake and hence
 names(data)[names(data) == 'relevent_experience'] = "relevant_experience"
 ```
 
-Not only the variable name is misspelled but also the observations. However, since the variable is of binary type, we aim to use a clear notation, to indicate whether the candidate has relevant experience or not. We achieve this by replacing "Has relevent experience" with "yes" and "No relevent experience" with "no" values, so to make later interpretations easier.
+Not only the variable name is misspelled but also the observations. However, since the variable is of binary type, we aim to use a clear notation, to indicate whether the candidate has relevant experience or not. We achieve this by replacing "Has relevent experience" with "Yes" and "No relevent experience" with "No" values, so to make later interpretations easier.
 
 ```{r}
 # replace observations
@@ -274,7 +274,7 @@ data $ last_new_job[data $ last_new_job == "never"] = "0"
 
 ## `target` {.unlisted .unnumbered}
 
-Lastly, the target variable, `target`, is not explanatory for the dataset. Therefore, we change the column name to something more descriptive, e.g., `is_looking_for_job`. The variable represents binary observations, whether the individual is looking to change job or not, for which the two possible value are "yes" or "no"
+Lastly, the target variable, `target`, does not explain what it stands for. Therefore, we change the column name to something more descriptive, e.g., `is_looking_for_job`. The variable represents binary observations, whether the individual is looking to change job or not, for which the two possible value are "Yes" or "No"
 
 ```{r}
 # replace column name
@@ -297,7 +297,7 @@ The below code reports a table on the missing values in a descending order.
 (missing_values = miss_var_summary( data ))
 ```
 
-From the above output we see that dataset contains `sum(is.na(data))` missing observations, which regards in total `r count(missing_values[missing_values["pct_miss"] > 0, ]["variable"])` variables. These are: `r missing_values[missing_values["pct_miss"] > 0, ] $ variable`.
+From the above output we see that dataset contains `r sum( is.na(data) )` missing observations, which regards in total `r count(missing_values[missing_values["pct_miss"] > 0, ]["variable"])` variables. These are: `r missing_values[missing_values["pct_miss"] > 0, ] $ variable`.
 
 To find out whether the missing values are systematically related to other missing observations, we plot a correlation matrix between variables that contains missing observations. 
 ```{r}
@@ -314,9 +314,9 @@ df_tmp[df_tmp == "FALSE"] = 0
 # plot correlation matrix
 ggcorr( data = df_tmp[ , var_list ], size = 3, hjust = 0.75, label = TRUE ) 
 ```
-The matrix reports a problematic pair of variable, `company_size` and `company_type`. We see that there is a high positive correlation ($\rho_{copmany\_size, company\_type} = 0.8$) between the missing values of  `company_size` and `company_type`. Meaning, that if `company_size` is missing, then there is a 80% probability that `company_type` will be missing as well, and this holds true vice versa. This may be the case, because `company_type` is usually a function of `company_size`. For example, if we know that a company has only a few employees, then there is a high chance that the form of the company is Early stage start-up. Furthermore, if we do not know the size of the company, we cannot classify it as any type, and this hold vice versa, hence the high correlation. In this case, the high correlation is justified, therefore we do not mark it as any problematic.
+The matrix reports a problematic pair of variable, `company_size` and `company_type`. We see that there is a high positive correlation ($\rho_{copmany\_size, company\_type} = 0.8$) between the missing values of  `company_size` and `company_type`. Meaning, that if `company_size` is missing, then there is a high chance that `company_type` will be missing as well, and this holds true vice versa. This may be the case, because `company_type` is usually a function of `company_size`. For example, if we know that a company has only a few employees, then there is a high chance that the form of the company is Early stage start-up. Furthermore, if we only know the type of the company, we cannot make a rough classification of its size, hence the high correlation. In this case, the high correlation is justified, but we do not find it problematic to drop them.
 
-Furthermore, based on the missing variable summary, we can report that the variables can be categorised as lightly or severely impacted by missing values: If a variable contains less than 5% of missing observations, then "lightly impacted" variable, and those that contain more than 5%, as "severely impacted"
+Furthermore, based on the missing variable summary, we can report that the variables can be categorised as lightly or severely impacted by missing values; If a variable contains less than 5% of missing observations, then "lightly impacted" variable, and those that contain more than 5%, as "severely impacted".
 
 
 | Missing value category | Variables |
@@ -324,9 +324,9 @@ Furthermore, based on the missing variable summary, we can report that the varia
 | severely impacted ($\pi_{missing\_vals} > 5\%$) | `r missing_values[missing_values["pct_miss"] > 5 , ] $ variable` |
 | lightly impacted ($\pi_{missing\_vals} \leq 5\%$)  | `r missing_values[missing_values["pct_miss"] > 0 & missing_values["pct_miss"] <= 5 , ] $ variable` |
  
-### Severely impacted variables by missing values
+### Dealing with the severely impacted variables
 
-When data is burdened to such large extent by missing values, we cannot use imputation because it may come at the expense of data reliability and distortion. Therefore, the two options are to either drop the missing observations, or replace them with a new "Unknown" value. If we were to drop the missing observations, then complete rows would be dropped, and so we lose valuable information.
+When data is burdened to such large extent by missing values, we cannot use imputation because it may come at the expense of data reliability and distorts it. Therefore, the two options are to either drop the missing observations, or replace them with a new "Unknown" value. Although the above variables are impacted by 30%, it is still not as severe to drop rows with missing observations. 
 
 Therefore, we proceed with the former approach, and replace missing observations with "Unknown" value.
 
@@ -341,8 +341,8 @@ for (col_name in severe_missing_val_cols)
 }
 ```
 
-### Lightly impacted variables by missing values
-When contains only a small fraction of missing values, we can utilise different imputation methods. In this case, we will perform an imputation, which replaces the missing values with random ones, proportional to the categories' records.
+### Dealing with the lightly impacted variables
+When data contains only a small fraction of missing values, we can utilise different imputation methods. In this case, we will perform an imputation, which replaces the missing values with random ones, proportional to the categories' records.
 
 ```{r}
 # impute data
@@ -352,7 +352,7 @@ data["enrolled_university"] = impute(data $ enrolled_university, "random")
 data["experience"] = impute(data $ experience, "random")
 ```
 
-Once the imputation is completed, we report a summary on them.
+Next, we report a summary on the imputed variables.
 ```{r}
 # create imputed variable collection
 imputed_vars = c("education_level", "last_new_job", "enrolled_university", "experience")
@@ -371,11 +371,13 @@ Finally, we confirm if there is still any missing values left in the dataset.
 any( is.na(data) )
 ```
 
+Based on the above output, we can state that the dataset is free from NA observations.
+
 ## Converting the variables
 
-Now that the data no longer contains missing values, and are clean, we can convert each variable into their corresponding data type.
+At this stage, the data no longer contains missing values, and are clean, however, each of the variables are either numeric or character type.
 
-Below the table summarises the data types of the variables.
+Below the table summarises the appropriate data type of the variables that in this section we will convert each of them.
 
 | Statistical type of variable | variable |
 | :- | :- | 
@@ -440,7 +442,7 @@ str(data)
 
 # Exploratory Data Analysis
 
-This section aims to identify useful predictors of `is_looking_for_job` target variable. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables, and then continue with the numerical ones.
+This section aims to identify useful predictors of the target variable, `is_looking_for_job`. We use graphs, plots, and tables to uncover important relationships that could indicate important areas for further investigation. Here we start with the categorical variables, and then continue with the numerical ones.
 
 ## Investigate the target variable `is_looking_for_job` {.unlisted .unnumbered}
 
@@ -463,17 +465,17 @@ prop.table( table(data $ is_looking_for_job) )
 
 We see above, that the majority of the candidates (`r round( 1 - summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`%) after successful completion of the training want to stay with the company. Still, `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`% of the candidates look for new opportunities.
 
-For the first sight the `r round( 1 - summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`% retention rate looks good, however, to understand the problem, we need to look at the other side of the same coin and realise that the turnover rate is `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`%. It means, that on average, every fourth candidate wants to leave the company after the training, and technically uses the training  as a jumping board to get into another company. This does not only undermine the opportunity given, but also exploits it at the cost of the company.
+For the first sight the `r round( 1 - summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`% retention rate looks good, however, to understand the problem, we need to look at the other side of the same coin and realise that the turnover rate is `r round( summary( data $ is_looking_for_job )[2] / nrow( data ), 4 ) * 100`%. It means, that on average, every fourth candidate wants to leave the company after the training, and technically uses the training  as a jumping board to get into another company. This does not only undermine the opportunity given, but also exploits the resources of the company.
 
 Throughout the analysis below, we attempt unveil important relationships between the target variable, `is_looking_for_job`, and the rest of the variable.
 
 
 ## Investigate the `city` variable
 
-With the `city` variable, we attempt to understand which cities are where the most candidates came from and the ones that were the most successful in terms employment. First, we plot the `city` as a normal and then as a standardised bar plot.
+With the `city` variable, we attempt to understand which cities are the ones where the most candidates came from and the ones that were the most successful in terms employment. First, we plot the `city` as a normal and then as a standardised bar plot.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
-# get barchart
+# plot bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = city, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for the target variable 'is_looking_for_job'" )  +
@@ -481,7 +483,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# get barchart with overlay
+# plot standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = city, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -489,10 +491,7 @@ ggplot( data = data ) +
   theme_new
 ```
 
-Since, there are `r length(unique(categorical_data $ city))` unique values plotted on the x-axis, it does not allow for clear identification of the cities.
-Therefore, we create a new data frame the `city` variable and the target variable.
-
-Below we add a few new columns to the data frame; `candidate_count`, which is the sum of the candidates from a given city, `application_rate`, which is rate of application per city compared to the overall dataset, and finally, `turnover_rate`, that shows the percentage of candidates that wants to change job in the given city.
+Since, there are `r length(unique(categorical_data $ city))` unique values plotted on the x-axis, it does not allow for clear identification of the cities. Therefore, we create a temporary data frame out of a standard contingency table for `city` variable, and add a few new columns to it; `candidate_count`, which is the sum of the candidates from a given city, `application_rate`, which is rate of application per city compared to the overall dataset, and finally, `turnover_rate`, that shows the percentage of candidates that wants to change job in the given city.
 
 ```{r}
 # create temporary data frame
@@ -507,14 +506,13 @@ city_df["application_rate"] = round(city_df $`candidate_count` / length(data $ci
 city_df["turnover_rate"] = round(city_df $`looking for job` / city_df $`candidate_count`, 4)
 ```
 
-First we order the data in a decreasing order based on application rate, so that we see from which city the company gets the most applicants from, and report the top 5 results.
+First we order the data in a decreasing order based on the application rate, so that we see from which city most applicants sign up from, and report the top 5 results.
 
 ```{r}
 head(city_df[ order(city_df $ application_rate, decreasing = TRUE), ])
-sum(head(city_df[ order(city_df $ application_rate, decreasing = TRUE), ]) $ application_rate) * 100
 ```
 
-We see that approximately `sum(head(city_df[ order(city_df $ application_rate, decreasing = TRUE), ]) $ application_rate) * 100`% of the applicant came from the above 5 cities. We also report, that the turnover rate does not seem to follow a pattern across the cities. Meaning, that the turnover rate is not consistent across the different level of application rates. 
+We see that approximately `r sum(head(city_df[ order(city_df $ application_rate, decreasing = TRUE), ]) $ application_rate) * 100`% of the applicant came from the above 5 cities. We also report, that the turnover rate does not seem to follow a pattern against the turnover rate, but they are rather random.
 
 Next, we filter for the turnover rate, and order it an decreasing order, so that we retrieve cities with the highest turnover rate first. However, prior to that, we filter for those cities where the candidate count were more than 30, so that we can eliminate cities that were lacking significant number of applications.
 
@@ -525,15 +523,16 @@ cand_count_more_30 = city_df[city_df $ candidate_count > 30, ]
 # get top 5 results in decreasing order of data frame where there are more than 30 candidates
 head(cand_count_more_30[ order(cand_count_more_30 $ turnover_rate, decreasing = TRUE), ])
 ```
-The above output shows, that turnover rate again does not follow any pattern, therefore it is advised to test whether there is significant correlation between the application rate, and the turnover rate of the given city.
+
+The above output shows, that turnover rate again does not seem to follow a pattern against application rate, therefore it is advised to test whether there is significant correlation between the application rate, and the turnover rate of the given city.
 
 **Hypotheses:** 
 
 \[
 \bigg\{
 \begin{matrix}
-          H_0:  \rho_{application_rate, turnover_rate} = 0 \\
-          H_a:  \rho_{application_rate, turnover_rate} \neq 0
+          H_0:  \rho_{application\_rate, turnover\_rate} = 0 \\
+          H_a:  \rho_{application\_rate, turnover\_rate} \neq 0
 \end{matrix}
 \]
 
@@ -548,7 +547,7 @@ cor.test( x = city_df $ application_rate, y = city_df $ turnover_rate,
 
 Given significance level of $\alpha = 0.05$ , and p-value = $85.68\%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that there is no linear relationship between application rate and turnover rate.
 
-Therefore we can say, that just because there are a few cities that bears with a larger candidate count, it will not tell whether those candidates will want to stay to work for the company or not. Overall, we can conclude that there is no predictive power of `city`, and hence we do not expect this variables to be part of the prediction model.
+Therefore we can say, that just because there are a few cities that bears with a larger candidate count (application rate), it will not tell whether those candidates will want to stay to work for the company or not. Overall, we can conclude that there is no predictive power of `city`, and hence we do not expect this variables to be part of the prediction model.
 
 ## Investigate the `gender` variable
 
@@ -558,13 +557,13 @@ To understand whether gender is a predictor of whether a candidate is going to s
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ gender, dnn = c( "is_looking_for_job", "gender" ) ) )
 
-# plot data as barchart 
+# plot data as bar chart with overlay 
 ggplot( data = data ) + 
   geom_bar( aes( x = gender, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'gender', with 'is_looking_for_job' overlay" )  +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
-# plot data as barchart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = gender, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -595,7 +594,13 @@ chisq.test( table( data $ is_looking_for_job, data $ gender ) )
 
 Given significance level of $\alpha = 0.05$ , and p-value = $2.2*10^{-14}\%$ < $\alpha = 5\%$, there is sufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that there is statistical relationship between `gender` and the target variable.
 
-Now that the relationship is confirmed, the company is advised to pay special attention to those candidates with Unknown gender, because they tend to leave the company more often than the rest of the genders.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The company should consider hiring male candidates, as they have the lowest tendency of leaving the company after the training.
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company is unable to establish proper engagement with those of unknown gender category.
 
 
 ## Investigate the `relevant_experience` variable
@@ -604,7 +609,7 @@ Now that the relationship is confirmed, the company is advised to pay special at
 # get contingency table 
 addmargins( table( data $ is_looking_for_job, data $ relevant_experience, dnn = c( "is_looking_for_job", "relevant_experience" ) ) )
 
-# plot data as bar chart 
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'relevant_experience' 
@@ -612,7 +617,7 @@ ggplot( data = data ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as a standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = relevant_experience, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -623,7 +628,15 @@ The above contingency table quantifies the relationship between `relevant_experi
 
 To learn about the tendency of looking for new opportunities across the different relevant experience categories, we need to look at the plot with `is_looking_for_job` overlay. We see that the turnover rate is higher for those without experience (approximately 30%) and lower for those with experience (approximately 20%). Given the visible difference in turnover rate, we do not need to carry out any hypothesis test to confirm the predictive importance of `relevant_experience`.
 
-This result may be explained by the fact that those without relevant former experience, lose interest in the field after the training, and hence look for job elsewhere. Additionally, this result also recommends the company to track candidates carefully based on their previous relevant experience, as those without one tend to leave the company approximately 10% more than those of non-experienced candidates.
+This result may be explained by the fact that those without relevant former experience, lose interest in the field after the training, and hence look for job elsewhere.
+
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The company is advised to track candidates carefully based on their previous relevant experience. The company should consider hiring candidates with relevant experience they tend to leave the company approximately 10% less likely than those without relevant experience.
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company loses out on candidates approximately 35% of times amongst those who lack experience in the field of Data Science.
 
 
 ## Investigate the `enrolled_univeristy` variable
@@ -632,7 +645,7 @@ This result may be explained by the fact that those without relevant former expe
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ enrolled_university, dnn = c( "is_looking_for_job", "enrolled_university" ) ) )
 
-# plot data as bar chart 
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'enrolled_university', with 
@@ -640,20 +653,27 @@ ggplot( data = data ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = enrolled_university, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
   theme_new
 ```
 
-The contingency table shows that the majority of candidates (14105) are/were not enrolled to any higher education, while those who took either full or part time courses at the university are in minority (5053).
+The contingency table shows that the majority of candidates (14087) are/were not enrolled to any higher education, while those who took either full or part time courses at the university are in minority (5071).
 
 Next, we analyse the standardised plot and report that those with a full time degree tend to leave the company approximately 37.5% of the times, while those of the other categories approximately at a rate of 20-25%. 
 
 Given the clear difference between the university enrolment categories, there is no need for a hypothesis test to confirm this. Therefore, based one the strong graphical evidence, we can expect the data mining algorithm to incorporate `enrolled_university` to the prediction model.
 
-The above plots also suggest the company to pay attention to those candidates who were/are enrolled at a full time course, since their turnover rate significantly stands out from the `enrolled_university` categories.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The above plots suggest the company to pay attention to those candidates who were/are enrolled at a full time course, since their turnover rate significantly stands out from the `enrolled_university` categories. That is, the company needs to focus on hiring those with no enrolment at university.
+
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company cannot establish proper engagement with those with full time enrolment, and hence loses them in 37.5% of the time.
 
 
 ## Investigate the `education_level` variable
@@ -662,7 +682,7 @@ The above plots also suggest the company to pay attention to those candidates wh
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ education_level, dnn = c( "is_looking_for_job", "education_level" ) ) )
 
-# plot data as bar chart 
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = education_level, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'education_level', with 
@@ -671,7 +691,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = education_level, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -681,13 +701,20 @@ ggplot( data = data ) +
 
 The largest part of the dataset is represented by those with a graduate degree (bachelor). The second and third largest group are those with Masters degree and High School diploma, respectively. Lastly, those with Primary School certificate and Phd are represented the least in the dataset.
 
-Given that `education_level` is an ordinal variable, the bar plot draws a normality, and symmetry for the data. That is, most of the candidates in the dataset hold a graduate degree, while towards the sides we find the rarer cases, which are of those with Masters and High School qualifications. Towards the tails, we find the rarest observations, i.e., those with significantly lower and higher qualifications, such as Primary School diploma and Phd.
+Given that `education_level` is an ordinal variable, the bar plot draws a symmetry for the data. That is, most of the candidates in the dataset hold a graduate degree, while towards the sides we find the rarer cases, which are of those with Masters and High School qualifications. Towards the tails, we find the rarest observations, i.e., those with significantly lower and higher qualifications, such as Primary School diploma and Phd.
 
-To see the proportion of turnover for each of the education levels, we read the standardised plot, and report that it kept its approximate symmetric shape. Furthermore, we see that those with a graduate degree tend to change job the most likely, by a little bit more than 25%, while the rest of the categories change job with a likeliness of less than 25%. Those with High School degrees want to change approximately with the same frequency as that of with Masters degree, which is approximately 20%. Similarly, those with Primary School degree wants to change job approximately as frequently as Phd degree holders, that is approximately 13%.
+To see the proportion of turnover for each of the education levels, we read the standardised plot, and report that it kept its approximate symmetric shape for turnover rate. Furthermore, we see that those with a graduate degree tend to change job the most likely, by a little bit more than 25%, while the rest of the categories change job with a likeliness of less than 25%. Those with High School degrees want to change approximately with the same frequency as that of with Masters degree, which is approximately 20%. Similarly, those with Primary School degree wants to change job approximately as frequently as Phd degree holders, that is approximately 13%.
 
 All things considered above, the plots indicate strong graphical evidence of education level being an important predictor of the target variable, therefore, we can expect the data mining algorithm to incorporate it into the prediction model.
 
-The above plots also highlight that the company needs to target those with Primary school certificate, or High school Diploma, or Masters degree or Phd. However, on the field of Data Science the higher qualification is generally more favoured, therefore the company should go with candidates specifically with Masters or Phd degrees.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+The above plots highlight that the company needs to target those with Primary school certificate, or High school Diploma, or Masters degree or Phd. However, on the field of Data Science the higher qualification is generally more favoured, therefore the company should go with candidates specifically with Masters or Phd degrees.
+
+
+**What are the main characteristics of candidates that the company loses? **
+The company loses standard graduates in a bit more than 25% of the times.
+
+
 
 ## Investigate the `major_discipline` variable
 
@@ -695,7 +722,7 @@ The above plots also highlight that the company needs to target those with Prima
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ major_discipline, dnn = c( "is_looking_for_job", "major_discipline" ) ) )
 
-# plot data as bar chart 
+# plot data as bar chart with overlay 
 ggplot( data = data ) + 
   geom_bar( aes( x = major_discipline, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'major_discipline', with 
@@ -704,7 +731,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = major_discipline, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -738,7 +765,14 @@ Given significance level of $\alpha = 0.05$ , and p-value = $6.225*10^{-10}\%$ <
 
 Therefore, `major_discipline` will be included in the prediction model.
 
-Furthermore, the company should focus on candidates with Business, STEM, and Other degrees, as these candidates tend to look for new opportunities the most amongst the discipline categories.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+To minimise turnover risk, the company should hire those with Arts, Humanities, and Unknown degree.
+
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company loses Business, STEM, and Other degree holder candidates the most,  as these candidates tend to look for new opportunities the most amongst the discipline categories. 
 
 
 ## Investigate the `experience` variable
@@ -747,7 +781,7 @@ Furthermore, the company should focus on candidates with Business, STEM, and Oth
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ experience, dnn = c( "is_looking_for_job", "experience" ) ) )
 
-# plot data as bar chart
+# plot data as bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = experience, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'experience', with 
@@ -756,7 +790,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = experience, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -764,11 +798,19 @@ ggplot( data = data ) +
   theme_new
 ```
 
-The above plots show, a multi-modal distribution. That is a distribution with multiple local modes; the first one is around experience of 4 years, the second  around experience of 10 years and lastly at 15 years. Additionally, we report that those with more than 20 years of experience represent the majority of the dataset.
+The above plots show, a multiple local modes to the data. The first we identify at around experience of 4 years, the second at around experience of 10 years and lastly at 15 years. The mode of the data however, is ">20", so we report that those with more than 20 years of experience represent the majority of the dataset.
 
 To see the turnover rate between the difference experience level, we read the standardised plot. The standardised plot shows that the more experience the candidate has the less likely he/she will be open to new job opportunities. Meaning, that there is a strong graphical indication of `experience` being an important predictor of the turnover rate, therefore we can expect this variable to be included in the prediction model by the data mining algorithm.
 
-Furthermore, the above identified relationship suggests the company to target the senior candidates, as their likeliness not to be loyal to the company is less compared to those with less experience.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The above identified relationship suggests the company to target the senior candidates in order to minimise turnover risk as their likeliness to be loyal to the company is significantly higher, than those of juniors.
+
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company unequivocally loses those candidates with less than 8 years of experience.
+
 
 ## Investigate the `company_size` variable
 
@@ -777,7 +819,7 @@ Furthermore, the above identified relationship suggests the company to target th
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ company_size, dnn = c( "is_looking_for_job", "company_size" ) ) )
 
-# plot data as bar chart 
+# plot data as bar chart with overlay 
 ggplot( data = data ) + 
   geom_bar( aes( x = company_size, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'company_size', with 
@@ -786,7 +828,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = company_size, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -794,13 +836,20 @@ ggplot( data = data ) +
   theme_new
 ```
 
-The above plot shows that candidates with unknown company size represent the majority of the data. Next to that, in majority as well those who work for companies of size "50-99" and "100-499" and large organisation of size more than ">9999".
+The above plot shows that candidates with unknown company size represent the majority of the data. Next to that, in majority as well those who work for companies of size "50-99" and "100-499" and large organisation of size more than 9999 employees.
 
 To observe the turnover rate between the different categories, we read the standardised plot; those with unknown company size tend to look for a job in the largest percentage. Next to this observation, only one category stands out as being significantly different from others and this is the candidates from company size of "10-49". These candidates tend to look for a job approximately 23% of the cases. 
-
 Conclusively, we see strong graphical indication of `company_size` as an important predictor of `is_looking_for_job`, and hence expect it to be incorporated in the prediction model.
 
-Both the data, and conclusion above suggests the company not to take candidates from companies of unknown size, instead, attempt to target those with headcount less than 10, "50-99", "100-499", "1000-4999".
+Both the data, and conclusion above suggests the company not to take candidates from companies of unknown size, instead, 
+
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The company should focus on hiring attempt candidates from companies of headcount less than 10, "50-99", "100-499", "1000-4999", in order to minimise turnover risk.
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company loses out the most on those candidates with unknown headcount and those with "10-49".
 
 ## Investigate the `company_type` variable
 
@@ -808,7 +857,7 @@ Both the data, and conclusion above suggests the company not to take candidates 
 # get contingency table
 addmargins( table( data $ is_looking_for_job, data $ company_type, dnn = c( "is_looking_for_job", "company_type" ) ) )
 
-# plot data as bar chart 
+# plot data as bar chart with overlay 
 ggplot( data = data ) + 
   geom_bar( aes( x = company_type, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'company_type', with 
@@ -817,7 +866,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = company_type, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -829,7 +878,15 @@ The above plots show that the majority of the candidates work for private limite
 
 To see the turnover rate per company type, we analyse the standardised plot, and see that those with unknown company type tend to look for a new job in the largest percentage. The second largest type in terms of turnover rate is the Early Stage Start-up. We see strong graphical indication of `company_type` being a predictor of the target variable, hence we can expect `company_type` to be included in the model by the data mining algorithm.
 
-Similarly to the previous variable, `company_size`, here the plots suggest the company not to hire candidates from unknown company type. The interpretation is similar, since the variables theoretically may correlate with one another.
+
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+Similarly to the previous variable, `company_size`, here the plots suggest the company to hire candidates funded start-ups, and private limited firms.
+
+
+**What are the main characteristics of candidates that the company loses? **
+
+the company cannot engage with candidates from unknown company types, and early stage start-ups and companies of type "other".
 
 
 ## Investigate the `last_new_job` variable
@@ -838,7 +895,7 @@ Similarly to the previous variable, `company_size`, here the plots suggest the c
 # add contingency table
 addmargins( table( data $ is_looking_for_job, data $ last_new_job, dnn = c( "is_looking_for_job", "last_new_job" ) ) )
 
-# plot data as bar chart 
+# plot data as bar chart with overlay 
 ggplot( data = data ) + 
   geom_bar( aes( x = last_new_job, fill = is_looking_for_job ) ) +
   labs( title = "Bar plot for 'last_new_job', with 
@@ -847,7 +904,7 @@ ggplot( data = data ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   theme_new
 
-# plot data as bar chart with overlay
+# plot data as standardised bar chart with overlay
 ggplot( data = data ) + 
   geom_bar( aes( x = last_new_job, fill = is_looking_for_job ), position = "fill" ) +
   scale_fill_manual( values = c( "palevioletred1", "darkseagreen1" ) ) + 
@@ -859,7 +916,12 @@ The above plots show that those who never had a job before, or changed job 1, 2 
 
 Given the strong graphical evidence of a relationship between `last_new_job` and the target variable, we expect the data mining algorithm to include the variable in question into the prediction model.
 
-The above plot also suggests the company to look for candidates who stays at their current company as long as possible.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The above plot also suggests the company to look for candidates who stays at their current company as long as possible. To minimise risk, this means at least 4 years at the current workplace.
+
+**What are the main characteristics of candidates that the company loses? **
+The company cannot engage with candidates of no former employment, and those with less than 2 years at the current workplace.
 
 ## Detect Correlated Variables {.unlisted .unnumbered}
 
@@ -896,7 +958,7 @@ From the above plot we read that the training hours given to the candidates are 
 
 The box plot also identifies outliers beyond `r boxplot.stats(data $ training_hours) $ stats[5]` hours, which regards `r count(data, training_hours > boxplot.stats(data $ training_hours) $ stats[5]) $ n [2]` values. Since it is `r round(count(data, training_hours > boxplot.stats(data $ training_hours) $ stats[5]) $ n [2] / nrow(data), 3) * 100`% of the the total dataset, we need to delve into the outliers a bit better.
 
-In the case of employee training, it usually takes anywhere between 3 months to 6 month. Given that the company did not specifically target any groups with specific prerequisites, many applied with diverse background from all walks of life. Therefore it should not be surprising that for a few candidates with no former experience in the field might take more time for the training to complete. Assuming that the candidate will spend 4 hours a day on the training, we see that the outliers spent at least `r boxplot.stats(data $ training_hours) $ stats[5] / 4` days (`r boxplot.stats(data $ training_hours) $ stats[5] / 80` month) with the training. Which in this context seems absolutely normal. Therefore, we will not deem any values an outlier in `training_hours`.
+In the case of employee training, it usually takes anywhere between 3 months to 6 month. Given that the company did not specifically target any groups with specific prerequisites, many applied with diverse background from all walks of life. Therefore it should not be surprising that for a few candidates with no former experience in the field might take more time for the training to complete. Assuming that the candidate will spend 4 hours a day on the training, we see that the outliers spent at least `r boxplot.stats(data $ training_hours) $ stats[5] / 4` days (`r boxplot.stats(data $ training_hours) $ stats[5] / 80` month) with the training. Which in this context seems normal. Therefore, we will not deem any values an outlier in `training_hours`.
 
 ```{r, fig.show = "hold", out.width = "50%", fig.align = 'default' }
 # plot standardised histogram with overlay
@@ -947,7 +1009,13 @@ Given significance level of $\alpha = 0.05$ , and p-value = $0.0628\%$ < $\alpha
 
 Given the above test results, we confirm the predictive importance of `training_hours`, and hence we would expect the data mining algorithm to incorporate that into the model.
 
-Furthermore, the graphical and numerical evidence shall suggest the company to extend the training course beyond 200 hours, so that it would decrease the turnover rate by naturally filtering out the most committed candidates.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The graphical and numerical evidence suggest the company to candidates with more than 200 hours spent on the course.
+
+**What are the main characteristics of candidates that the company loses? **
+
+Those finishing the training less than 200 hours tend to leave the company. Therefore, the company loses these candidates in the largest percent.
 
 
 ## Investigate the `city_development_index` variable
@@ -964,9 +1032,9 @@ ggplot( data ) +
      geom_histogram( aes( x = city_development_index ), bins = 30, color = "blue", fill = "lightblue" )
 ```
 
-The above box plots indicate that for the 2 target variable groups the distribution is significantly different. For both groups the data is skewed negatively, meaning, that the data over represents those who come from a higher socio-economic cities. The box plot identifies a few outliers for those not looking for a job. These observations are towards the lower end of CDI, and are classified as such if they from a city with a CDI below `r boxplot.stats(data $ city_development_index) $ stats[1]`. This regards in total, `r count(data, city_development_index < boxplot.stats(data $ city_development_index) $ stats[1])[2, 2]` observations. 
+The above box plots indicate that for the 2 target variable groups the distribution is significantly different. For both groups the data is skewed negatively, meaning, that the data over represents those who come from a higher socio-economic cities. The box plot identifies a few outliers for those not looking for a job. These observations are towards the lower end of CDI, and are classified as such if they from a city with a CDI below `r boxplot.stats(data $ city_development_index) $ stats[1]`. This regards in total `r count(data, city_development_index < boxplot.stats(data $ city_development_index) $ stats[1])[2, 2]` observations. 
 
-Given that in less developed cities (according to the methodology of CDI), the opportunity to access proper social, economic, educational and cultural facilities are limited. Poor CDI, does not allow for candidates to develop an affinity towards Data Science and hence, it is rare to get applications from these cities. Therefore, if a candidate comes from a city with such low CDI, and passes the training course, it is indeed an exceptional case, and hence can be deemed as an outlier. Therefore, we will treat these observations as outliers and impute them by values drawn randomly from an underlying distribution of `city_development_index`.
+Given that in less developed cities (according to the methodology of CDI), the opportunity to access proper social, economic, educational and cultural facilities are limited, poor CDI, does not allow for candidates to develop an affinity towards Data Science and hence, it is rare to get applications from these cities. Therefore, if a candidate comes from a city with low CDI, and passes the training course, it is indeed an exceptional case, and hence can be deemed as an outlier. Therefore, we will treat these observations as outliers and impute them by values drawn randomly from an underlying distribution of `city_development_index`.
 
 ```{r}
 # get lower whisker of box plot
@@ -1001,7 +1069,14 @@ The above histogram and density plot clearly show a negative relationship betwee
 
 Given the clear graphical evidence of the predictive importance of `city_development_index`, we expect the data mining algorithm to incorporate into the prediction model.
 
-Additionally, the data suggest the company to hire candidates from high cities that has CDI higher than 0.75.
+**What type of candidates should the company consider hiring to minimise the risk of turnover? **
+
+The data suggest the company to hire candidates from cities with at least 0.75 CDI, in order to minimise turnover risk.
+
+**What are the main characteristics of candidates that the company loses? **
+
+The company loses engagement with those from lower CDI cities (below CDI of 0.7).
+
 
 ## Conclusion of EDA
 
@@ -1015,12 +1090,16 @@ Based on the above analysis, our conclusion is the following:
 * `relevant_experience`: The predictive importance of this variable is strong. The company needs to focus on candidates with relevant former experience as they stay to work for the company in a greater percent than those without relevant experience.
 * `enrolled_university`: The variable has predictive capabilities. The company should watch out for those with a full time degree as they turn over in a higher rate than those of other categories.
 * `education_level`: The variable has strong predictive importance. The company should specifically focus on candidates with at least a masters level degree.
-* `major_discipline`: The variable has predictive capabilities. The company need to focus on groups with major discipline of Art, Humanities and those with unknown discipline, as they are the most loyal to the company after hiring.
+* `major_discipline`: The variable has predictive capabilities. The company need to focus on groups with major discipline of Art, Humanities and those with unknown discipline, as they are the most loyal to the company after the course completion.
 * `experience`: The variable shows strong predictive importance. The relationship is clear, the more experience a candidate has, the less likely to leave the job. The company needs to focus on candidates with at least 8 years of experience.
 * `company_size`: The variable shows predictive capabilities, and the company needs to avoid candidates with unknown company size, as they tend to leave the job in the majority of the cases.
 * `company_type`: The variable shows strong enough graphical indication of predictive importance. The company needs to look out for candidates with unknown company type, as these candidates leave approximately 37.5% of the cases.
 * `last_new_job`: The variable shows strong indication of predictive capabilities. The more a candidate stays at his/her current position, the less likely he/she will leave the job offered by the hiring company. Therefore, the company needs to focus on those, who are in their current position for longer than 4 years.
-* `training_hours`: The variable has strong predictive importance. The company needs to focus on candidates with at least 200 hours spent on training hours.
+* `training_hours`: The variable has strong predictive importance. The company needs to focus on candidates with at least 200 hours spent on the training.
+
+**What are the key predictors of employee turnover? **
+
+Based on EDA, we find that the key predictors of turnover are the following variables: `city_development_index`, `gender`, `relevant_experience`, `enrolled_university`, `education_level`, `major_discipline`, `experience`, `company_size`, `company_type`, `last_new_job`, `training_hours`.
 
 # Data Preparation
 
@@ -1069,14 +1148,14 @@ prop.test( x = c( x1, x2 ), n = c( n1, n2 ) )
 
 **Test conclusion:**
 
-Given significance level of $\alpha = 0.05$ , and p-value = $52.54\%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the proportion of those who want to leave the company are not different between the training set and the test set.
+Given significance level of $\alpha = 0.05$ , and p-value = $52.54\%$ > $\alpha = 5\%$, there is insufficient evidence found to reject the $H_0$ in favour for $H_a$, and we infer that the proportion of those who want to leave the company are not different between the training set and the test set. This indicates, that the partition for the target variable, `is_looking_for_job` is valid.
 
 
 # Modeling - Classification
 
 Per concluded above in the [Exploratory Data Analysis](#exploratory-data-analysis) section, the following variables are relevant for prediction: `city_development_index`, `gender`, `relevant_experience`, `enrolled_university`, `education_level`, `major_discipline`, `experience`, `company_size`, `company_type`, `last_new_job`, `training_hours`.
 
-Thus, here, based on the training dataset, we want to apply different type of Machine Learning algorithms, by using above predictors in our model. We use the following formula:
+Based on the training dataset, we apply different type of Machine Learning algorithms, by using above predictors in our model. We use the following formula:
 
 ```{r}
 # declare formula for modelling 
@@ -1086,16 +1165,16 @@ formula = is_looking_for_job ~ city_development_index + gender + relevant_experi
 
 ## Classificaiton with the k-nearest neighbor algorithm
 
-To find out the optimal value of `k` for the k-nearest neighbour algorithm we plot the error rate each `k` value produces, from 1 to 20.
+To find out the optimal value of `k` for the k-nearest neighbour algorithm we plot the error rate for each `k` for $k \in [1, 20]$.
 
-We achieve this by using this `kNN.plot()` function, and set a seed of for the sake of reproducibility.
+We achieve this by using the `kNN.plot()` function, and set a seed of for the sake of reproducibility.
 
 ```{r fig.align = 'center'}
 # get kNN error rate plot 
 kNN.plot( formula, train = train_set, test = test_set, transform = "minmax", k.max = 20, set.seed = 5 )
 ```
 
-The plot shows that the minimum value of error rate is for the case that `k = 19`. Since the smaller values of error rate indicates better predictions, the optimal value of `k` would be 17.
+The plot shows that the minimum value of error rate is obtained for `k = 19`. Since the smaller values of error rate indicates better predictions, $k=19$ is the optimal value.
 
 Now, to find the k-nearest neighbour for the test data set for the case `k = 19`, we use `kNN()` command: 
 ```{r}
@@ -1103,7 +1182,7 @@ Now, to find the k-nearest neighbour for the test data set for the case `k = 19`
 predict_knn = kNN( formula, train = train_set, test = test_set, transform = "minmax", k = 19 )
 ```
 
-Given that our target variable is binary, we use a min-max normalisation, so that neither of the variables overwhelm the others.
+Given that the variables in this dataset do not have the same scale, one variable may overwhelm the contribution of another's. For this reason, we use a min-max normalisation and transfer the predictors.
 
 ## Classificaiton with Decision Tree by CART algorithm
 
@@ -1120,19 +1199,23 @@ rpart.plot( tree_cart, type = 4, extra = 104 )
 ```
 
 In general a CART decision tree is interpreted as follows:
+
 * we start with the top decision node (root node), and follow along an edge, whereby the next nodes and the edges tell which subsets we are looking at
 * once a leaf node is reached, it tells the predicted outcome
 * all the edges are connected by ‘AND’
 
-The above plot shows a single decision node, which is the root node. The root node represents 100% of the observations, out of which 75% classify as not looking for a job, and the rest 25% as a candidate who looks for a job. The root node splits at `city_development_index`.
+The above plot shows a single decision node, which is the root node. The root node represents 100% of the observations, out of which 75% classify as not looking for a job, and the rest 25% as a candidate who wants to change after the completion of the training. The root node splits at `city_development_index`, based on whether a city has a CDI at least 0.62 or not.
 
-Additionally, we see that 82% of the candidates are from cities with City Development Index >= 0.62, while the rest 18% are from lower CDI classified cities.
+We read that 82% of the candidates are from cities with City Development Index >= 0.62, while the rest 18% are from lower CDI classified cities.
 
-82% of those are from the higher CDI cities classify as not wanting to change job, while the rest 18% does want to change job after the training.
+82% of those from the higher CDI cities classify as not wanting to change job, while the rest 18% does want to change job after the training.
 
 59% of those candidates who are from the lower CDI cities classify as wanting to change job after the training, while the rest 41% report that they do not look for a job.
 
-Based on this classification algorithm, the company only needs to pay attention for what City Development Index the candidate comes from.
+
+**What are the key predictors of employee turnover? **
+
+Based on the kNN algorithm, the only predictor is City Development Index.
 
 ## Classificaiton with Decision Tree by C50 algorithm
 
@@ -1148,14 +1231,9 @@ Since the tree from the **C5.0 algorithm** is relatively large to visualize, we 
 summary( tree_C50 )
 ```
 
-The following variables bear with the highest level of usage for prediction according to C5.0. If the company was to use the C5.0 algorithm, they would need to consider these features of each candidate before making a hiring decision: 
+**What are the key predictors of employee turnover? **
 
-* `city_development_index`
-* `company_size`
-* `major_discipline`
-* `company_type`
-* `experience`
-* `enrolled_university`
+According to C5.0, the following predictors bear with the highest level of usage: `city_development_index`, `company_size`, `major_discipline`, `company_type`, `experience`, `education_level`.
 
 ## Classificaiton with Random Forest
 
@@ -1174,23 +1252,25 @@ To decide the suitable value the number of trees in the random forest algorithm,
 plot( random_forest )
 ```
 
-We see that `n` obtains its minimum approximately around `ntree=25`. After this value we see an approximate constant error rate.
+We see that `n` obtains its minimum approximately around `ntree=25`. After this value we see that the error rate is roughly constant.
 
-Below we plot a dot-chart for each variable of how each variable contributes to the homogeneity of the nodes and leaves in the the above reported random forest.  The higher the value of mean decrease Gini score, the higher the importance of the variable in the model.
+Below we plot a dot-chart for each variable to see how each variable contributes to the homogeneity of the nodes and leaves in the the above reported random forest.  The higher the value of mean decrease Gini score, the higher the importance of the variable in the model.
 
 ```{r}
 # get Random Forest mean decrease Gini score plot
 varImpPlot( random_forest )
 ```
 
-We can report that the top 5 contributor to the model is `city_development_index`, `training_hours`, `experience`, `company_size`, `last_new_job`. These are the features the company needs to dedicate attention for when hiring candidates based on the random forest algorithm.
+**What are the key predictors of employee turnover? **
+
+Based on the Random Forest algorithm, the most significant predictors are `city_development_index`, `training_hours`, `experience`, `company_size`, `last_new_job` and `company_type`. These are the features the company needs to dedicate attention for when hiring candidates based on the random forest algorithm.
 
 ## Classificaiton with Logistic Regression 
 
 Since we are dealing with a binary target variable, we will use logistics regression modelling.
 ```{r}
 # get logistic regression prediction
-logreg = glm( formula, data = data, family = binomial )
+logreg = glm( formula, data = data, family = binomial)
 ```
 
 To view the summary of the model, run the `summary()` command with the name of the saved model as the sole input. 
@@ -1200,7 +1280,7 @@ summary( logreg )
 ```
 # Model Evaluation
 
-Above we dealt with 5 different classification methods: k-nearest Neighbour Algorithm, CART, C5.0, Random Forest and Logistic Regression. To decide which of the algorithms are more suitable the dataset at hand, we evaluate them by the ROC and AUC.
+Above we dealt with 5 different classification methods: k-nearest Neighbour Algorithm, CART, C5.0, Random Forest and Logistic Regression. To decide which of the algorithms are the most accurate for prediction, we evaluate them by the ROC and AUC. The AUC is the best method across the learned evaluation metrics, because it incorporates the confusion matrix at multiple splits. The highest AUC indicates the highest combined specificity and sensitivity of the model, and by the that its accuracy.
 
 ```{r fig.align='center'}
 # get prediction for variables
@@ -1217,9 +1297,9 @@ roc_C50 = roc( actual_test, prob_C50 )
 roc_random_forest = roc( actual_test, prob_random_forest )
 roc_logreg = roc( actual_test, prob_logreg )
 
-# plot ROC curves, and get AUC vaules for variables
+# plot ROC curves, and get AUC values for variables
 ggroc( list( roc_knn, roc_cart, roc_C50, roc_random_forest, roc_logreg ), size = 0.8 ) + 
-    theme_minimal() + ggtitle( "ROC plots with AUC for 4 outcomes") +
+    theme_minimal() + ggtitle( "ROC plots with AUC for 5 outcomes") +
   scale_color_manual( values = 1:5, 
     labels = c( paste( "KNN; AUC=", round( auc( roc_knn ), 3 ) ),
                 paste( "CART; AUC=", round( auc( roc_cart ), 3 ) ), 
@@ -1231,24 +1311,26 @@ ggroc( list( roc_knn, roc_cart, roc_C50, roc_random_forest, roc_logreg ), size =
   theme( legend.position = c( .7, .3 ), text = element_text( size = 17 ) )
 ```
 
-Based on the above output we can say, that the CART algorithm performs the worst of all 5, and the Random Forest the best because it has the largest enclosed area under the ROC curve of 0.80. Therefore, to gain the most accurate classification of which candidate want to stay for the company we need to use the Random Forest algorithm.
+The above plot shows that the CART algorithm performs the worst of all 5 models with its AUC of 0.343, and the Random Forest the best with AUC of 0.803. Therefore, we can conclude that the company should use the Random Forest algorithm for prediction and rely on the following variables when making hiring decisions: `city_development_index`, `training_hours`, `experience`, `company_size`, `last_new_job` and `company_type`.
 
 # Conclusion
 
-In the first section, [Business Understanding Stage](#business-understanding-stage), we explored the general problem with the phenomenon of employee turnover, and introduced the objectives of the dataset at hand.
+In the first section, [Business Understanding Stage](#business-understanding-stage), we explored the general problem employee turnover, and introduced the objectives of the dataset at hand.
 
-In the second section, [Data Understanding Stage](#data-understanding-stage), we gained more insight into the data, by exploring the unique values that the categorical variables took on, and made remarks about the problematic parts of the data.
+We then moved on with the [Data Understanding Stage](#data-understanding-stage) section and obtained more insight into the data, by exploring the unique values that the categorical variables took on, and made remarks about the problematic parts of the data.
 
-The third section, [Data cleaning and preprocessing](#data-cleaning-and-preprocessing), we solved the issues about the dataset, e.g., resolved inconsistencies, fixed up overlapping data, and converted character variables into the variables' statistically corresponding data type.
+The third section, [Data cleaning and preprocessing](#data-cleaning-and-preprocessing), solved the issues about the dataset, e.g., resolved inconsistencies, fixed up overlapping data, and converted character variables into the variables' statistically appropriate data type.
 
-Next, in the forth section, [Exploratory Data Analysis](#exploratory-data-analysis) we analysed each variables by means of Exploratory Data Analysis and sorted the variables into 2 bins; either useful for predictions or not. Furthermore, we unveiled important relationships between the particular variable and the target variable. Finally we made relevant remakrs of what the company needs to pay attention for or address in their hiring system.
+After then, in the forth section, [Exploratory Data Analysis](#exploratory-data-analysis) we analysed each variables by means of Exploratory Data Analysis and sorted the variables into 2 bins; useful for predictions and not useful. Also, we unveiled important relationships between the given variables and the target variable. In EDA, we also provided an answer to the type of candidates the company needs to consider in order to minimise the risk of turnover, as well as identified those that the company could not engage with.
 
-We continued with the fifth part, [Data Preparation](#data-preparation), and partitioned the data into training and test set. Also, the partitions were validated whether they represent the dataset as a whole, and passed this test.
+Next,in the [Data Preparation](#data-preparation), we started the modelling phase of the paper, and partitioned the data into training and test set. 
 
-The [Modeling section](#modeling---classification) used five different models to classify variables.
+Once the partitions were proved to be valid, the [Modeling section](#modeling---classification) started. In this section, we used five different models to classify variables, and answered the main question of what are the key predictors based on the different classification methods.
 
-Finally, we evaluated the competing classification models based on their accuracy and found that the Random Forest is the best out of all 5 models.
+Finally, we evaluated the competing models based based on their AUC value, and found that the Random Forest is the best out of all 5 models.
 
 # References
 
-1. O'Connell, M., & Kung, M. C. (2007). The Cost of Employee Turnover. Industrial Management, 49(1).
+<span id="ref_1">1.</span> [Abassi SM, Hollman KW (2000). "Turnover: the real bottom line", Public Personnel Management, 2 (3) :333-342.](http://ithuteng.ub.bw/bitstream/handle/10311/1154/Ongori_AJBM_2007.pdf?sequence=1&isAllowed=y)
+
+<span id="ref_2">2.</span> [O'Connell, M., & Kung, M. C. (2007). The Cost of Employee Turnover. Industrial Management, 49(1).](https://www.researchgate.net/publication/211392097_The_Cost_of_Employee_Turnover)
